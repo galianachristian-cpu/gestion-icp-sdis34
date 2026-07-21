@@ -225,44 +225,160 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Fonctions de persistance Supabase
-async function loadFromSupabase() {
+async function saveToSupabase() {
+    if (!supabaseClient) {
+        console.error('❌ Supabase client non initialisé');
+        console.error('   Vérifiez que SUPABASE_URL et SUPABASE_KEY sont correctement configurés');
+        return false;
+    }
     try {
+        const dataToSave = initialData.map(agent => ({
+            id: agent.id,
+            nom: agent.nom || null,
+            prenom: agent.prenom || null,
+            annee: agent.annee || null,
+            sexe: agent.sexe || null,
+            poids: agent.poids === '' ? null : (parseFloat(agent.poids) || null),
+            rameur_temps: agent.rameur_temps === '' ? null : agent.rameur_temps,
+            luc_niv: agent.luc_niv === '' ? null : agent.luc_niv,
+            luc_perf: agent.luc_perf === '' ? null : agent.luc_perf,
+            souplesse: agent.souplesse === '' ? null : agent.souplesse,
+            pompes: agent.pompes === '' ? null : (parseInt(agent.pompes) || null),
+            tractions: agent.tractions === '' ? null : (parseInt(agent.tractions) || null),
+            updated_at: new Date().toISOString()
+        }));
+        console.log('📤 Tentative de sauvegarde vers Supabase...');
+        console.log('   Nombre d'agents:', dataToSave.length);
+        console.log('   Premier agent:', dataToSave[0]);
         const { data, error } = await supabaseClient
             .from('agents_icp')
-            .select('*')
-            .order('id');
-        if (error) throw error;
-        if (data && data.length > 0) {
-            data.forEach(row => {
-                const agent = initialData.find(a => a.id === row.id);
-                if (agent) {
-                    Object.assign(agent, row);
-                }
+            .upsert(dataToSave, { 
+                onConflict: 'id',
+                ignoreDuplicates: false
             });
-            console.log('✅ Données chargées depuis Supabase');
-            return true;
+        if (error) {
+            console.error('❌ Erreur Supabase (upsert):', error);
+            console.error('   Code:', error.code);
+            console.error('   Message:', error.message);
+            console.error('   Détails:', error.details);
+            throw error;
         }
-        return false;
+        console.log('✅ Données sauvegardées sur Supabase');
+        console.log('   Lignes affectées:', data?.length || 'N/A');
+        return true;
     } catch (e) {
-        console.warn('⚠️ Chargement Supabase échoué:', e.message);
+        console.error('❌ Sauvegarde Supabase échouée:', e.message);
+        console.error('   Stack:', e.stack);
+        if (e.message?.includes('fetch') || e.message?.includes('network')) {
+            console.warn('   💡 Vérifiez votre connexion internet et la configuration Supabase');
+        }
+        if (e.message?.includes('permission') || e.message?.includes('policy')) {
+            console.warn('   💡 Vérifiez les politiques RLS (Row Level Security) dans Supabase');
+        }
+        if (e.message?.includes('column')) {
+            console.warn('   💡 La structure de la table ne correspond pas aux données envoyées');
+        }
         return false;
     }
 }
 
-async function saveToSupabase() {
+async function loadFromSupabase() {
+    if (!supabaseClient) {
+        console.error('❌ Supabase client non initialisé');
+        return false;
+    }
     try {
-        // Supprimer les données existantes
-        await supabaseClient.from('agents_icp').delete().neq('id', 0);
-        // Insérer les nouvelles données
-        const { error } = await supabaseClient
+        console.log('📥 Tentative de chargement depuis Supabase...');
+        const { data, error } = await supabaseClient
             .from('agents_icp')
-            .insert(initialData);
-        if (error) throw error;
-        console.log('✅ Données sauvegardées sur Supabase');
+            .select('*')
+            .order('id');
+        if (error) {
+            console.error('❌ Erreur Supabase (select):', error);
+            console.error('   Code:', error.code);
+            console.error('   Message:', error.message);
+            throw error;
+        }
+        if (!data || data.length === 0) {
+            console.log('ℹ️ Aucune donnée trouvée dans Supabase, utilisation des données locales');
+            return false;
+        }
+        console.log('✅ Données reçues depuis Supabase:', data.length, 'agents');
+        let updatedCount = 0;
+        let createdCount = 0;
+        data.forEach(row => {
+            const agent = initialData.find(a => a.id === row.id);
+            if (agent) {
+                const updatableFields = [
+                    'poids', 'rameur_temps', 'luc_niv', 'luc_perf', 
+                    'souplesse', 'pompes', 'tractions'
+                ];
+                updatableFields.forEach(field => {
+                    if (row[field] !== undefined && row[field] !== null) {
+                        agent[field] = row[field];
+                    }
+                });
+                if (row.nom) agent.nom = row.nom;
+                if (row.prenom) agent.prenom = row.prenom;
+                if (row.annee) agent.annee = row.annee;
+                if (row.sexe) agent.sexe = row.sexe;
+                updatedCount++;
+            } else {
+                const newAgent = {
+                    id: row.id,
+                    nom: row.nom || '',
+                    prenom: row.prenom || '',
+                    annee: row.annee || '',
+                    sexe: row.sexe || '',
+                    poids: row.poids || '',
+                    rameur_temps: row.rameur_temps || '',
+                    luc_niv: row.luc_niv || '',
+                    luc_perf: row.luc_perf || '',
+                    souplesse: row.souplesse || '',
+                    pompes: row.pompes || '',
+                    tractions: row.tractions || ''
+                };
+                initialData.push(newAgent);
+                createdCount++;
+            }
+        });
+        console.log(`✅ Données chargées: ${updatedCount} mis à jour, ${createdCount} nouveaux`);
+        if (typeof renderTable === 'function') {
+            renderTable();
+        }
+        if (typeof updateStats === 'function') {
+            updateStats();
+        }
         return true;
     } catch (e) {
-        console.warn('⚠️ Sauvegarde Supabase échouée:', e.message);
+        console.error('❌ Chargement Supabase échoué:', e.message);
+        console.error('   Stack:', e.stack);
         return false;
+    }
+}
+
+async function checkSupabaseConnection() {
+    if (!supabaseClient) {
+        return { ok: false, error: 'Client non initialisé' };
+    }
+    try {
+        const { count, error } = await supabaseClient
+            .from('agents_icp')
+            .select('*', { count: 'exact', head: true });
+        if (error) throw error;
+        return { 
+            ok: true, 
+            count: count,
+            message: `Connexion OK - ${count} agents dans la table`
+        };
+    } catch (e) {
+        return { 
+            ok: false, 
+            error: e.message,
+            hint: e.message?.includes('relation') 
+                ? 'La table agents_icp n'existe pas' 
+                : 'Vérifiez URL, clé API et permissions'
+        };
     }
 }
 
