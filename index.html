@@ -403,7 +403,52 @@ function secToTime(s){var m=Math.floor(s/60);var sec=s%60;return m+"'"+(sec<10?"
 function evalRameur(sexe,poids,age,tempsStr){var sec=timeToSec(tempsStr);if(!sec||!poids)return"";var tr=getTranche(age);var p=parseFloat(poids);var ergo=sexe==="M"?ergoHomme:ergoFemme;var poidsList=sexe==="M"?ergoPoidsHomme:ergoPoidsFemme;var closest=poidsList[0];var minDiff=Math.abs(p-closest);for(var i=1;i<poidsList.length;i++){var d=Math.abs(p-poidsList[i]);if(d<minDiff){minDiff=d;closest=poidsList[i]}}var seuils=ergo[closest]?ergo[closest][tr]:null;if(!seuils)return"";if(sec>seuils[0])return"1";if(sec>seuils[1])return"2";return"3"}
 function evalTest(testKey,sexe,age,perf){if(!perf||perf.toString().trim()==="")return"";var tr=getTranche(age);var b=baremes[testKey];if(!b)return"";var vals=b[sexe==="M"?"homme":"femme"][tr];if(!vals)return"";var v=parseFloat(perf.toString().replace(",","."));var n1max=parseFloat(vals[0].replace("<","").replace(",","."));if(v<n1max)return"1";var n3min=parseFloat(vals[2].replace(" et +","").replace(",","."));if(v>=n3min)return"3";return"2"}
 function getNiveauGlobal(p){var niveaux=[];var age=getAge(p.annee);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);if(rameurNiv)niveaux.push(parseInt(rameurNiv));var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);if(lucNiv)niveaux.push(parseInt(lucNiv));var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);if(souplNiv)niveaux.push(parseInt(souplNiv));var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);if(pompNiv)niveaux.push(parseInt(pompNiv));var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);if(tractNiv)niveaux.push(parseInt(tractNiv));if(niveaux.length===0)return"";return Math.min.apply(Math,niveaux).toString()}
-function doLogin(){var u=document.getElementById("loginUser").value.trim();var p=document.getElementById("loginPass").value.trim();if(u==="chriscruzy"&&p==="Rockmyroot1976!1"){isAdmin=true;document.getElementById("roleBadge").textContent="Administrateur";document.getElementById("roleBadge").className="badge badge-admin";document.getElementById("loginScreen").classList.add("hidden");document.getElementById("mainApp").classList.remove("hidden");renderAll()}else if(u==="user"&&p==="user"){isAdmin=false;document.getElementById("roleBadge").textContent="Utilisateur";document.getElementById("roleBadge").className="badge badge-user";document.getElementById("loginScreen").classList.add("hidden");document.getElementById("mainApp").classList.remove("hidden");renderAll()}else{alert("Identifiants incorrects")}}
+function doLogin() {
+    try {
+        var u = document.getElementById("loginUser").value.trim();
+        var p = document.getElementById("loginPass").value.trim();
+
+        console.log("[DEBUG] Tentative de connexion - Utilisateur:", u);
+
+        // Vérifier que les champs ne sont pas vides
+        if (!u || !p) {
+            alert("Veuillez saisir un identifiant et un mot de passe.");
+            return;
+        }
+
+        // Connexion Administrateur
+        if (u === "chriscruzy" && p === "Rockmyroot1976!1") {
+            isAdmin = true;
+            document.getElementById("roleBadge").textContent = "Administrateur";
+            document.getElementById("roleBadge").className = "badge badge-admin";
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("mainApp").classList.remove("hidden");
+            renderAll();
+            console.log("[SUCCESS] Connexion administrateur réussie");
+            return;
+        }
+
+        // Connexion Utilisateur (user-user comme demandé)
+        if (u === "user-user" && p === "user-user") {
+            isAdmin = false;
+            document.getElementById("roleBadge").textContent = "Utilisateur";
+            document.getElementById("roleBadge").className = "badge badge-user";
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("mainApp").classList.remove("hidden");
+            renderAll();
+            console.log("[SUCCESS] Connexion utilisateur réussie");
+            return;
+        }
+
+        // Échec de connexion
+        console.log("[ERROR] Identifiants incorrects - Utilisateur:", u);
+        alert("Identifiants incorrects.\n\nComptes disponibles :\n• Admin : chriscruzy / Rockmyroot1976!1\n• User : user-user / user-user");
+
+    } catch (err) {
+        console.error("[CRITICAL] Erreur dans doLogin:", err);
+        alert("Erreur technique lors de la connexion :\n" + err.message);
+    }
+}
 function doLogout(){document.getElementById("mainApp").classList.add("hidden");document.getElementById("loginScreen").classList.remove("hidden");document.getElementById("loginUser").value="";document.getElementById("loginPass").value="";isAdmin=false}
 function switchTab(tab,el){var tabs=["dashboard","saisie","bilan","echelles","export"];document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{document.querySelectorAll(".tab")[tabs.indexOf(tab)].classList.add("active")}tabs.forEach(function(t){document.getElementById("tab-"+t).classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="saisie")renderSaisie();if(tab==="bilan")renderBilan();if(tab==="echelles")renderEchelles();if(tab==="export")renderExport()}
 function renderAll(){renderDashboard();renderSaisie();renderBilan();renderEchelles();renderExport()}
