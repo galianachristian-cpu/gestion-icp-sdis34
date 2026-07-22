@@ -80,6 +80,15 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .legend-box{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .legend-dot{width:12px;height:12px;border-radius:3px}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 8px var(--success); }
+  50% { box-shadow: 0 0 16px var(--success); }
+}
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 8px var(--danger); }
+  50% { box-shadow: 0 0 16px var(--danger); }
+}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -100,6 +109,10 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <header>
 <h1>🚒 GESTION DES INDICES DE CONDITION PHYSIQUE</h1>
 <p>Caserne Cruzy-Quarante — SDIS 34 — Barèmes officiels Hérault 2026 <span id="roleBadge" class="badge badge-user">Utilisateur</span></p>
+<div id="supabaseStatus" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted)">
+  <span id="statusDot" style="width:12px;height:12px;border-radius:50%;background:var(--danger);display:inline-block;box-shadow:0 0 8px var(--danger);transition:all .3s"></span>
+  <span id="statusText">Connexion Supabase...</span>
+</div>
 </header>
 <div class="tabs" id="navTabs">
 <div class="tab active" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
@@ -225,161 +238,72 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Fonctions de persistance Supabase
-async function saveToSupabase() {
-    if (!supabaseClient) {
-        console.error('❌ Supabase client non initialisé');
-        console.error('   Vérifiez que SUPABASE_URL et SUPABASE_KEY sont correctement configurés');
-        return false;
-    }
-    try {
-        const dataToSave = initialData.map(agent => ({
-            id: agent.id,
-            nom: agent.nom || null,
-            prenom: agent.prenom || null,
-            annee: agent.annee || null,
-            sexe: agent.sexe || null,
-            poids: agent.poids === '' ? null : (parseFloat(agent.poids) || null),
-            rameur_temps: agent.rameur_temps === '' ? null : agent.rameur_temps,
-            luc_niv: agent.luc_niv === '' ? null : agent.luc_niv,
-            luc_perf: agent.luc_perf === '' ? null : agent.luc_perf,
-            souplesse: agent.souplesse === '' ? null : agent.souplesse,
-            pompes: agent.pompes === '' ? null : (parseInt(agent.pompes) || null),
-            tractions: agent.tractions === '' ? null : (parseInt(agent.tractions) || null),
-            updated_at: new Date().toISOString()
-        }));
-        console.log('📤 Tentative de sauvegarde vers Supabase...');
-        console.log('   Nombre d'agents:', dataToSave.length);
-        console.log('   Premier agent:', dataToSave[0]);
-        const { data, error } = await supabaseClient
-            .from('agents_icp')
-            .upsert(dataToSave, { 
-                onConflict: 'id',
-                ignoreDuplicates: false
-            });
-        if (error) {
-            console.error('❌ Erreur Supabase (upsert):', error);
-            console.error('   Code:', error.code);
-            console.error('   Message:', error.message);
-            console.error('   Détails:', error.details);
-            throw error;
-        }
-        console.log('✅ Données sauvegardées sur Supabase');
-        console.log('   Lignes affectées:', data?.length || 'N/A');
-        return true;
-    } catch (e) {
-        console.error('❌ Sauvegarde Supabase échouée:', e.message);
-        console.error('   Stack:', e.stack);
-        if (e.message?.includes('fetch') || e.message?.includes('network')) {
-            console.warn('   💡 Vérifiez votre connexion internet et la configuration Supabase');
-        }
-        if (e.message?.includes('permission') || e.message?.includes('policy')) {
-            console.warn('   💡 Vérifiez les politiques RLS (Row Level Security) dans Supabase');
-        }
-        if (e.message?.includes('column')) {
-            console.warn('   💡 La structure de la table ne correspond pas aux données envoyées');
-        }
-        return false;
-    }
-}
-
 async function loadFromSupabase() {
-    if (!supabaseClient) {
-        console.error('❌ Supabase client non initialisé');
-        return false;
-    }
     try {
-        console.log('📥 Tentative de chargement depuis Supabase...');
+        updateSupabaseStatus(false, "Connexion en cours...");
         const { data, error } = await supabaseClient
             .from('agents_icp')
             .select('*')
             .order('id');
-        if (error) {
-            console.error('❌ Erreur Supabase (select):', error);
-            console.error('   Code:', error.code);
-            console.error('   Message:', error.message);
-            throw error;
-        }
-        if (!data || data.length === 0) {
-            console.log('ℹ️ Aucune donnée trouvée dans Supabase, utilisation des données locales');
+        if (error) throw error;
+        if (data && data.length > 0) {
+            data.forEach(row => {
+                const agent = initialData.find(a => a.id === row.id);
+                if (agent) {
+                    Object.assign(agent, row);
+                }
+            });
+            updateSupabaseStatus(true, "Connecté — Données synchronisées");
+            console.log('✅ Données chargées depuis Supabase');
+            renderAll();
+            return true;
+        } else {
+            updateSupabaseStatus(true, "Connecté — Aucune donnée distante");
             return false;
         }
-        console.log('✅ Données reçues depuis Supabase:', data.length, 'agents');
-        let updatedCount = 0;
-        let createdCount = 0;
-        data.forEach(row => {
-            const agent = initialData.find(a => a.id === row.id);
-            if (agent) {
-                const updatableFields = [
-                    'poids', 'rameur_temps', 'luc_niv', 'luc_perf', 
-                    'souplesse', 'pompes', 'tractions'
-                ];
-                updatableFields.forEach(field => {
-                    if (row[field] !== undefined && row[field] !== null) {
-                        agent[field] = row[field];
-                    }
-                });
-                if (row.nom) agent.nom = row.nom;
-                if (row.prenom) agent.prenom = row.prenom;
-                if (row.annee) agent.annee = row.annee;
-                if (row.sexe) agent.sexe = row.sexe;
-                updatedCount++;
-            } else {
-                const newAgent = {
-                    id: row.id,
-                    nom: row.nom || '',
-                    prenom: row.prenom || '',
-                    annee: row.annee || '',
-                    sexe: row.sexe || '',
-                    poids: row.poids || '',
-                    rameur_temps: row.rameur_temps || '',
-                    luc_niv: row.luc_niv || '',
-                    luc_perf: row.luc_perf || '',
-                    souplesse: row.souplesse || '',
-                    pompes: row.pompes || '',
-                    tractions: row.tractions || ''
-                };
-                initialData.push(newAgent);
-                createdCount++;
-            }
-        });
-        console.log(`✅ Données chargées: ${updatedCount} mis à jour, ${createdCount} nouveaux`);
-        if (typeof renderTable === 'function') {
-            renderTable();
-        }
-        if (typeof updateStats === 'function') {
-            updateStats();
-        }
-        return true;
     } catch (e) {
-        console.error('❌ Chargement Supabase échoué:', e.message);
-        console.error('   Stack:', e.stack);
+        updateSupabaseStatus(false, "Déconnecté — " + e.message);
+        console.warn('⚠️ Chargement Supabase échoué:', e.message);
         return false;
     }
 }
 
-async function checkSupabaseConnection() {
-    if (!supabaseClient) {
-        return { ok: false, error: 'Client non initialisé' };
-    }
+async function saveToSupabase() {
     try {
-        const { count, error } = await supabaseClient
+        updateSupabaseStatus(false, "Sauvegarde en cours...");
+        // Supprimer les données existantes
+        await supabaseClient.from('agents_icp').delete().neq('id', 0);
+        // Insérer les nouvelles données
+        const { error } = await supabaseClient
             .from('agents_icp')
-            .select('*', { count: 'exact', head: true });
+            .insert(initialData);
         if (error) throw error;
-        return { 
-            ok: true, 
-            count: count,
-            message: `Connexion OK - ${count} agents dans la table`
-        };
+        updateSupabaseStatus(true, "Connecté — Sauvegarde OK");
+        console.log('✅ Données sauvegardées sur Supabase');
+        setTimeout(() => updateSupabaseStatus(true, "Connecté — Données synchronisées"), 2000);
+        return true;
     } catch (e) {
-        return { 
-            ok: false, 
-            error: e.message,
-            hint: e.message?.includes('relation') 
-                ? 'La table agents_icp n'existe pas' 
-                : 'Vérifiez URL, clé API et permissions'
-        };
+        updateSupabaseStatus(false, "Erreur sauvegarde — " + e.message);
+        console.warn('⚠️ Sauvegarde Supabase échouée:', e.message);
+        return false;
     }
+}
+
+// Fonction de mise à jour du voyant Supabase
+function updateSupabaseStatus(connected, message) {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (!dot || !text) return;
+    if (connected) {
+        dot.style.background = 'var(--success)';
+        dot.style.boxShadow = '0 0 10px var(--success)';
+        dot.style.animation = 'pulse-green 2s infinite';
+    } else {
+        dot.style.background = 'var(--danger)';
+        dot.style.boxShadow = '0 0 10px var(--danger)';
+        dot.style.animation = 'pulse-red 2s infinite';
+    }
+    text.textContent = message;
 }
 
 
@@ -403,57 +327,13 @@ function secToTime(s){var m=Math.floor(s/60);var sec=s%60;return m+"'"+(sec<10?"
 function evalRameur(sexe,poids,age,tempsStr){var sec=timeToSec(tempsStr);if(!sec||!poids)return"";var tr=getTranche(age);var p=parseFloat(poids);var ergo=sexe==="M"?ergoHomme:ergoFemme;var poidsList=sexe==="M"?ergoPoidsHomme:ergoPoidsFemme;var closest=poidsList[0];var minDiff=Math.abs(p-closest);for(var i=1;i<poidsList.length;i++){var d=Math.abs(p-poidsList[i]);if(d<minDiff){minDiff=d;closest=poidsList[i]}}var seuils=ergo[closest]?ergo[closest][tr]:null;if(!seuils)return"";if(sec>seuils[0])return"1";if(sec>seuils[1])return"2";return"3"}
 function evalTest(testKey,sexe,age,perf){if(!perf||perf.toString().trim()==="")return"";var tr=getTranche(age);var b=baremes[testKey];if(!b)return"";var vals=b[sexe==="M"?"homme":"femme"][tr];if(!vals)return"";var v=parseFloat(perf.toString().replace(",","."));var n1max=parseFloat(vals[0].replace("<","").replace(",","."));if(v<n1max)return"1";var n3min=parseFloat(vals[2].replace(" et +","").replace(",","."));if(v>=n3min)return"3";return"2"}
 function getNiveauGlobal(p){var niveaux=[];var age=getAge(p.annee);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);if(rameurNiv)niveaux.push(parseInt(rameurNiv));var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);if(lucNiv)niveaux.push(parseInt(lucNiv));var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);if(souplNiv)niveaux.push(parseInt(souplNiv));var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);if(pompNiv)niveaux.push(parseInt(pompNiv));var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);if(tractNiv)niveaux.push(parseInt(tractNiv));if(niveaux.length===0)return"";return Math.min.apply(Math,niveaux).toString()}
-function doLogin() {
-    try {
-        var u = document.getElementById("loginUser").value.trim();
-        var p = document.getElementById("loginPass").value.trim();
-
-        console.log("[DEBUG] Tentative de connexion - Utilisateur:", u);
-
-        // Vérifier que les champs ne sont pas vides
-        if (!u || !p) {
-            alert("Veuillez saisir un identifiant et un mot de passe.");
-            return;
-        }
-
-        // Connexion Administrateur
-        if (u === "chriscruzy" && p === "Rockmyroot1976!1") {
-            isAdmin = true;
-            document.getElementById("roleBadge").textContent = "Administrateur";
-            document.getElementById("roleBadge").className = "badge badge-admin";
-            document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("mainApp").classList.remove("hidden");
-            renderAll();
-            console.log("[SUCCESS] Connexion administrateur réussie");
-            return;
-        }
-
-        // Connexion Utilisateur (user-user comme demandé)
-        if (u === "user-user" && p === "user-user") {
-            isAdmin = false;
-            document.getElementById("roleBadge").textContent = "Utilisateur";
-            document.getElementById("roleBadge").className = "badge badge-user";
-            document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("mainApp").classList.remove("hidden");
-            renderAll();
-            console.log("[SUCCESS] Connexion utilisateur réussie");
-            return;
-        }
-
-        // Échec de connexion
-        console.log("[ERROR] Identifiants incorrects - Utilisateur:", u);
-        alert("Identifiants incorrects.\n\nComptes disponibles :\n• Admin : chriscruzy / Rockmyroot1976!1\n• User : user-user / user-user");
-
-    } catch (err) {
-        console.error("[CRITICAL] Erreur dans doLogin:", err);
-        alert("Erreur technique lors de la connexion :\n" + err.message);
-    }
-}
+function doLogin(){var u=document.getElementById("loginUser").value.trim();var p=document.getElementById("loginPass").value.trim();if(u==="admin"&&p==="icp2026"){isAdmin=true;document.getElementById("roleBadge").textContent="Administrateur";document.getElementById("roleBadge").className="badge badge-admin";document.getElementById("loginScreen").classList.add("hidden");document.getElementById("mainApp").classList.remove("hidden");renderAll();loadFromSupabase()}else{alert("Identifiants incorrects\n\nSeul l'administrateur peut accéder à cette application.")}}
 function doLogout(){document.getElementById("mainApp").classList.add("hidden");document.getElementById("loginScreen").classList.remove("hidden");document.getElementById("loginUser").value="";document.getElementById("loginPass").value="";isAdmin=false}
 function switchTab(tab,el){var tabs=["dashboard","saisie","bilan","echelles","export"];document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{document.querySelectorAll(".tab")[tabs.indexOf(tab)].classList.add("active")}tabs.forEach(function(t){document.getElementById("tab-"+t).classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="saisie")renderSaisie();if(tab==="bilan")renderBilan();if(tab==="echelles")renderEchelles();if(tab==="export")renderExport()}
 function renderAll(){renderDashboard();renderSaisie();renderBilan();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var avgAge=Math.round(data.reduce(function(s,p){return s+getAge(p.annee)},0)/total);var allF=["rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/tf)*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+getAge(p.annee)+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
-function renderSaisie(){var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td><b>'+p.nom+'</b></td><td>'+p.prenom+'</td><td><span class="age-tag">'+age+' ans</span><br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+p.poids+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+p.rameur_temps+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"number\" min=\"1\" max=\"3\" value=\""+p.luc_niv+'" onchange="updateField('+p.id+",'luc_niv',this.value)\" "+dis+' style="width:45px;text-align:center"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+p.souplesse+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+p.pompes+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+p.tractions+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td><td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
+function renderSaisie(){
+    if(!isAdmin){alert("Accès réservé à l'administrateur.");switchTab('dashboard');return;}var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td><b>'+p.nom+'</b></td><td>'+p.prenom+'</td><td><span class="age-tag">'+age+' ans</span><br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+p.poids+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+p.rameur_temps+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"number\" min=\"1\" max=\"3\" value=\""+p.luc_niv+'" onchange="updateField('+p.id+",'luc_niv',this.value)\" "+dis+' style="width:45px;text-align:center"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+p.souplesse+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+p.pompes+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+p.tractions+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td><td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
 function updateField(id,field,value){var p=data.find(function(x){return x.id===id});if(p)p[field]=value;if(field==="luc_perf"){var age=getAge(p.annee);p.luc_niv=evalTest("luc",p.sexe,age,value)}renderSaisie()}
 function saveAll(){
     saveToSupabase().then(function(ok){
