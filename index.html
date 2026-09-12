@@ -462,7 +462,7 @@ const ADMIN_EMAILS = ["galiana.christian@gmail.com"];
 //   -- écriture réservée à ton compte admin réel (Supabase Auth), pour éviter que
 //   -- n'importe qui modifie la liste des comptes/onglets
 //   create policy "Ecriture admin uniquement" on comptes_app
-//     for insert, update, delete to authenticated
+//     for all to authenticated
 //     using (auth.jwt() ->> 'email' = 'galiana.christian@gmail.com')
 //     with check (auth.jwt() ->> 'email' = 'galiana.christian@gmail.com');
 //
