@@ -951,12 +951,17 @@ function getHistorique(p){
 function setHistorique(p,arr){p.historique=JSON.stringify(arr)}
 function aDesDonnees(p){return champsTest.some(function(f){return p[f]&&p[f].toString().trim()!==""})}
 function normNom(s){return (s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g,"")}
-function fusionnerHistoriqueImport(){
+function fusionnerHistoriqueImport(allowCreate){
   var ajouts=0,ignores=0,crees=[];
   Object.keys(HISTORIQUE_IMPORT).sort().forEach(function(annee){
     HISTORIQUE_IMPORT[annee].forEach(function(r){
       var p=data.find(function(x){return normNom(x.nom)===normNom(r.nom)&&normNom(x.prenom)===normNom(r.prenom)});
       if(!p){
+        // Si la personne n'existe plus localement, c'est qu'un admin l'a supprimée
+        // intentionnellement (ou qu'elle n'a jamais été ajoutée) : on ne la
+        // recrée PAS automatiquement à chaque connexion. Seul l'import manuel
+        // explicite (bouton « Recharger les relevés ») peut la recréer.
+        if(!allowCreate)return;
         p={id:nextId++,nom:r.nom,prenom:r.prenom,annee:parseInt(r.naissance)||0,sexe:r.sexe||"M",poids:"",
            rameur_temps:"",luc_niv:"",luc_perf:"",souplesse:"",pompes:"",tractions:"",fc_repos:"",fc_max:"",historique:""};
         data.push(p);crees.push(r.prenom+" "+r.nom);
@@ -972,16 +977,18 @@ function fusionnerHistoriqueImport(){
   });
   return {ajouts:ajouts,ignores:ignores,crees:crees};
 }
-// Chargé automatiquement au démarrage : les campagnes 2022-2025 des relevés papier
-// sont toujours disponibles, même avant la synchronisation Supabase.
+// Chargé automatiquement au démarrage : complète l'historique des pompiers déjà
+// présents avec les campagnes papier 2022-2025, mais NE RECRÉE JAMAIS un pompier
+// supprimé (allowCreate=false) — sinon une suppression serait annulée à la
+// connexion suivante.
 function chargerHistoriqueDeReference(){
-  var s=fusionnerHistoriqueImport();
+  var s=fusionnerHistoriqueImport(false);
   if(s.ajouts)console.log("📥 Historique des relevés chargé : "+s.ajouts+" campagne(s), "+s.crees.length+" pompier(s) ajouté(s).");
   return s;
 }
 function importerHistorique(){
   if(!isAdmin){alert("Accès réservé à l'administrateur.");return}
-  var s=fusionnerHistoriqueImport();
+  var s=fusionnerHistoriqueImport(true);
   if(s.ajouts)markDirty();
   renderAll();
   alert(s.ajouts?("✅ "+s.ajouts+" campagne(s) ajoutée(s)"+(s.crees.length?"\nPompiers créés : "+s.crees.join(", "):"")
