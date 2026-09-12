@@ -451,6 +451,7 @@ async function loadFromSupabase() {
             // Fusionne les lignes distantes dans le tableau de travail `data`
             // (et pas `initialData`, qui ne doit jamais être modifié : c'est le jeu
             // de secours utilisé par "Réinitialiser").
+            const remoteIds = new Set(rows.map(function(r){ return r.id; }));
             rows.forEach(row => {
                 if (row) { row.nom = cleanName(row.nom); row.prenom = cleanName(row.prenom); }
                 const agent = data.find(a => a.id === row.id);
@@ -460,6 +461,14 @@ async function loadFromSupabase() {
                     data.push(row);
                 }
             });
+            // Une fois Supabase connecté et non-vide, la base distante fait autorité :
+            // on retire du jeu de travail local les pompiers venus d'`initialData`
+            // (les 30 pompiers codés en dur) qui ont été supprimés côté serveur.
+            // Sans ça, un pompier supprimé puis sauvegardé réapparaissait à chaque
+            // reconnexion, car il restait présent dans `initialData`.
+            for (let i = data.length - 1; i >= 0; i--) {
+                if (!remoteIds.has(data[i].id)) data.splice(i, 1);
+            }
             nextId = Math.max.apply(Math, data.map(function(p){ return p.id; })) + 1;
             updateSupabaseStatus(true, "Connecté — Données synchronisées");
             console.log('✅ Données chargées depuis Supabase');
