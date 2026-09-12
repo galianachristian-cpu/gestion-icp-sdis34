@@ -625,6 +625,19 @@ async function doLogin(){
     // onAuthStateChange (ci-dessous) prend le relais pour afficher l'app.
 }
 async function doLogout(){
+    // Si des modifications ne sont pas encore enregistrées (l'auto-save attend
+    // 4 s après la dernière saisie), on tente de sauvegarder avant de couper la
+    // connexion. Sans ça, une suppression/modif faite juste avant de cliquer sur
+    // "Déconnexion" n'atteint jamais Supabase et semble "revenir" à la reconnexion,
+    // alors qu'en réalité elle n'a simplement jamais été enregistrée.
+    if (dirty) {
+        const ok = await saveToSupabase();
+        if (ok) {
+            clearDirty();
+        } else if (!confirm("La sauvegarde des dernières modifications a échoué. Se déconnecter quand même et perdre ces modifications ?")) {
+            return;
+        }
+    }
     await supabaseClient.auth.signOut();
 }
 async function onAuthSuccess(){
