@@ -134,7 +134,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="form-row"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
 <div id="loginError" style="color:var(--danger);font-size:13px;margin-top:4px;min-height:18px"></div>
 <button class="btn btn-primary" style="width:100%;margin-top:8px" id="loginBtn" onclick="doLogin()">Connexion</button>
-<p style="color:var(--muted);font-size:11px;margin-top:12px;text-align:center">Compte géré depuis Supabase (Authentication). Aucun mot de passe n'est stocké dans cette page.</p>
+<p style="color:var(--muted);font-size:11px;margin-top:12px;text-align:center">Compte admin : Supabase Authentication. Comptes secondaires : créés depuis l'onglet Comptes de l'appli.</p>
 </div>
 <div id="mainApp" class="hidden">
 <header>
@@ -147,17 +147,18 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </header>
 <div class="tabs" id="navTabs">
-<div class="tab active" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
-<div class="tab" onclick="switchTab('saisie',this)">📝 Saisie</div>
-<div class="tab" onclick="switchTab('terrain',this)">📱 Terrain</div>
-<div class="tab" onclick="switchTab('bilan',this)">📈 Bilan</div>
-<div class="tab" onclick="switchTab('progression',this)">📊 Progression</div>
-<div class="tab" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
-<div class="tab" onclick="switchTab('muscu',this)">💪 Musculation</div>
-<div class="tab" onclick="switchTab('seances',this)">🗓️ Séances</div>
-<div class="tab" onclick="switchTab('echelles',this)">📏 Barèmes</div>
-<div class="tab" onclick="switchTab('ppa',this)">🧗 PPA</div>
-<div class="tab" onclick="switchTab('export',this)">📄 Export PDF</div>
+<div class="tab active" id="navtab-dashboard" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
+<div class="tab" id="navtab-saisie" onclick="switchTab('saisie',this)">📝 Saisie</div>
+<div class="tab" id="navtab-terrain" onclick="switchTab('terrain',this)">📱 Terrain</div>
+<div class="tab" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
+<div class="tab" id="navtab-progression" onclick="switchTab('progression',this)">📊 Progression</div>
+<div class="tab" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
+<div class="tab" id="navtab-muscu" onclick="switchTab('muscu',this)">💪 Musculation</div>
+<div class="tab" id="navtab-seances" onclick="switchTab('seances',this)">🗓️ Séances</div>
+<div class="tab" id="navtab-echelles" onclick="switchTab('echelles',this)">📏 Barèmes</div>
+<div class="tab" id="navtab-ppa" onclick="switchTab('ppa',this)">🧗 PPA</div>
+<div class="tab" id="navtab-export" onclick="switchTab('export',this)">📄 Export PDF</div>
+<div class="tab hidden" id="navtab-comptes" onclick="switchTab('comptes',this)">👥 Comptes</div>
 <div class="tab" onclick="doLogout()" style="margin-left:auto;background:var(--danger);color:white;border-color:var(--danger)">🔒 Déconnexion</div>
 </div>
 <div id="tab-dashboard">
@@ -379,6 +380,23 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </div>
 </div>
+<div id="tab-comptes" class="hidden">
+<div class="card">
+<div class="card-title">👥 Comptes secondaires — accès par rubrique</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:16px">Réservé à l'administrateur. Tout se fait ici, sans dashboard Supabase : email + mot de passe + onglets visibles. Ces comptes restent en lecture seule (comme aujourd'hui pour tout le monde sauf ton compte admin) ; ils voient seulement ce que tu leur coches. Mot de passe non chiffré — usage interne à la caserne uniquement.</p>
+<div id="comptesListe"></div>
+</div>
+<div class="card">
+<div class="card-title">➕ Créer / mettre à jour un compte</div>
+<div class="form-row"><label>Email du compte</label><input type="email" id="compteEmail" placeholder="prenom.nom@sdis34.fr"></div>
+<div class="form-row"><label>Mot de passe</label><input type="text" id="comptePass" placeholder="ex. cruzy34"></div>
+<div class="form-row"><label>Onglets visibles pour ce compte</label>
+<div id="compteOngletsBox" style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:6px"></div>
+</div>
+<button class="btn btn-success" onclick="ajouterOuMajCompte()">💾 Créer / enregistrer ce compte</button>
+<div id="compteMsg" style="margin-top:8px;font-size:13px;min-height:18px"></div>
+</div>
+</div>
 <div id="modalAdd" class="modal-overlay hidden" onclick="if(event.target===this)closeModal()">
 <div class="modal">
 <h3>➕ Ajouter un pompier</h3>
@@ -407,7 +425,66 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 // Laisser le tableau VIDE = comportement historique : tout compte connecté est
 // administrateur. Le rôle peut aussi être défini côté Supabase :
 // Authentication > Users > (user) > app_metadata : { "role": "admin" }
-const ADMIN_EMAILS = [];
+const ADMIN_EMAILS = ["galiana.christian@gmail.com"];
+
+// --- Comptes secondaires "façon Carnet JSP" --------------------------------
+// Choix assumé par Christian (12/09/2026) : les comptes secondaires sont créés
+// et gérés ENTIÈREMENT depuis l'appli (onglet Comptes), sans passer par le
+// dashboard Supabase — exactement comme dans Carnet JSP. Cela veut dire :
+//   - un mot de passe en clair, stocké dans une table Supabase (pas de vraie
+//     session Supabase Auth pour ces comptes) ;
+//   - pour que la lecture/écriture de la table `pompiers` fonctionne pour un
+//     compte "simple" (sans session authentifiée), la RLS de `pompiers` doit
+//     autoriser aussi la clé anonyme, pas seulement "authenticated".
+// CONSÉQUENCE IMPORTANTE, à avoir en tête : une fois le SQL ci-dessous exécuté,
+// la table `pompiers` (et la table `comptes_app`) sont lisibles par N'IMPORTE
+// QUI connaissant l'URL Supabase et la clé publique — déjà visibles dans le
+// code source public de cette page — MÊME SANS jamais se connecter à l'appli.
+// C'est le même compromis que celui de Carnet JSP, assumé pour la simplicité.
+//
+// SQL à coller une fois dans le SQL Editor Supabase :
+//   -- 1) Ouvre pompiers à la clé anonyme (en plus de "authenticated" déjà en place)
+//   create policy "Accès public (mode comptes simples)" on pompiers
+//     for all to anon using (true) with check (true);
+//
+//   -- 2) Table des comptes secondaires (email / mot de passe en clair / onglets)
+//   create table if not exists comptes_app (
+//     email text primary key,
+//     mot_de_passe text not null,
+//     onglets jsonb not null default '[]'::jsonb,
+//     est_admin boolean not null default false,
+//     created_at timestamptz not null default now()
+//   );
+//   alter table comptes_app enable row level security;
+//   -- lecture ouverte (nécessaire pour vérifier email+mdp au moment de la connexion,
+//   -- avant même d'être authentifié)
+//   create policy "Lecture publique" on comptes_app for select to anon, authenticated using (true);
+//   -- écriture réservée à ton compte admin réel (Supabase Auth), pour éviter que
+//   -- n'importe qui modifie la liste des comptes/onglets
+//   create policy "Ecriture admin uniquement" on comptes_app
+//     for insert, update, delete to authenticated
+//     using (auth.jwt() ->> 'email' = 'galiana.christian@gmail.com')
+//     with check (auth.jwt() ->> 'email' = 'galiana.christian@gmail.com');
+//
+// Un compte comptes_app non coché sur un onglet ne voit que le Tableau de bord.
+// Ces comptes restent en lecture seule partout : seul le compte admin
+// (ADMIN_EMAILS, vraie session Supabase Auth) peut saisir/enregistrer.
+const TABS_INFO = [
+    {id:"saisie",label:"📝 Saisie"},
+    {id:"terrain",label:"📱 Terrain"},
+    {id:"bilan",label:"📈 Bilan"},
+    {id:"progression",label:"📊 Progression"},
+    {id:"cardio",label:"❤️ Zones cardio"},
+    {id:"muscu",label:"💪 Musculation"},
+    {id:"seances",label:"🗓️ Séances"},
+    {id:"echelles",label:"📏 Barèmes"},
+    {id:"ppa",label:"🧗 PPA"},
+    {id:"export",label:"📄 Export PDF"}
+];
+var misOnglets = [];        // onglets autorisés pour le compte non-admin connecté
+var comptesCache = [];      // dernière liste chargée depuis comptes_app (vue admin)
+var compteSimpleActif = false; // true si connecté via un compte comptes_app (pas de session Supabase Auth)
+
 
 // --- Anti-perte de saisie ------------------------------------------------
 var dirty = false;            // des modifications non enregistrées existent
@@ -612,17 +689,30 @@ function getNiveauGlobal(p){var niveaux=[];var age=getAge(p.annee);var rameurNiv
 // données doit être verrouillé par des règles RLS sur la table `pompiers`
 // (sinon la clé publique permet de lire/écrire les données sans être connecté).
 async function doLogin(){
-    var email=document.getElementById("loginUser").value.trim();
+    var email=document.getElementById("loginUser").value.trim().toLowerCase();
     var pass=document.getElementById("loginPass").value;
     var errEl=document.getElementById("loginError");
     var btn=document.getElementById("loginBtn");
     errEl.textContent="";
     if(!email||!pass){errEl.textContent="Renseignez l'email et le mot de passe.";return}
     btn.disabled=true;btn.textContent="Connexion...";
+    // 1) Compte admin réel, via Supabase Auth (dashboard > Authentication).
     var res=await supabaseClient.auth.signInWithPassword({email:email,password:pass});
+    if(!res.error){
+        btn.disabled=false;btn.textContent="Connexion";
+        return; // onAuthStateChange (ci-dessous) prend le relais pour afficher l'app.
+    }
+    // 2) Compte secondaire "simple" (créé depuis l'onglet Comptes, sans Supabase Auth).
+    try{
+        var q=await supabaseClient.from('comptes_app').select('*').eq('email', email).eq('mot_de_passe', pass).maybeSingle();
+        if(!q.error && q.data){
+            btn.disabled=false;btn.textContent="Connexion";
+            connecterCompteSimple(q.data);
+            return;
+        }
+    }catch(e){ /* tombe sur le message générique ci-dessous */ }
     btn.disabled=false;btn.textContent="Connexion";
-    if(res.error){errEl.textContent="Identifiants incorrects.";return}
-    // onAuthStateChange (ci-dessous) prend le relais pour afficher l'app.
+    errEl.textContent="Identifiants incorrects.";
 }
 async function doLogout(){
     // Si des modifications ne sont pas encore enregistrées (l'auto-save attend
@@ -638,10 +728,17 @@ async function doLogout(){
             return;
         }
     }
-    await supabaseClient.auth.signOut();
+    if (compteSimpleActif) {
+        // Pas de vraie session Supabase Auth à couper pour un compte "simple".
+        compteSimpleActif = false;
+        showLoginScreen();
+    } else {
+        await supabaseClient.auth.signOut();
+    }
 }
-async function onAuthSuccess(){
-    isAdmin = await resoudreRole();
+// Étapes communes une fois l'identité (isAdmin / misOnglets) déterminée,
+// quelle que soit sa source (Supabase Auth ou comptes_app).
+function finaliserConnexion(){
     var badge=document.getElementById("roleBadge");
     if(isAdmin){badge.textContent="Administrateur";badge.className="badge badge-admin";}
     else{badge.textContent="Consultation";badge.className="badge badge-user";}
@@ -649,9 +746,44 @@ async function onAuthSuccess(){
     document.getElementById("mainApp").classList.remove("hidden");
     document.getElementById("loginUser").value="";
     document.getElementById("loginPass").value="";
+    applyPermissions();
     chargerHistoriqueDeReference();
     renderAll();
     loadFromSupabase();
+}
+async function onAuthSuccess(){
+    compteSimpleActif = false;
+    misOnglets = [];
+    isAdmin = await resoudreRole();
+    finaliserConnexion();
+}
+// Connexion via un compte "simple" (table comptes_app, sans Supabase Auth).
+function connecterCompteSimple(compte){
+    compteSimpleActif = true;
+    isAdmin = !!compte.est_admin;
+    misOnglets = Array.isArray(compte.onglets) ? compte.onglets : [];
+    finaliserConnexion();
+}
+// true si le compte connecté peut voir cet onglet.
+function tabAutorise(tab){
+    if (isAdmin) return true;
+    if (tab === "dashboard") return true;
+    if (tab === "comptes") return false; // réservé à l'admin
+    return misOnglets.indexOf(tab) !== -1;
+}
+// Affiche/masque les boutons d'onglets selon les droits du compte connecté,
+// et rebascule sur le Tableau de bord si l'onglet actuellement ouvert n'est
+// plus autorisé (ex. après un changement de rôle).
+function applyPermissions(){
+    var comptesBtn=document.getElementById("navtab-comptes");
+    if(comptesBtn) comptesBtn.classList.toggle("hidden", !isAdmin);
+    TABS_INFO.forEach(function(t){
+        var el=document.getElementById("navtab-"+t.id);
+        if(el) el.classList.toggle("hidden", !tabAutorise(t.id));
+    });
+    var activeBtn=document.querySelector("#navTabs .tab.active");
+    var activeId=(activeBtn&&activeBtn.id)?activeBtn.id.replace("navtab-",""):"dashboard";
+    if(!tabAutorise(activeId)) switchTab("dashboard", document.getElementById("navtab-dashboard"));
 }
 // Détermine si l'utilisateur connecté est administrateur.
 // Ordre : rôle Supabase (app_metadata / user_metadata) > liste ADMIN_EMAILS.
@@ -673,6 +805,8 @@ async function resoudreRole(){
 }
 function showLoginScreen(){
     isAdmin=false;
+    misOnglets=[];
+    compteSimpleActif=false;
     document.getElementById("mainApp").classList.add("hidden");
     document.getElementById("loginScreen").classList.remove("hidden");
 }
@@ -684,7 +818,7 @@ async function initAuth(){
         if(event==="SIGNED_OUT")showLoginScreen();
     });
 }
-function switchTab(tab,el){var tabs=["dashboard","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export"];if(tab==="saisie"&&!isAdmin){alert("Onglet Saisie réservé à l'administrateur. Votre compte est en lecture seule.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{document.querySelectorAll(".tab")[tabs.indexOf(tab)].classList.add("active")}tabs.forEach(function(t){document.getElementById("tab-"+t).classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances")renderSeance();if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport()}
+function switchTab(tab,el){var tabs=["dashboard","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances")renderSeance();if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes()}
 function renderAll(){renderDashboard();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var avgAge=Math.round(data.reduce(function(s,p){return s+getAge(p.annee)},0)/total);var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/tf)*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+getAge(p.annee)+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 function parNomPrenom(a,b){return a.nom.localeCompare(b.nom,'fr')||a.prenom.localeCompare(b.prenom,'fr');}
@@ -2211,6 +2345,101 @@ function generatePDF(orientation){
     alert("✅ PDF généré avec succès !\nFichier : " + filename);
 }
 
+// --- Gestion des comptes secondaires (onglet Comptes, admin uniquement) ---
+async function chargerComptes(){
+    try{
+        var res=await supabaseClient.from('comptes_app').select('*').order('email');
+        if(res.error) throw res.error;
+        comptesCache = res.data || [];
+    }catch(e){
+        console.warn("⚠️ Chargement des comptes échoué :", e.message);
+        comptesCache = [];
+    }
+}
+function checkboxesOnglets(idPrefix, selection){
+    selection = selection || [];
+    return TABS_INFO.map(function(t){
+        var checked = selection.indexOf(t.id) !== -1 ? "checked" : "";
+        return '<label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);cursor:pointer">'
+            + '<input type="checkbox" data-onglet="'+t.id+'" id="'+idPrefix+'-'+t.id+'" '+checked+' style="width:auto">'
+            + t.label + '</label>';
+    }).join("");
+}
+function ongletsCoches(idPrefix){
+    return TABS_INFO.map(function(t){ return t.id; }).filter(function(id){
+        var el=document.getElementById(idPrefix+'-'+id);
+        return el && el.checked;
+    });
+}
+async function renderComptes(){
+    document.getElementById("compteOngletsBox").innerHTML = checkboxesOnglets("nc", []);
+    document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
+    await chargerComptes();
+    if(comptesCache.length === 0){
+        document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Aucun compte secondaire pour l\'instant. Crée-en un ci-dessous.</p>';
+        return;
+    }
+    var html = '';
+    comptesCache.forEach(function(c, idx){
+        var pid = 'ec'+idx;
+        var emailEsc = c.email.replace(/'/g,"\\'");
+        html += '<div class="ergo-card" style="margin-bottom:12px">'
+            + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">'
+            + '<b>'+c.email+'</b>'
+            + '<div style="display:flex;gap:8px">'
+            + '<button class="btn btn-success btn-sm" onclick="sauverCompteExistant(\''+emailEsc+'\',\''+pid+'\')">💾 Enregistrer</button>'
+            + '<button class="btn btn-danger btn-sm" onclick="supprimerCompte(\''+emailEsc+'\')">🗑️ Supprimer</button>'
+            + '</div></div>'
+            + '<div class="form-row" style="max-width:220px"><label>Mot de passe</label><input type="text" id="'+pid+'-pass" value="'+escAttr(c.mot_de_passe)+'"></div>'
+            + '<div style="display:flex;flex-wrap:wrap;gap:8px 16px" id="'+pid+'-box">'+checkboxesOnglets(pid, c.onglets||[])+'</div>'
+            + '</div>';
+    });
+    document.getElementById("comptesListe").innerHTML = html;
+}
+async function sauverCompteExistant(email, idPrefix){
+    var onglets = ongletsCoches(idPrefix);
+    var pass = document.getElementById(idPrefix+'-pass').value;
+    if(!pass){alert("Le mot de passe ne peut pas être vide.");return;}
+    try{
+        var res=await supabaseClient.from('comptes_app').upsert({email:email, mot_de_passe:pass, onglets:onglets}, {onConflict:'email'});
+        if(res.error) throw res.error;
+        alert("✅ Compte mis à jour pour "+email);
+        renderComptes();
+    }catch(e){
+        alert("⚠️ Échec de l'enregistrement : "+e.message+"\n\nAs-tu bien créé la table comptes_app et ses policies dans Supabase (voir le commentaire au début du script) ?");
+    }
+}
+async function ajouterOuMajCompte(){
+    var email=document.getElementById("compteEmail").value.trim().toLowerCase();
+    var pass=document.getElementById("comptePass").value;
+    var msg=document.getElementById("compteMsg");
+    msg.style.color="var(--muted)";
+    if(!email){msg.textContent="Renseigne l'email du compte.";msg.style.color="var(--danger)";return;}
+    if(!pass){msg.textContent="Renseigne un mot de passe.";msg.style.color="var(--danger)";return;}
+    var onglets = ongletsCoches("nc");
+    try{
+        var res=await supabaseClient.from('comptes_app').upsert({email:email, mot_de_passe:pass, onglets:onglets}, {onConflict:'email'});
+        if(res.error) throw res.error;
+        msg.textContent="✅ Compte "+email+" créé/mis à jour.";
+        msg.style.color="var(--success)";
+        document.getElementById("compteEmail").value="";
+        document.getElementById("comptePass").value="";
+        renderComptes();
+    }catch(e){
+        msg.textContent="⚠️ Échec : "+e.message;
+        msg.style.color="var(--danger)";
+    }
+}
+async function supprimerCompte(email){
+    if(!confirm("Supprimer définitivement le compte "+email+" ?"))return;
+    try{
+        var res=await supabaseClient.from('comptes_app').delete().eq('email', email);
+        if(res.error) throw res.error;
+        renderComptes();
+    }catch(e){
+        alert("⚠️ Échec de la suppression : "+e.message);
+    }
+}
 initAuth();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
