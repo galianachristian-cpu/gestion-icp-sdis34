@@ -131,7 +131,12 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <p style="color:var(--muted);font-size:13px">Cruzy-Quarante — Barèmes officiels Hérault 2026</p>
 </div>
 <div class="form-row"><label>Email</label><input type="email" id="loginUser" placeholder="prenom.nom@sdis34.fr" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()"></div>
-<div class="form-row"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<div class="form-row"><label>Mot de passe</label>
+<div style="position:relative">
+<input type="password" id="loginPass" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()" style="padding-right:36px">
+<button type="button" onclick="toggleLoginPass(this)" title="Afficher/masquer le mot de passe" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:15px;padding:4px 6px;color:var(--muted)">👁</button>
+</div>
+</div>
 <div id="loginError" style="color:var(--danger);font-size:13px;margin-top:4px;min-height:18px"></div>
 <button class="btn btn-primary" style="width:100%;margin-top:8px" id="loginBtn" onclick="doLogin()">Connexion</button>
 <p style="color:var(--muted);font-size:11px;margin-top:12px;text-align:center">Compte admin : Supabase Authentication. Comptes secondaires : créés depuis l'onglet Comptes de l'appli.</p>
@@ -688,6 +693,12 @@ function getNiveauGlobal(p){var niveaux=[];var age=getAge(p.annee);var rameurNiv
 // créé dans le dashboard Supabase (Authentication > Users), et l'accès aux
 // données doit être verrouillé par des règles RLS sur la table `pompiers`
 // (sinon la clé publique permet de lire/écrire les données sans être connecté).
+function toggleLoginPass(btn){
+    var champ=document.getElementById("loginPass");
+    var visible = champ.type === "text";
+    champ.type = visible ? "password" : "text";
+    btn.textContent = visible ? "👁" : "🙈";
+}
 async function doLogin(){
     var email=document.getElementById("loginUser").value.trim().toLowerCase();
     var pass=document.getElementById("loginPass").value;
