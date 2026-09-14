@@ -119,10 +119,44 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
  .terrain-grid{grid-template-columns:1fr}
  .terrain-field input{font-size:16px}
 }
+
+/* ===== Séances — habillage visuel + effets (idées validées par Christian le 14/09/2026) ===== */
+.seance-band{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid var(--border);border-left:4px solid #ea580c;border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.seance-band .seance-band-icon{font-size:28px;line-height:1}
+.seance-band .seance-band-title{font-size:16px;font-weight:700;color:#fff}
+.seance-band .seance-band-sub{font-size:13px;color:#fdba74;margin-top:2px}
+.niveau-badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;color:#0f172a}
+.niveau-badge.reprise{background:#86efac}
+.niveau-badge.standard{background:#fcd34d}
+.niveau-badge.confirme{background:#fca5a5}
+.rpe-thermo-track{position:relative;height:16px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;margin:6px 0}
+.rpe-thermo-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:8px 0 0 8px;background:linear-gradient(90deg,#f59e0b,#ea580c);transition:width 1s cubic-bezier(.2,.8,.2,1)}
+.rpe-thermo-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px}
+.ex-photo-wrap{transition:transform .15s ease}
+.ex-photo-wrap img{transition:transform .18s ease,box-shadow .18s ease;cursor:default;border-radius:8px}
+.ex-photo-wrap:hover img{transform:scale(1.045);box-shadow:0 0 0 2px #ea580c}
+@keyframes cardFlipIn{from{opacity:0;transform:perspective(600px) rotateY(75deg) scale(.92)}to{opacity:1;transform:perspective(600px) rotateY(0) scale(1)}}
+.ex-photo-wrap{animation:cardFlipIn .45s ease both}
+#seanceContent,#seanceContent *{transition:opacity .2s ease}
+#seanceContent.seance-fading{opacity:0}
+.carnet-spark{display:block;margin:6px 0}
+.carnet-spark path{stroke-dasharray:300;stroke-dashoffset:300;transition:stroke-dashoffset 1s ease}
+.carnet-spark.drawn path{stroke-dashoffset:0}
+.tendance-arrow{display:inline-block;font-weight:700;animation:tendanceBounce .5s ease}
+@keyframes tendanceBounce{0%{transform:translateY(-4px);opacity:0}100%{transform:translateY(0);opacity:1}}
+#toastContainer{position:fixed;bottom:18px;right:18px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:320px}
+.toast{padding:10px 14px;border-radius:8px;font-size:13px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.35);animation:toastIn .25s ease;opacity:.97}
+.toast.toast-success{background:#16a34a}
+.toast.toast-error{background:#dc2626}
+.toast.toast-warning{background:#ea580c}
+.toast.toast-out{animation:toastOut .25s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:.97;transform:translateX(0)}}
+@keyframes toastOut{from{opacity:.97;transform:translateX(0)}to{opacity:0;transform:translateX(20px)}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<div id="toastContainer"></div>
 <div class="app">
 <div id="loginScreen" class="login-box card">
 <div style="text-align:center;margin-bottom:20px">
@@ -1599,6 +1633,18 @@ var MATERIEL_CIRCUIT=["Un banc ou banc a lombaires","Une barre + disques (develo
 var MATERIEL_MUSCU=["Une barre + disques","Un rack de squat / developpe","Tapis de sol"];
 var MATERIEL_CARDIO=["Selon le format choisi : tapis de course, velo, rameur, ou terrain exterieur"];
 function getMateriel(type,s){if(type==="cardio")return MATERIEL_CARDIO;return isCircuit(s)?MATERIEL_CIRCUIT:MATERIEL_MUSCU;}
+// Petites icones devant chaque ligne de materiel (idee visuelle) — simple correspondance par mot-cle,
+// premiere correspondance trouvee dans le libelle ; sinon puce neutre.
+var ICONES_MATERIEL=[["banc","🪑"],["barre","🏋️"],["haltere","🏋️"],["rack","🗄️"],["tirage","🪢"],["step","🧱"],["surelevation","🧱"],["tapis de course","🏃"],["velo","🚴"],["rameur","🚣"],["tapis","🧘"],["terrain","🌳"]];
+function iconeMateriel(txt){
+  var low=txt.toLowerCase();
+  for(var i=0;i<ICONES_MATERIEL.length;i++){if(low.indexOf(ICONES_MATERIEL[i][0])!==-1)return ICONES_MATERIEL[i][1];}
+  return "•";
+}
+// Icone + libelle court selon le type de seance, pour le bandeau visuel (idee visuelle)
+function iconeSeance(type,s){return type==="cardio"?"🏃":(isCircuit(s)?"🔄":"🏋️");}
+// Classe de badge couleur pour un niveau du tableau des 3 niveaux (idee visuelle)
+function classeNiveau(i){return ["reprise","standard","confirme"][i]||"";}
 // Reperes de recuperation par groupe musculaire (generique, cadre : circuit a charge moderee RPE 4-7)
 var REPERES_RECUP=[
  ["Grands groupes (quadriceps, dos, pectoraux, fessiers)","48h avant de retravailler le meme groupe a intensite comparable"],
@@ -1613,12 +1659,21 @@ var REGLES_MUSCU=[
 ];
 function rpeGaugeHtml(range,titre){
   if(!range)return"";
-  var cells="";
-  for(var i=0;i<=10;i++){
-    var on=i>=range[0]&&i<=range[1];
-    cells+='<div style="flex:1;text-align:center;padding:4px 0;font-size:11px;border:1px solid var(--border);'+(on?'background:#ea580c;color:#fff;font-weight:700':'color:var(--muted)')+'">'+i+'</div>';
-  }
-  return '<div style="margin:10px 0"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+(titre||"Ressenti vise (echelle de Borg / RPE)")+' — cible '+range[0]+' a '+range[1]+'</div><div style="display:flex">'+cells+'</div></div>';
+  // Jauge "thermometre" (idee visuelle) : barre 0-10 avec la zone ciblee en surbrillance,
+  // remplissage anime en CSS via animateRpeThermos() apres insertion dans le DOM.
+  var left=(range[0]/11*100).toFixed(1);
+  var width=((range[1]-range[0]+1)/11*100).toFixed(1);
+  return '<div style="margin:10px 0">'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:4px">'+(titre||"Ressenti visé (échelle de Borg / RPE)")+' — cible '+range[0]+' à '+range[1]+'</div>'
+    +'<div class="rpe-thermo-track"><div class="rpe-thermo-fill" style="left:'+left+'%" data-target-width="'+width+'%"></div></div>'
+    +'<div class="rpe-thermo-labels"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>'
+    +'</div>';
+}
+function animateRpeThermos(){
+  var els=document.querySelectorAll('.rpe-thermo-fill[data-target-width]');
+  els.forEach(function(el){
+    raf(function(){el.style.width=el.getAttribute('data-target-width');});
+  });
 }
 function pdfRpeGauge(doc,x,y,width,range){
   var n=11,cw=width/n;
@@ -1808,8 +1863,35 @@ var echauffementType={
  general:"Footing avec accélérations sur les longueurs et récupération sur les largeurs, montées de genoux, talons-fesses, pas chassés (5')",
  specifique:"Exercices dynamiques alliant mobilité articulaire et gainage (10')"
 };
+// Petits raccourcis rAF avec repli setTimeout (certains environnements de test/anciens navigateurs
+// n'exposent pas requestAnimationFrame) — utilises par les effets visuels ci-dessous.
+var raf=(typeof window!=="undefined"&&window.requestAnimationFrame)?window.requestAnimationFrame.bind(window):function(cb){return setTimeout(cb,16);};
+var caf=(typeof window!=="undefined"&&window.cancelAnimationFrame)?window.cancelAnimationFrame.bind(window):function(id){clearTimeout(id);};
+// Petit toast non bloquant (remplace alert() pour les actions du carnet de suivi) — auto-disparait.
+function showToast(msg,type){
+  var c=document.getElementById('toastContainer');
+  if(!c){alert(msg);return;}
+  var t=document.createElement('div');
+  t.className='toast toast-'+(type||'success');
+  t.textContent=msg;
+  c.appendChild(t);
+  setTimeout(function(){
+    t.classList.add('toast-out');
+    setTimeout(function(){ if(t.parentNode)t.parentNode.removeChild(t); },250);
+  },(type==='error')?6000:3500);
+}
 var seanceTirage=0;
-function tirerSeance(){seanceTirage++;zoneChoixManuel={};renderSeance()}
+function tirerSeance(){
+  // Fondu enchaine (idee effets) : on estompe la fiche actuelle avant de retirer et re-afficher.
+  var box=document.getElementById('seanceContent');
+  seanceTirage++;zoneChoixManuel={};
+  if(box){
+    box.classList.add('seance-fading');
+    setTimeout(function(){ renderSeance(); box.classList.remove('seance-fading'); },180);
+  }else{
+    renderSeance();
+  }
+}
 function alea(liste,decalage){return liste[(seanceTirage+(decalage||0))%liste.length]}
 // Choix manuel par zone pour les seances "Circuit" (idee #4) : chaque zone garde sa selection manuelle
 // (nom de l'exercice) tant que l'agent ne repasse pas sur "Auto" ; sinon le tirage aleatoire habituel (alea) s'applique.
@@ -1853,20 +1935,33 @@ async function chargerCarnetSiBesoin(){
   }
   renderCarnetHistorique();
 }
+var carnetUAAnimId=null;
 function majCarnetUA(){
   var rpe=parseFloat(document.getElementById('carnetRpe').value);
   var duree=parseFloat(document.getElementById('carnetDuree').value);
   var el=document.getElementById('carnetUA');
   if(!el)return;
-  el.textContent=(rpe>=0&&duree>0)?Math.round(rpe*duree):'—';
+  if(carnetUAAnimId)caf(carnetUAAnimId);
+  if(!(rpe>=0&&duree>0)){el.textContent='—';return;}
+  var target=Math.round(rpe*duree);
+  var start=parseInt(el.textContent)||0;
+  if(start===target){el.textContent=target;return;}
+  var t0=null,dur=350;
+  function step(ts){
+    if(!t0)t0=ts;
+    var pct=Math.min(1,(ts-t0)/dur);
+    el.textContent=Math.round(start+(target-start)*pct);
+    if(pct<1)carnetUAAnimId=raf(step);else el.textContent=target;
+  }
+  carnetUAAnimId=raf(step);
 }
 async function ajouterCarnetEntree(){
   var pompierSel=document.getElementById('seancePompier').value;
   var pompierId=parseInt(pompierSel);
-  if(!pompierId){alert('Sélectionnez un pompier avant d\'enregistrer une entrée dans le carnet.');return;}
+  if(!pompierId){showToast('Sélectionnez un pompier avant d\'enregistrer une entrée dans le carnet.','warning');return;}
   var rpe=parseFloat(document.getElementById('carnetRpe').value);
   var duree=parseFloat(document.getElementById('carnetDuree').value);
-  if(!(rpe>=0&&rpe<=10)||!(duree>0)){alert('Renseignez un RPE valide (0 à 10) et une durée en minutes (> 0).');return;}
+  if(!(rpe>=0&&rpe<=10)||!(duree>0)){showToast('Renseignez un RPE valide (0 à 10) et une durée en minutes (> 0).','warning');return;}
   var type=document.getElementById('seanceType').value;
   var cat=catalogueSeances();
   var s=cat.find(function(x){return x.id===document.getElementById('seanceObjectif').value})||cat[0];
@@ -1880,14 +1975,30 @@ async function ajouterCarnetEntree(){
     document.getElementById('carnetDuree').value='';
     majCarnetUA();
     renderCarnetHistorique();
-    alert('✅ Entrée ajoutée au carnet de suivi.');
+    showToast('✅ Entrée ajoutée au carnet de suivi.','success');
   }catch(e){
     if(/carnet_seances/i.test(e.message||'')){
-      alert("⚠️ La table \"carnet_seances\" n'existe pas encore dans Supabase. Créez-la avec le script SQL fourni, puis réessayez.");
+      showToast('⚠️ La table "carnet_seances" n\'existe pas encore dans Supabase. Créez-la avec le script SQL fourni, puis réessayez.','error');
     }else{
-      alert('❌ Erreur lors de l\'enregistrement : '+e.message);
+      showToast('❌ Erreur lors de l\'enregistrement : '+e.message,'error');
     }
   }
+}
+// Petit sparkline SVG (idee visuelle) : evolution de la charge UA, du plus ancien au plus recent.
+function sparklineSvg(valeurs){
+  if(valeurs.length<2)return"";
+  var w=180,h=34,pad=4;
+  var min=Math.min.apply(Math,valeurs),max=Math.max.apply(Math,valeurs);
+  if(min===max){min-=1;max+=1;}
+  var stepX=(w-2*pad)/(valeurs.length-1);
+  var pts=valeurs.map(function(v,i){
+    var x=pad+i*stepX;
+    var y=h-pad-((v-min)/(max-min))*(h-2*pad);
+    return x.toFixed(1)+","+y.toFixed(1);
+  });
+  return '<svg class="carnet-spark" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'">'
+    +'<path d="M'+pts.join(" L")+'" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'
+    +'</svg>';
 }
 function renderCarnetHistorique(){
   var box=document.getElementById('carnetHistorique');
@@ -1896,12 +2007,26 @@ function renderCarnetHistorique(){
   if(!pompierId){box.innerHTML='Sélectionnez un pompier ci-dessus pour voir son historique.';return;}
   var mine=carnetEntries.filter(function(e){return e.pompier_id===pompierId}).slice(0,10);
   if(!mine.length){box.innerHTML='Aucune séance enregistrée pour ce pompier pour l\'instant.';return;}
-  var html='<table style="font-size:12px;width:100%"><thead><tr><th style="text-align:left">Date</th><th style="text-align:left">Séance</th><th>RPE</th><th>Durée</th><th>Charge (UA)</th></tr></thead><tbody>';
-  mine.forEach(function(e){
-    html+='<tr><td>'+(e.date||'')+'</td><td>'+(e.objectif_label||e.type||'')+'</td><td style="text-align:center">'+e.rpe+'</td><td style="text-align:center">'+e.duree_min+'\'</td><td style="text-align:center;font-weight:600;color:var(--accent)">'+e.charge_ua+'</td></tr>';
+  var chrono=mine.slice().reverse(); // plus ancien -> plus recent, pour le sparkline
+  var html=sparklineSvg(chrono.map(function(e){return e.charge_ua||0}));
+  html+='<table style="font-size:12px;width:100%"><thead><tr><th style="text-align:left">Date</th><th style="text-align:left">Séance</th><th>RPE</th><th>Durée</th><th>Charge (UA)</th><th></th></tr></thead><tbody>';
+  mine.forEach(function(e,i){
+    var tendance="";
+    if(i<mine.length-1){
+      var prev=mine[i+1].charge_ua;
+      if(e.charge_ua>prev)tendance='<span class="tendance-arrow delta-up">▲</span>';
+      else if(e.charge_ua<prev)tendance='<span class="tendance-arrow delta-down">▼</span>';
+      else tendance='<span class="tendance-arrow delta-flat">▬</span>';
+    }
+    html+='<tr><td>'+(e.date||'')+'</td><td>'+(e.objectif_label||e.type||'')+'</td><td style="text-align:center">'+e.rpe+'</td><td style="text-align:center">'+e.duree_min+'\'</td><td style="text-align:center;font-weight:600;color:var(--accent)">'+e.charge_ua+'</td><td style="text-align:center">'+tendance+'</td></tr>';
   });
   html+='</tbody></table>';
   box.innerHTML=html;
+  // Animation "dessin" du sparkline (idee effets) — declenchee apres insertion dans le DOM.
+  raf(function(){
+    var spark=box.querySelector('.carnet-spark');
+    if(spark)spark.classList.add('drawn');
+  });
 }
 function zoneSelectHtml(z){
   if(!z.options||z.options.length<2)return"";
@@ -1945,6 +2070,9 @@ function renderSeance(){
   var garde=document.getElementById("seanceContexte").value==="garde";
   var circuit=isCircuit(s);
   var html="";
+  html+='<div class="seance-band"><div class="seance-band-icon">'+iconeSeance(type,s)+'</div><div><div class="seance-band-title">'
+    +(type==="cardio"?(s.objectif+" — "+s.type):(s.qualite+" — "+s.effort.replace(/ \(.*\)/,"")))
+    +'</div><div class="seance-band-sub">'+(garde?"Pendant la garde / astreinte":"Séance libre")+(p?(" — "+p.prenom+" "+p.nom):" — séance collective")+'</div></div></div>';
   if(garde){
     html+=type==="muscu"
       ?'<p style="color:var(--success);font-size:13px;margin-bottom:12px">✔ Méthode préconisée pendant le temps de garde (document CNFPT « Développer la force musculaire »).</p>'
@@ -1968,7 +2096,7 @@ function renderSeance(){
   var materiel=getMateriel(type,s);
   html+='<div class="card" style="background:var(--surface2);margin-bottom:14px">';
   html+='<div class="card-title" style="font-size:14px">🎒 Matériel</div>';
-  html+='<ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text);line-height:1.7">'+materiel.map(function(m){return "<li>"+m+"</li>"}).join("")+'</ul>';
+  html+='<ul style="margin:0;padding-left:4px;list-style:none;font-size:13px;color:var(--text);line-height:1.9">'+materiel.map(function(m){return '<li>'+iconeMateriel(m)+' '+m+'</li>'}).join("")+'</ul>';
   html+='</div>';
 
   // ===== Outil de suivi RPE / Borg =====
@@ -1987,7 +2115,7 @@ function renderSeance(){
     var niv=circuitNiveaux;
     html+='<div class="card" style="background:var(--surface2);margin-bottom:14px">';
     html+='<div class="card-title" style="font-size:14px">📋 Tableau des 3 niveaux</div>';
-    html+='<div style="overflow-x:auto"><table style="font-size:12px;width:100%"><thead><tr><th></th>'+niv.labels.map(function(l){return "<th>"+l+"</th>"}).join("")+'</tr></thead><tbody>';
+    html+='<div style="overflow-x:auto"><table style="font-size:12px;width:100%"><thead><tr><th></th>'+niv.labels.map(function(l,i){return '<th><span class="niveau-badge '+classeNiveau(i)+'">'+l+'</span></th>'}).join("")+'</tr></thead><tbody>';
     var rows=[["Charge",niv.charge],["RPE ciblé",niv.rpe],["Charge séance visée (UA)",niv.chargeSeance],["Répétitions",niv.repetitions],["Tours de circuit",niv.tours],["Récupération",niv.recuperation]];
     rows.forEach(function(r){html+="<tr><td><b>"+r[0]+"</b></td>"+r[1].map(function(v){return "<td>"+v+"</td>"}).join("")+"</tr>"});
     html+='</tbody></table></div></div>';
@@ -2021,7 +2149,7 @@ function renderSeance(){
     html+='<tr><td style="vertical-align:top"><b>Corps de séance</b></td><td>'
       +'<div style="color:var(--muted);font-size:12px;margin-bottom:8px">'+format+' — '+s.consigne+' <span style="opacity:.8">(chaque atelier peut être choisi manuellement ci-dessous, ou laissé en tirage aléatoire)</span></div>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'
-      +zonesTirees.map(function(z){return '<div style="text-align:center"><img src="'+IMG_SEANCE[z.ex.img]+'" style="width:100%;border-radius:8px;display:block;margin-bottom:4px"><b style="font-size:12px">'+z.ex.nom+'</b><div style="color:var(--muted);font-size:11px">'+z.muscle+'</div>'+zoneSelectHtml(z)+'</div>'}).join("")
+      +zonesTirees.map(function(z,i){return '<div class="ex-photo-wrap" style="text-align:center;animation-delay:'+(i*0.06)+'s"><img src="'+IMG_SEANCE[z.ex.img]+'" style="width:100%;display:block;margin-bottom:4px"><b style="font-size:12px">'+z.ex.nom+'</b><div style="color:var(--muted);font-size:11px">'+z.muscle+'</div>'+zoneSelectHtml(z)+'</div>'}).join("")
       +'</div></td></tr>';
   }else{
     var rm=parseFloat(document.getElementById("seanceRm").value);
@@ -2041,7 +2169,7 @@ function renderSeance(){
         var mv=alea(mouvementsFondamentaux[f],i);
         var imgKey=MOUVEMENT_IMG[mv];
         if(imgKey){
-          return '<div style="text-align:center"><img src="'+IMG_SEANCE[imgKey]+'" style="width:100%;border-radius:8px;display:block;margin-bottom:4px"><b style="font-size:12px">'+mv+'</b><div style="color:var(--muted);font-size:11px">'+f+'</div></div>';
+          return '<div class="ex-photo-wrap" style="text-align:center;animation-delay:'+(i*0.06)+'s"><img src="'+IMG_SEANCE[imgKey]+'" style="width:100%;display:block;margin-bottom:4px"><b style="font-size:12px">'+mv+'</b><div style="color:var(--muted);font-size:11px">'+f+'</div></div>';
         }
         return '<div style="text-align:left;padding:8px;background:var(--surface);border-radius:8px"><b style="font-size:12px">'+f+'</b><div style="color:var(--muted);font-size:12px">'+mv+'</div></div>';
       }).join("")
@@ -2060,7 +2188,7 @@ function renderSeance(){
     html+='<tr><td style="vertical-align:top"><b>Retour au calme</b><br><span style="color:var(--muted)">10\'</span></td><td>'
       +'<div style="color:var(--muted);font-size:12px;margin-bottom:8px">Étirements passifs des groupes travaillés — 30s par étirement, respiration calme, jamais jusqu\'à la douleur.</div>'
       +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">'
-      +zonesTirees.map(function(z){var img=etirementsZones[z.muscle];return img?'<div style="text-align:center"><img src="'+IMG_SEANCE[img]+'" style="width:100%;border-radius:8px;display:block;margin-bottom:4px"><b style="font-size:12px">Étirement '+z.muscle+'</b></div>':''}).join("")
+      +zonesTirees.map(function(z,i){var img=etirementsZones[z.muscle];return img?'<div class="ex-photo-wrap" style="text-align:center;animation-delay:'+(i*0.06)+'s"><img src="'+IMG_SEANCE[img]+'" style="width:100%;display:block;margin-bottom:4px"><b style="font-size:12px">Étirement '+z.muscle+'</b></div>':''}).join("")
       +'</div></td></tr>';
   }else{
     html+='<tr><td style="vertical-align:top"><b>Retour au calme</b><br><span style="color:var(--muted)">10\'</span></td><td>Footing lent ou marche, mobilité articulaire, étirements doux.</td></tr>';
@@ -2099,6 +2227,8 @@ function renderSeance(){
     +(garde&&type==="muscu"?'Paramètres repris du document <b>« Développer la force musculaire — quelques repères »</b> (CNFPT), spécifique au temps de garde. Cadre général : ':'Paramètres repris du ')
     +'<b>Livret des ressources — Formation des EAP2</b> (CNFPT) : entraînement cardio-vasculaire p.5, développement des qualités musculaires p.10-11, détermination de la charge de travail p.9. Programmation : alterner les charges, individualiser (1 agent = 1 entraînement), préférer beaucoup de petites séances à peu de grosses séances.</p>';
   box.innerHTML=html;
+  animateRpeThermos();
+  renderCarnetHistorique();
 }
 function generateSeancePDF(){
   var type=document.getElementById("seanceType").value;
