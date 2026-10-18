@@ -74,7 +74,9 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
  .entete{margin:0 -4px 12px;padding:8px 10px}
  .entete-marque img{width:40px;height:40px}
  .entete-titre{font-size:18px}
- .entete-sous,.etat #statusText,.btn-compte .nom,.btn-compte .badge{display:none}
+ .entete-sous,.etat #statusText,.btn-compte .nom,.btn-compte .badge,#dirtyFlag .txt{display:none}
+ .entete-titre{white-space:nowrap}
+ #toastContainer{bottom:calc(86px + env(safe-area-inset-bottom));right:12px;left:12px;max-width:none}
  .btn-compte{padding:3px}
 }
 /* Cartes */
@@ -184,7 +186,18 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .terrain-field .hint{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;text-align:center}
 .terrain-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
 .terrain-head>.terrain-nav{flex:1;min-width:300px;justify-content:flex-end}
-.terrain-name{font-size:22px;font-weight:700;color:var(--accent)}
+.terrain-name{font-size:22px;font-weight:700;color:var(--accent);font-family:var(--titre)}
+.case-terrain{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer}
+.case-terrain input{width:auto}
+.atelier-ligne{display:grid;grid-template-columns:1fr 150px 130px;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);margin-bottom:8px}
+.atelier-ligne.fait{border-color:color-mix(in srgb,var(--success) 50%,var(--border))}
+.atelier-nom{font-weight:600}
+.atelier-nom small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.atelier-ligne input{font-size:20px;height:50px;text-align:center}
+.atelier-niv{text-align:center;font-size:12px}
+.terrain-suivant{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:16px}
+.terrain-suivant .btn{padding:16px;font-size:16px}
+@media(max-width:720px){.atelier-ligne{grid-template-columns:1fr 110px;}.atelier-niv{grid-column:1/-1;text-align:left}.case-terrain{order:5}}
 .delta-up{color:var(--success);font-weight:600}
 .delta-down{color:var(--danger);font-weight:600}
 .delta-flat{color:var(--muted)}
@@ -268,7 +281,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="supabaseStatus" class="etat">
   <span id="statusDot" style="width:12px;height:12px;border-radius:50%;background:var(--danger);display:inline-block;box-shadow:0 0 8px var(--danger);transition:all .3s"></span>
   <span id="statusText">Connexion Supabase...</span>
-  <span id="dirtyFlag" style="display:none;color:var(--warning);font-weight:600">● Non enregistré</span>
+  <span id="dirtyFlag" style="display:none;color:var(--warning);font-weight:600" title="Modifications pas encore enregistrées">● <span class="txt">Non enregistré</span></span>
 </div>
 <div class="menu-compte">
 <button class="btn-compte" onclick="basculerMenuCompte(event)" aria-haspopup="true" title="Mon compte"><span class="avatar" id="avatarCompte">·</span><span class="nom" id="nomCompte"></span><span id="roleBadge" class="badge badge-user">Utilisateur</span><span class="nom">▾</span></button>
@@ -309,6 +322,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div style="display:flex;justify-content:flex-end"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPlus()">Fermer</button></div></div>
 </div>
 <div id="tab-dashboard">
+<div class="card" id="carteSessions"><div class="card-title">📅 Sessions ICP</div><div id="sessionsContenu"><div class="squelette" style="min-height:70px"></div></div></div>
 <div class="card"><div class="card-title">🔥 Condition physique de la caserne</div><div id="dashVisuel"></div></div>
 <div class="card"><div class="card-title">📊 Vue d'ensemble</div><div class="grid-4" id="dashboardStats"></div></div>
 <div class="card">
@@ -329,6 +343,8 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
+<button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
 </div>
 <div class="grid-4" id="syntheseStats" style="margin-bottom:16px"></div>
 <div class="legend-box" style="margin:0 0 14px">
@@ -339,7 +355,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="legend-item"><span class="pastille" style="background:#94a3b8"></span>Passé, non coté</div>
 </div>
 <div class="scroll-table"><table>
-<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Tests passés</th></tr></thead>
+<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Tests passés</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
 <tbody id="syntheseBody"></tbody>
 </table></div>
 </div>
@@ -370,9 +386,21 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div><div class="card-title" style="margin-bottom:2px">📱 Saisie terrain</div>
 <div id="terrainProgress" style="font-size:13px;color:var(--muted)"></div></div>
 <div class="terrain-nav">
-<button class="btn btn-primary" onclick="terrainStep(-1)">◀</button>
+<select id="terrainMode" onchange="renderTerrain()" style="min-width:170px">
+<option value="pompier">👤 Par pompier</option>
+<option value="poids">⚖️ Atelier : poids</option>
+<option value="rameur_temps">🚣 Atelier : rameur</option>
+<option value="luc_perf">🏃 Atelier : Luc Léger</option>
+<option value="souplesse">🤸 Atelier : souplesse</option>
+<option value="pompes">💪 Atelier : pompes</option>
+<option value="tractions">🧗 Atelier : tractions</option>
+</select>
+<label class="case-terrain"><input type="checkbox" id="terrainAFaire" onchange="renderTerrain()"> À compléter seulement</label>
+<span id="terrainNavPompier" style="display:flex;gap:8px;align-items:center">
+<button class="btn btn-primary" onclick="terrainStep(-1)" aria-label="Pompier précédent">◀</button>
 <select id="terrainPompier" onchange="renderTerrain()" style="min-width:200px"></select>
-<button class="btn btn-primary" onclick="terrainStep(1)">▶</button>
+<button class="btn btn-primary" onclick="terrainStep(1)" aria-label="Pompier suivant">▶</button>
+</span>
 <button class="btn btn-success" onclick="saveAll()">💾 Enregistrer</button>
 </div>
 </div>
@@ -583,7 +611,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 <div id="modalEnvoi" class="modal-overlay hidden" onclick="if(event.target===this)fermerEnvoi()">
 <div class="modal">
-<h3>📤 Envoyer l'accès</h3>
+<h3 id="envoiTitre">📤 Envoyer l'accès</h3>
 <p style="color:var(--muted);font-size:13px;margin-bottom:10px">Message prêt à envoyer (vous pouvez le modifier) :</p>
 <textarea id="envoiTexte" style="min-height:190px;font-family:inherit;font-size:13px"></textarea>
 <div class="form-row" style="margin-top:10px"><label>N° de portable (facultatif, pour le SMS)</label><input type="tel" id="envoiTel" placeholder="06 12 34 56 78"></div>
@@ -887,7 +915,7 @@ function finaliserConnexion(){
     // Squelettes animés le temps que les données arrivent
     ["dashboardStats","syntheseStats"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>';});
     var dv=document.getElementById("dashVisuel"); if(dv) dv.innerHTML='<div class="squelette" style="min-height:150px"></div>';
-    loadFromSupabase();
+    loadFromSupabase().then(function(){chargerSessions();});
 }
 var connexionEnCours = false;
 async function onAuthSuccess(){
@@ -969,6 +997,7 @@ function showLoginScreen(){
     data=[];
     carnetEntries=[];
     carnetCharge=false;
+    sessionsIcp=[];
     document.getElementById("mainApp").classList.add("hidden");
     document.getElementById("loginScreen").classList.remove("hidden");
 }
@@ -980,7 +1009,7 @@ async function initAuth(){
         if(event==="SIGNED_OUT")showLoginScreen();
     });
 }
-function switchTab(tab,el){var tabs=["dashboard","synthese","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();}if(tab==="synthese")renderSynthese();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab)}
+function switchTab(tab,el){var tabs=["dashboard","synthese","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab)}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var avgAge=Math.round(data.reduce(function(s,p){return s+getAge(p.annee)},0)/(total||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+getAge(p.annee)+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -1070,7 +1099,7 @@ function syntheseLignes(campagne){
       var n=t.key==="rameur"?evalRameur(o.sexe,o.poids,age,v):evalTest(t.key,o.sexe,age,v);
       niv[t.key]=n?n.toString():"?"; // ex. rameur sans poids : passé mais pas cotable
     });
-    return {nom:o.nom,prenom:o.prenom,niv:niv,global:(o._niveau||"").toString(),passes:passes,
+    return {id:o.id,nom:o.nom,prenom:o.prenom,niv:niv,global:(o._niveau||"").toString(),passes:passes,
             taux:Math.round(passes/TESTS_SYNTHESE.length*100)};
   }).sort(parNomPrenom);
 }
@@ -1109,9 +1138,175 @@ function renderSynthese(){
     html+='<tr><td><span class="initiales">'+escAttr(((l.prenom||" ")[0]+(l.nom||" ")[0]).toUpperCase())+'</span><b>'+escAttr(l.nom)+'</b></td><td>'+escAttr(l.prenom)+'</td>'
       +TESTS_SYNTHESE.map(function(t){return '<td style="text-align:center">'+pastilleHtml(l.niv[t.key])+'</td>'}).join("")
       +'<td style="text-align:center">'+pastilleHtml(l.global)+'</td>'
-      +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+TESTS_SYNTHESE.length+' · '+l.taux+'%</td></tr>';
+      +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+TESTS_SYNTHESE.length+' · '+l.taux+'%</td>'
+      +(isAdmin?'<td style="text-align:center"><button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Fiche individuelle (PDF)" onclick="generateFichePDF('+l.id+')">📄</button></td>':'')+'</tr>';
   });
-  document.getElementById("syntheseBody").innerHTML=html||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Aucun pompier.</td></tr>';
+  document.querySelectorAll("#tab-synthese .admin-seul").forEach(function(e){e.classList.toggle("hidden",!isAdmin)});
+  document.getElementById("syntheseBody").innerHTML=html||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Aucun pompier.</td></tr>';
+}
+// ===== PLANNING DES SESSIONS ICP =====
+var sessionsIcp=[];
+async function chargerSessions(){
+  try{var r=await supabaseClient.from('sessions_icp').select('*').order('date');if(!r.error)sessionsIcp=r.data||[];}
+  catch(e){console.warn("Sessions ICP :",e.message);}
+  renderSessions();
+}
+function aujourdhuiISO(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function sessionsAVenir(){var t=aujourdhuiISO();return sessionsIcp.filter(function(x){return x.date>=t});}
+function prochaineSession(){return sessionsAVenir()[0]||null;}
+function dateLongue(iso){var t=new Date(iso+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});return t.charAt(0).toUpperCase()+t.slice(1);}
+function libelleSession(x){return dateLongue(x.date)+(x.heure?" à "+x.heure:"")+(x.lieu?" — "+x.lieu:"");}
+function testsManquants(p){return TESTS_SYNTHESE.filter(function(t){return !p[t.field]||p[t.field].toString().trim()===""}).map(function(t){return t.label});}
+function renderSessions(){
+  var el=document.getElementById("sessionsContenu");if(!el)return;
+  var next=prochaineSession(),html="";
+  if(next){
+    var jours=Math.round((new Date(next.date+"T12:00:00")-new Date(aujourdhuiISO()+"T12:00:00"))/86400000);
+    var quand=jours===0?"aujourd'hui":jours===1?"demain":"dans "+jours+" jours";
+    var attendus=data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length});
+    html+='<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">'
+      +'<div><div style="font-size:13px;color:var(--muted)">Prochaine session · <b style="color:var(--primary)">'+quand+'</b></div>'
+      +'<div style="font-family:var(--titre);font-size:24px;color:var(--text);margin-top:2px">'+escAttr(libelleSession(next))+'</div>'
+      +(next.note?'<div style="font-size:13px;color:var(--muted);margin-top:4px">'+escAttr(next.note)+'</div>':'')+'</div>'
+      +'<button class="btn btn-primary btn-sm" onclick="genererRelance()">📣 Prévenir les pompiers</button></div>';
+    html+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted);font-size:13px"><b style="color:var(--text)">'+attendus.length+'</b> pompier(s) attendu(s) — tests encore à passer</summary>'
+      +'<ul style="margin:8px 0 0 18px;font-size:13px;color:var(--muted);columns:2 260px">'+attendus.map(function(p){var m=testsManquants(p);
+        return '<li><b style="color:var(--text)">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</b> : '+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))+'</li>'}).join("")+'</ul></details>';
+  }else{
+    html+='<p style="color:var(--muted);font-size:14px">Aucune session prévue pour le moment.</p>';
+  }
+  var autres=sessionsAVenir().slice(next?1:0);
+  if(autres.length)html+='<div style="margin-top:12px;font-size:13px;color:var(--muted)">Ensuite : '+autres.map(function(x){return escAttr(libelleSession(x))}).join(" · ")+'</div>';
+  if(isAdmin){
+    html+='<details style="margin-top:14px"'+(next?'':' open')+'><summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600">⚙️ Gérer les sessions</summary>'
+      +'<div class="filters" style="margin-top:10px;align-items:center">'
+      +'<input type="date" id="sesDate" style="width:auto"><input type="text" id="sesHeure" placeholder="Heure (ex. 9h00)" style="width:130px">'
+      +'<input type="text" id="sesLieu" placeholder="Lieu (ex. gymnase)" style="width:180px"><input type="text" id="sesNote" placeholder="Note (facultatif)" style="width:220px">'
+      +'<button class="btn btn-success btn-sm" onclick="ajouterSession()">➕ Ajouter</button></div>'
+      +sessionsAVenir().map(function(x){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><span>'+escAttr(libelleSession(x))+'</span><button class="btn btn-danger btn-sm" onclick="supprimerSession('+x.id+')">🗑️</button></div>'}).join("")
+      +'</details>';
+  }
+  el.innerHTML=html;
+}
+async function ajouterSession(){
+  var d=document.getElementById("sesDate").value;
+  if(!d){alert("Choisissez une date.");return;}
+  var ligne={date:d,heure:document.getElementById("sesHeure").value.trim()||null,lieu:document.getElementById("sesLieu").value.trim()||null,note:document.getElementById("sesNote").value.trim()||null};
+  var r=await supabaseClient.from('sessions_icp').insert(ligne);
+  if(r.error){alert("⚠️ "+r.error.message);return;}
+  showToast("✅ Session ajoutée.","success");
+  chargerSessions();
+}
+async function supprimerSession(id){
+  if(!confirm("Supprimer cette session ?"))return;
+  var r=await supabaseClient.from('sessions_icp').delete().eq('id',id);
+  if(r.error){alert("⚠️ "+r.error.message);return;}
+  chargerSessions();
+}
+
+// ===== RELANCE DES POMPIERS NON ÉVALUÉS =====
+function genererRelance(){
+  var manquants=data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length});
+  if(!manquants.length){alert("✅ Tout le monde a passé tous les tests de la campagne en cours.");return;}
+  var next=prochaineSession();
+  var texte="Bonjour à tous,\n\nPoint sur les tests ICP (indices de condition physique) de la campagne en cours :\n\n"
+    +(next?"📅 Prochaine session : "+libelleSession(next)+(next.note?" ("+next.note+")":"")+"\n\n":"")
+    +"Tests restant à passer :\n"
+    +manquants.map(function(p){var m=testsManquants(p);return "• "+p.prenom+" "+p.nom+" : "+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))}).join("\n")
+    +"\n\nMerci de vous organiser pour venir les passer"+(next?" à cette date":"")+". En cas d'empêchement, prévenez-moi.\n\nChristian";
+  ouvrirMessage("📣 Relancer les pompiers",texte,"Tests ICP — tests restant à passer","");
+}
+
+// ===== FICHE INDIVIDUELLE (PDF) =====
+var CONSEILS_TEST={
+  rameur:{1:"Endurance à développer : 2 à 3 séances par semaine de 30 à 45 min (rameur, vélo ou course) à allure modérée, plus 1 séance de fractionné (ex. 6 × 500 m au rameur, récupération 1 min 30).",
+          2:"Bonne base : ajoutez 1 séance de fractionné par semaine (ex. 4 × 1000 m au rameur) pour gagner en vitesse.",
+          3:"Excellent niveau cardio : entretenez avec 2 séances par semaine."},
+  luc:{1:"VMA à développer : 1 séance de fractionné court par semaine (30 s vite / 30 s lent, 2 × 8 répétitions) et 1 sortie longue en endurance.",
+       2:"Pour progresser : alternez fractionné court (30/30) et fractionné long (3 × 5 min à allure soutenue).",
+       3:"Très bonne VMA : maintenez 1 séance de fractionné par semaine."},
+  souplesse:{1:"Souplesse à travailler : 10 min d'étirements par jour (arrière des cuisses, dos, hanches), toujours après l'effort.",
+             2:"Gardez la routine d'étirements après chaque séance et ajoutez 2 séances de mobilité par semaine.",
+             3:"Très bonne souplesse : continuez les étirements après l'effort."},
+  pompes:{1:"Haut du corps à renforcer : pompes tous les 2 jours, 4 séries (sur les genoux au début), plus du gainage (planche 3 × 30 s).",
+          2:"Pour progresser : 4 à 5 séries de pompes 3 fois par semaine en augmentant de 2 répétitions chaque semaine.",
+          3:"Excellent : variez (pompes déclinées, lestées) pour continuer à progresser."},
+  tractions:{1:"Tirage à renforcer : tractions avec élastique ou négatives (descente lente), tirage horizontal, 2 à 3 fois par semaine.",
+             2:"Pour progresser : 5 séries de tractions au maximum moins 1, 2 fois par semaine.",
+             3:"Excellent : entretenez et travaillez les tractions lestées si possible."}
+};
+var UNITES_TEST={rameur:"",luc:" (palier)",souplesse:" cm",pompes:" répétitions",tractions:" répétitions"};
+var TEXTE_NIVEAU={"1":"Vigilance","2":"Engagement opérationnel","3":"Condition optimale","?":"Non coté"};
+function dessinerFiche(doc,p){
+  var pageW=doc.internal.pageSize.getWidth(),margin=14,age=getAge(p.annee);
+  doc.setFillColor(12,10,9);doc.rect(0,0,pageW,30,'F');
+  doc.setFillColor(234,88,12);doc.rect(0,30,pageW,1.4,'F');
+  pdfLogo(doc,margin-4,3,24);
+  doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(255,255,255);
+  doc.text("FICHE INDIVIDUELLE ICP",pageW/2,11,{align:"center"});
+  doc.setFontSize(13);doc.setTextColor(251,191,36);
+  doc.text(p.prenom+" "+p.nom,pageW/2,19,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(214,211,209);
+  doc.text(age+" ans — "+(p.sexe==="M"?"Homme":"Femme")+" — Caserne Cruzy-Quarante — SDIS 34 — "+new Date().toLocaleDateString('fr-FR'),pageW/2,26,{align:"center"});
+  var y=40;
+  pdfSectionTitle(doc,margin,y,"Campagne en cours",11);y+=4;
+  var lignes=TESTS_SYNTHESE.map(function(t){
+    var v=p[t.field],n="";
+    if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
+    return {t:t,v:v,n:n};
+  });
+  doc.autoTable({startY:y,theme:'grid',margin:{left:margin,right:margin},
+    head:[["Test","Votre résultat","Niveau"]],
+    body:lignes.map(function(l){return [l.t.label,(l.v&&l.v.toString().trim())?l.v+UNITES_TEST[l.t.key]:"non passé",l.n||"-"]}),
+    headStyles:{fillColor:[28,25,23],textColor:255,fontSize:9,fontStyle:'bold'},styles:{fontSize:10,cellPadding:3},
+    columnStyles:{0:{fontStyle:'bold',cellWidth:45},2:{halign:'center',cellWidth:60}},
+    didParseCell:function(d){
+      if(d.section!=='body'||d.column.index!==2)return;
+      var v=d.cell.raw;
+      if(COULEURS_NIVEAU[v]){d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;d.cell.styles.textColor=255;d.cell.styles.fontStyle='bold';d.cell.text=[TEXTE_NIVEAU[v]];}
+      else{d.cell.text=["à passer"];d.cell.styles.textColor=[120,113,108];}
+    }});
+  y=doc.lastAutoTable.finalY+7;
+  var g=getNiveauGlobal(p);
+  if(g&&COULEURS_NIVEAU[g]){var c=COULEURS_NIVEAU[g].rgb;doc.setFillColor(c[0],c[1],c[2]);doc.roundedRect(margin,y,pageW-2*margin,11,2,2,'F');
+    doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(255,255,255);doc.text("Niveau global : "+TEXTE_NIVEAU[g],pageW/2,y+7.3,{align:"center"});y+=18;}
+  // Évolution
+  var hist=getHistorique(p).slice().sort(function(a,b){return (a.campagne||"").localeCompare(b.campagne||"")});
+  if(hist.length){
+    pdfSectionTitle(doc,margin,y,"Évolution d'une campagne à l'autre",11);y+=4;
+    var rows=hist.map(function(h){return [h.campagne,(h.niveau||"-").toString()]});
+    if(g)rows.push(["En cours",g]);
+    doc.autoTable({startY:y,theme:'grid',margin:{left:margin,right:margin},head:[["Campagne","Niveau global"]],body:rows,
+      headStyles:{fillColor:[28,25,23],textColor:255,fontSize:9},styles:{fontSize:10,cellPadding:2.5},columnStyles:{1:{halign:'center'}},
+      didParseCell:function(d){if(d.section!=='body'||d.column.index!==1)return;var v=d.cell.raw;
+        if(COULEURS_NIVEAU[v]&&v!=="?"){d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;d.cell.styles.textColor=255;d.cell.text=[TEXTE_NIVEAU[v]];}else d.cell.text=["non évalué"];}});
+    y=doc.lastAutoTable.finalY+8;
+  }
+  // Conseils
+  pdfSectionTitle(doc,margin,y,"Conseils pour progresser",11);y+=6;
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(28,25,23);
+  lignes.forEach(function(l){
+    var conseil=!l.n?"Test à passer lors de la prochaine session.":(l.n==="?"?"Résultat non coté (poids manquant) : pensez à faire renseigner votre poids.":CONSEILS_TEST[l.t.key][l.n]);
+    var txt=doc.splitTextToSize(conseil,pageW-2*margin-34);
+    if(y+txt.length*4.6>285){doc.addPage();y=20;}
+    doc.setFont("helvetica","bold");doc.text(l.t.label+" :",margin,y);
+    doc.setFont("helvetica","normal");doc.text(txt,margin+34,y);
+    y+=txt.length*4.6+3;
+  });
+  var next=prochaineSession();
+  if(next){if(y>275){doc.addPage();y=20;}doc.setFont("helvetica","bold");doc.setTextColor(194,65,12);doc.text("Prochaine session ICP : "+libelleSession(next),margin,y+4);}
+}
+function generateFichePDF(id){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  var { jsPDF }=window.jspdf;var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  dessinerFiche(doc,p);
+  doc.save("Fiche_ICP_"+p.nom+"_"+p.prenom+".pdf");
+}
+function generateToutesFichesPDF(){
+  var liste=data.slice().sort(parNomPrenom);if(!liste.length)return;
+  var { jsPDF }=window.jspdf;var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  liste.forEach(function(p,i){if(i)doc.addPage();dessinerFiche(doc,p);});
+  doc.save("Fiches_individuelles_ICP.pdf");
 }
 function generateSynthesePDF(){
   var campagne=document.getElementById("syntheseCampagne").value;
@@ -1572,56 +1767,144 @@ function renderProgression(){
 // ===== MODE TERRAIN (saisie mobile, un pompier à la fois) =====
 function terrainStep(dir){
   var sel=document.getElementById("terrainPompier");
+  if(!sel.options.length)return;
   var i=sel.selectedIndex+dir;
   if(i<0)i=sel.options.length-1;
   if(i>=sel.options.length)i=0;
   sel.selectedIndex=i;renderTerrain();
 }
-function setTerrainField(field,value){
+// Saisie plus rapide au téléphone : « 824 », « 8.24 » ou « 8:24 » deviennent 8'24"
+function normaliserSaisie(f,v){
+  v=(v===undefined||v===null?"":v).toString().trim();
+  if(f==="rameur_temps"&&v){
+    var m=v.match(/^(\d{1,2})\s*[.,:'h]\s*(\d{2})\s*"?$/);
+    if(!m&&/^\d{3,4}$/.test(v))m=[v,v.slice(0,-2),v.slice(-2)];
+    if(m&&parseInt(m[2])<60)return parseInt(m[1])+"'"+m[2]+'"';
+  }
+  return v;
+}
+// Niveau d'un seul test (pour les ateliers)
+function niveauChamp(p,f){
+  var age=getAge(p.annee),v=p[f];
+  if(!v||v.toString().trim()==="")return "";
+  if(f==="rameur_temps")return evalRameur(p.sexe,p.poids,age,v);
+  if(f==="luc_perf")return evalTest("luc",p.sexe,age,v);
+  if(f==="poids")return "";
+  return evalTest(f,p.sexe,age,v);
+}
+function terrainChamps(p){
+  var age=getAge(p.annee),tr=getTranche(age);
+  return [
+    {f:"poids",lab:"Poids (kg)",mode:"decimal",hint:function(){return p.poids?"IMC / barème rameur "+tr:"nécessaire pour le barème rameur"}},
+    {f:"rameur_temps",lab:"Rameur 2000 m",mode:"decimal",ph:"8'24\" ou 824",hint:function(){var n=evalRameur(p.sexe,p.poids,age,p.rameur_temps);return n?getLevelBadge(n):"tapez 824 pour 8'24\""}},
+    {f:"luc_perf",lab:"Luc Léger (palier)",mode:"decimal",ph:"9,5",hint:function(){var n=evalTest("luc",p.sexe,age,p.luc_perf);var v=vmaLuc(p);return (n?getLevelBadge(n):"")+(v?' <span style="color:var(--muted)">VMA '+v+" km/h</span>":"")}},
+    {f:"souplesse",lab:"Souplesse (cm)",mode:"decimal",hint:function(){var n=evalTest("souplesse",p.sexe,age,p.souplesse);return n?getLevelBadge(n):""}},
+    {f:"pompes",lab:"Pompes (nb)",mode:"numeric",hint:function(){var n=evalTest("pompes",p.sexe,age,p.pompes);return n?getLevelBadge(n):""}},
+    {f:"tractions",lab:"Tractions (nb)",mode:"numeric",hint:function(){var n=evalTest("tractions",p.sexe,age,p.tractions);return n?getLevelBadge(n):""}},
+    {f:"fc_repos",lab:"FC repos (bpm)",mode:"numeric",hint:function(){return p.fc_repos?"réserve : "+(getFcMax(p).val-p.fc_repos)+" bpm":"au réveil, 1 minute"}},
+    {f:"fc_max",lab:"FC Max mesurée (bpm)",mode:"numeric",hint:function(){return p.fc_max?"mesurée":"sinon estimée à "+(220-age)}}
+  ];
+}
+function terrainPompierCourant(){
   var sel=document.getElementById("terrainPompier");
-  var p=data.find(function(x){return x.id===parseInt(sel.value)});
-  if(!p)return;
-  p[field]=value;
-  if(field==="luc_perf")p.luc_niv=evalTest("luc",p.sexe,getAge(p.annee),value);
-  markDirty();
-  renderTerrain();
+  return sel?data.find(function(x){return x.id===parseInt(sel.value)}):null;
+}
+function libelleOptionTerrain(p){var r=participationRate(p);return (r===100?"✅ ":r>0?"◐ ":"○ ")+p.nom+" "+p.prenom;}
+function majTerrainProgression(p){
+  var complets=data.filter(function(x){return participationRate(x)===100}).length;
+  var el=document.getElementById("terrainProgress");
+  if(el)el.innerHTML=complets+" / "+data.length+" fiches complètes"+(p?" — "+escAttr(p.prenom)+" "+escAttr(p.nom)+" : "+participationRate(p)+"% renseigné":"");
 }
 function renderTerrain(){
   var sel=document.getElementById("terrainPompier");if(!sel)return;
+  var mode=(document.getElementById("terrainMode")||{}).value||"pompier";
+  var aFaire=(document.getElementById("terrainAFaire")||{}).checked;
+  document.getElementById("terrainNavPompier").style.display=mode==="pompier"?"flex":"none";
+  if(mode!=="pompier"){renderAtelier(mode,aFaire);return;}
   var cur=sel.value;
-  sel.innerHTML=data.slice().sort(parNomPrenom).map(function(p){
-    var r=participationRate(p);
-    return '<option value="'+p.id+'">'+(r===100?"✅ ":r>0?"◐ ":"○ ")+p.nom+" "+p.prenom+"</option>";
-  }).join("");
-  if(cur)sel.value=cur;
-  var p=data.find(function(x){return x.id===parseInt(sel.value)})||data[0];
-  if(!p)return;
-  var complets=data.filter(function(x){return participationRate(x)===100}).length;
-  document.getElementById("terrainProgress").innerHTML=complets+" / "+data.length+" fiches complètes — "+p.prenom+" "+p.nom+" : "+participationRate(p)+"% renseigné";
-  var age=getAge(p.annee);var tr=getTranche(age);
-  var dis=isAdmin?"":"disabled";
-  var champs=[
-    {f:"poids",lab:"Poids (kg)",type:"number",step:"0.1",hint:function(){return p.poids?"IMC / barème rameur "+tr:"nécessaire pour le barème rameur"}},
-    {f:"rameur_temps",lab:"Rameur 2000 m",type:"text",ph:"8'24\"",hint:function(){var n=evalRameur(p.sexe,p.poids,age,p.rameur_temps);return n?getLevelBadge(n):"format mm'ss\""}},
-    {f:"luc_perf",lab:"Luc Léger (palier)",type:"text",ph:"9,5",hint:function(){var n=evalTest("luc",p.sexe,age,p.luc_perf);var v=vmaLuc(p);return (n?getLevelBadge(n):"")+(v?' <span style="color:var(--muted)">VMA '+v+" km/h</span>":"")}},
-    {f:"souplesse",lab:"Souplesse (cm)",type:"text",hint:function(){var n=evalTest("souplesse",p.sexe,age,p.souplesse);return n?getLevelBadge(n):""}},
-    {f:"pompes",lab:"Pompes (nb)",type:"number",hint:function(){var n=evalTest("pompes",p.sexe,age,p.pompes);return n?getLevelBadge(n):""}},
-    {f:"tractions",lab:"Tractions (nb)",type:"number",hint:function(){var n=evalTest("tractions",p.sexe,age,p.tractions);return n?getLevelBadge(n):""}},
-    {f:"fc_repos",lab:"FC repos (bpm)",type:"number",hint:function(){return p.fc_repos?"réserve : "+(getFcMax(p).val-p.fc_repos)+" bpm":"au réveil, 1 minute"}},
-    {f:"fc_max",lab:"FC Max mesurée (bpm)",type:"number",hint:function(){return p.fc_max?"mesurée":"sinon estimée à "+(220-age)}}
-  ];
-  var html='<div class="terrain-head"><div class="terrain-name">'+p.prenom+" "+p.nom+'</div>'
-    +'<div style="color:var(--muted);font-size:13px">'+age+" ans ("+tr+") — "+(p.sexe==="M"?"Homme":"Femme")+' — niveau global '+getLevelBadge(getNiveauGlobal(p))+'</div></div>';
+  var liste=data.slice().sort(parNomPrenom).filter(function(p){return !aFaire||participationRate(p)<100||String(p.id)===cur});
+  sel.innerHTML=liste.map(function(p){return '<option value="'+p.id+'">'+escAttr(libelleOptionTerrain(p))+"</option>"}).join("");
+  if(cur&&liste.some(function(p){return String(p.id)===cur}))sel.value=cur;
+  var p=terrainPompierCourant()||liste[0];
+  majTerrainProgression(p);
+  if(!p){document.getElementById("terrainContent").innerHTML='<p style="color:var(--success);padding:16px 0">✅ Toutes les fiches sont complètes.</p>';return;}
+  var age=getAge(p.annee),tr=getTranche(age),dis=isAdmin?"":"disabled";
+  var html='<div class="terrain-head"><div class="terrain-name">'+escAttr(p.prenom)+" "+escAttr(p.nom)+'</div>'
+    +'<div style="color:var(--muted);font-size:13px">'+age+" ans ("+tr+") — "+(p.sexe==="M"?"Homme":"Femme")+' — niveau global <span id="terrainNivGlobal">'+getLevelBadge(getNiveauGlobal(p))+'</span></div></div>';
   html+='<div class="terrain-grid">';
-  champs.forEach(function(c){
-    html+='<div class="terrain-field"><label>'+c.lab+'</label>'
-      +'<input type="'+c.type+'" '+(c.step?'step="'+c.step+'" ':'')+(c.ph?'placeholder="'+c.ph+'" ':'')
-      +'value="'+escAttr(p[c.f])+'" onchange="setTerrainField(\''+c.f+'\',this.value)" '+dis+'>'
-      +'<div class="hint">'+c.hint()+'</div></div>';
+  terrainChamps(p).forEach(function(c){
+    html+='<div class="terrain-field"><label for="tf-'+c.f+'">'+c.lab+'</label>'
+      +'<input id="tf-'+c.f+'" type="text" inputmode="'+c.mode+'" enterkeyhint="next" autocomplete="off" '+(c.ph?'placeholder="'+escAttr(c.ph)+'" ':'')
+      +'value="'+escAttr(p[c.f])+'" onchange="terrainMaj(this,'+p.id+',\''+c.f+'\')" onkeydown="terrainEntree(event,this)" '+dis+'>'
+      +'<div class="hint" id="th-'+c.f+'">'+c.hint()+'</div></div>';
   });
   html+='</div>';
+  if(isAdmin)html+='<div class="terrain-suivant"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="terrainStep(-1)">◀ Précédent</button><button class="btn btn-primary" onclick="terrainStep(1);focusPremierVide()">Pompier suivant ▶</button></div>';
+  else html+='<p style="color:var(--warning);margin-top:12px">Lecture seule — connectez-vous en administrateur pour saisir.</p>';
+  document.getElementById("terrainContent").innerHTML=html;
+}
+// Mise à jour d'un champ sans tout redessiner (le clavier du téléphone reste ouvert)
+function terrainMaj(input,id,f){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  var v=normaliserSaisie(f,input.value);input.value=v;
+  p[f]=v;
+  if(f==="luc_perf")p.luc_niv=evalTest("luc",p.sexe,getAge(p.annee),v);
+  markDirty();
+  terrainChamps(p).forEach(function(c){var h=document.getElementById("th-"+c.f);if(h)h.innerHTML=c.hint();});
+  var g=document.getElementById("terrainNivGlobal");if(g)g.innerHTML=getLevelBadge(getNiveauGlobal(p));
+  var sel=document.getElementById("terrainPompier");
+  var opt=sel&&[].find.call(sel.options,function(o){return o.value===String(id)});if(opt)opt.textContent=libelleOptionTerrain(p);
+  majTerrainProgression(p);
+}
+function focusPremierVide(){
+  setTimeout(function(){
+    var ins=[].slice.call(document.querySelectorAll("#terrainContent input:not([disabled])"));
+    var cible=ins.find(function(i){return !i.value})||ins[0];
+    if(cible)cible.focus();
+  },30);
+}
+// Entrée = champ suivant ; au dernier champ, pompier suivant (mode pompier)
+function terrainEntree(e,input){
+  if(e.key!=="Enter")return;
+  e.preventDefault();
+  var ins=[].slice.call(document.querySelectorAll("#terrainContent input:not([disabled])"));
+  var i=ins.indexOf(input);
+  if(i>=0&&i<ins.length-1){ins[i+1].focus();if(ins[i+1].select)ins[i+1].select();return;}
+  input.blur();
+  if(document.getElementById("terrainMode").value==="pompier"){terrainStep(1);focusPremierVide();}
+  else showToast("✅ Fin de la liste pour cet atelier.","success");
+}
+// Mode atelier : un test, tous les pompiers à la suite
+function renderAtelier(f,aFaire){
+  var nomsAtelier={poids:"Poids (kg)",rameur_temps:"Rameur 2000 m",luc_perf:"Luc Léger (palier)",souplesse:"Souplesse (cm)",pompes:"Pompes (nb)",tractions:"Tractions (nb)"};
+  var modes={poids:"decimal",rameur_temps:"decimal",luc_perf:"decimal",souplesse:"decimal",pompes:"numeric",tractions:"numeric"};
+  var vide=function(p){return !p[f]||p[f].toString().trim()===""};
+  var liste=data.slice().sort(parNomPrenom).filter(function(p){return !aFaire||vide(p)});
+  var faits=data.filter(function(p){return !vide(p)}).length;
+  document.getElementById("terrainProgress").innerHTML="Atelier "+nomsAtelier[f]+" — "+faits+" / "+data.length+" pompiers renseignés"+(f==="rameur_temps"?' · tapez <b>824</b> pour 8\'24"':"");
+  var dis=isAdmin?"":"disabled";
+  var html=liste.map(function(p){
+    var n=niveauChamp(p,f);
+    return '<div class="atelier-ligne'+(vide(p)?'':' fait')+'" id="tl-'+p.id+'"><div class="atelier-nom">'+escAttr(p.nom)+' '+escAttr(p.prenom)+'<small>'+getAge(p.annee)+' ans · '+(p.sexe==="M"?"H":"F")+'</small></div>'
+      +'<input type="text" inputmode="'+modes[f]+'" enterkeyhint="next" autocomplete="off" value="'+escAttr(p[f])+'" aria-label="'+escAttr(nomsAtelier[f]+" — "+p.prenom+" "+p.nom)+'" onchange="atelierMaj(this,'+p.id+',\''+f+'\')" onkeydown="terrainEntree(event,this)" '+dis+'>'
+      +'<div class="atelier-niv" id="tn-'+p.id+'">'+(n?getLevelBadge(n):(f==="rameur_temps"&&!vide(p)&&!p.poids?'<span style="color:var(--warning)">poids manquant</span>':''))+'</div></div>';
+  }).join("");
+  if(!liste.length)html='<p style="color:var(--success);padding:16px 0">✅ Tout le monde est renseigné pour cet atelier.</p>';
   if(!isAdmin)html+='<p style="color:var(--warning);margin-top:12px">Lecture seule — connectez-vous en administrateur pour saisir.</p>';
   document.getElementById("terrainContent").innerHTML=html;
+}
+function atelierMaj(input,id,f){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  var v=normaliserSaisie(f,input.value);input.value=v;
+  p[f]=v;
+  if(f==="luc_perf")p.luc_niv=evalTest("luc",p.sexe,getAge(p.annee),v);
+  markDirty();
+  var n=niveauChamp(p,f),c=document.getElementById("tn-"+id);
+  if(c)c.innerHTML=n?getLevelBadge(n):(f==="rameur_temps"&&v&&!p.poids?'<span style="color:var(--warning)">poids manquant</span>':'');
+  var l=document.getElementById("tl-"+id);if(l)l.classList.toggle("fait",!!v);
+  var faits=data.filter(function(x){return x[f]&&x[f].toString().trim()!==""}).length;
+  var pr=document.getElementById("terrainProgress");
+  if(pr)pr.innerHTML=pr.innerHTML.replace(/— \d+ \/ \d+/,"— "+faits+" / "+data.length);
 }
 // ===== MUSCULATION — 1 RM et charges d'entraînement =====
 // Formule de Brzycki : charge = 1 RM x (1,0278 - 0,0278 x répétitions), arrondie au kg supérieur.
@@ -3393,21 +3676,28 @@ function genererMotDePasse(){
     p+=chiffres[a[7]%chiffres.length]+chiffres[a[8]%chiffres.length]+chiffres[a[9]%chiffres.length];
     return p; // ex. « Kbrtmqz482 » : facile à lire et à taper sur un téléphone
 }
+function lienAppli(){return location.origin+location.pathname.replace(/index\.html$/,"");}
+// Ouvre la fenêtre d'envoi (email, SMS, WhatsApp, copier) avec un message prêt
+function ouvrirMessage(titre,texte,sujet,emailDest){
+    envoiCourant={email:emailDest||"",sujet:sujet};
+    document.getElementById("envoiTitre").textContent=titre;
+    document.getElementById("envoiTexte").value=texte;
+    document.getElementById("envoiTel").value="";
+    document.getElementById("envoiMsg").textContent="";
+    document.getElementById("btnPartager").style.display=navigator.share?"":"none";
+    document.getElementById("modalEnvoi").classList.remove("hidden");
+}
 function ouvrirEnvoi(email, pass){
-    var lien=location.origin+location.pathname.replace(/index\.html$/,"");
-    envoiCourant={email:email};
-    document.getElementById("envoiTexte").value=
+    var lien=lienAppli();
+    ouvrirMessage("📤 Envoyer l'accès",
         "Bonjour,\n\nVoici votre accès à l'application Gestion ICP de la caserne Cruzy-Quarante :\n\n"
         +"🔗 Lien : "+lien+"\n"
         +"👤 Identifiant : "+email+"\n"
         +"🔑 Mot de passe : "+pass+"\n\n"
         +"Après votre première connexion, vous pourrez choisir votre propre mot de passe avec le bouton « 🔑 Mot de passe ».\n"
         +"Astuce : sur téléphone, ajoutez l'appli à l'écran d'accueil (Partager → « Sur l'écran d'accueil »).\n\n"
-        +"Christian";
-    document.getElementById("envoiTel").value="";
-    document.getElementById("envoiMsg").textContent="";
-    document.getElementById("btnPartager").style.display=navigator.share?"":"none";
-    document.getElementById("modalEnvoi").classList.remove("hidden");
+        +"Christian",
+        "Accès à l'application Gestion ICP — SDIS 34", email);
 }
 function fermerEnvoi(){
     document.getElementById("modalEnvoi").classList.add("hidden");
@@ -3417,7 +3707,7 @@ function fermerEnvoi(){
 async function envoyerAcces(mode){
     var texte=document.getElementById("envoiTexte").value;
     var msg=document.getElementById("envoiMsg");
-    var sujet="Accès à l'application Gestion ICP — SDIS 34";
+    var sujet=(envoiCourant&&envoiCourant.sujet)||"Application Gestion ICP — SDIS 34";
     if(mode==="mail"){
         location.href="mailto:"+encodeURIComponent(envoiCourant?envoiCourant.email:"")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent(texte);
     }else if(mode==="sms"){
