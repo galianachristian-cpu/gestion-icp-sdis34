@@ -198,7 +198,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .terrain-head>.terrain-nav{flex:1;min-width:300px;justify-content:flex-end}
 .terrain-name{font-size:22px;font-weight:700;color:var(--accent);font-family:var(--titre)}
 .case-terrain{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer}
-.case-terrain input{width:auto}
+.case-terrain input{width:auto!important;min-width:0!important}
 .atelier-ligne{display:grid;grid-template-columns:1fr 150px 130px;gap:12px;align-items:center;padding:10px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);margin-bottom:8px}
 .atelier-ligne.fait{border-color:color-mix(in srgb,var(--success) 50%,var(--border))}
 .atelier-nom{font-weight:600}
@@ -615,7 +615,14 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 <div id="tab-comptes" class="hidden">
 <div class="card">
-<div class="card-title">👥 Comptes secondaires — accès par rubrique</div>
+<div class="card-title">👨‍🚒 Accès des pompiers</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:10px">Chaque pompier de la liste a sa ligne ; un pompier ajouté y apparaît automatiquement. Saisissez son email (par exemple avec lui, pendant une session) puis « Activer » : son accès est créé avec un mot de passe, et il ne verra <b>que sa propre fiche</b>.</p>
+<div class="filters" style="align-items:center"><b id="accesCompteur" style="color:var(--accent)"></b>
+<label class="case-terrain"><input type="checkbox" id="accesAFaire" onchange="renderAccesPompiers()"> À activer seulement</label></div>
+<div id="accesPompiers"><div class="squelette" style="min-height:80px"></div></div>
+</div>
+<div class="card">
+<div class="card-title">👥 Comptes de l’équipe — accès par rubrique</div>
 <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Réservé à l'administrateur. Tout se fait ici, sans dashboard Supabase : email + mot de passe + onglets visibles. Ces comptes restent en lecture seule ; ils voient seulement ce que tu leur coches. Les mots de passe sont chiffrés par Supabase : personne (toi compris) ne peut les relire, mais tu peux en définir un nouveau à tout moment.</p>
 <div id="comptesListe"></div>
 </div>
@@ -686,6 +693,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="form-row"><label>Année de naissance</label><input type="number" id="newAnnee" value="1990"></div>
 <div class="form-row"><label>Sexe</label><select id="newSexe"><option value="M">Masculin</option><option value="F">Féminin</option></select></div>
 <div class="form-row"><label>Poids (kg) — pour le rameur</label><input type="number" id="newPoids" value="75" step="0.1"></div>
+<div class="form-row"><label>Email (facultatif) — crée aussitôt son accès personnel</label><input type="email" id="newEmail" placeholder="vous pourrez aussi le remplir plus tard"></div>
 <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
 <button class="btn" onclick="closeModal()" style="background:var(--surface2);color:var(--text)">Annuler</button>
 <button class="btn btn-success" onclick="addPompier()">Ajouter</button>
@@ -1186,7 +1194,17 @@ function saveAll(){
 function deletePompier(id){if(!confirm("Supprimer ce pompier ?"))return;data=data.filter(function(p){return p.id!==id});markDirty();renderSaisie();renderDashboard()}
 function showAddPompier(){document.getElementById("modalAdd").classList.remove("hidden")}
 function closeModal(){document.getElementById("modalAdd").classList.add("hidden")}
-function addPompier(){var nom=cleanName(document.getElementById("newNom").value);var prenom=cleanName(document.getElementById("newPrenom").value);var annee=parseInt(document.getElementById("newAnnee").value);var sexe=document.getElementById("newSexe").value;var poids=document.getElementById("newPoids").value;if(!nom||!prenom){alert("Renseignez le nom et prénom");return}data.push({id:nextId++,nom:nom,prenom:prenom,annee:annee,sexe:sexe,poids:poids,rameur_temps:"",luc_niv:"",luc_perf:"",souplesse:"",pompes:"",tractions:"",fc_repos:"",fc_max:"",historique:""});markDirty();closeModal();document.getElementById("newNom").value="";document.getElementById("newPrenom").value="";renderSaisie();renderDashboard()}
+function addPompier(){var nom=cleanName(document.getElementById("newNom").value);var prenom=cleanName(document.getElementById("newPrenom").value);var annee=parseInt(document.getElementById("newAnnee").value);var sexe=document.getElementById("newSexe").value;var poids=document.getElementById("newPoids").value;if(!nom||!prenom){alert("Renseignez le nom et prénom");return}var email=(document.getElementById("newEmail").value||"").trim().toLowerCase();if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){alert("Email invalide (vous pouvez le laisser vide).");return}var nouvelId=nextId;data.push({id:nextId++,nom:nom,prenom:prenom,annee:annee,sexe:sexe,poids:poids,rameur_temps:"",luc_niv:"",luc_perf:"",souplesse:"",pompes:"",tractions:"",fc_repos:"",fc_max:"",historique:""});markDirty();closeModal();document.getElementById("newNom").value="";document.getElementById("newPrenom").value="";document.getElementById("newEmail").value="";renderSaisie();renderDashboard();if(email)creerAccesApresAjout(nouvelId,email)}
+// Le compte est relié à la fiche : on enregistre d'abord le pompier en base
+async function creerAccesApresAjout(id,email){
+  clearTimeout(autosaveTimer);
+  var ok=await saveToSupabase();
+  if(!ok){alert("Pompier ajouté, mais l'enregistrement a échoué : créez son accès plus tard dans l'onglet Comptes.");return;}
+  dirty=false;updateDirtyFlag();
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  try{var pass=await creerAccesPompier(p,email);messageAccesPompier(p,email,pass);}
+  catch(e){alert("Pompier ajouté, mais la création de l'accès a échoué : "+e.message+"\nVous pourrez l'activer dans l'onglet Comptes.");}
+}
 // Renvoie, pour la campagne demandée, une fiche par pompier avec les valeurs de cette
 // campagne (« __encours__ » = les valeurs en cours de saisie).
 function pompiersCampagne(campagne){
@@ -1324,6 +1342,73 @@ async function supprimerSession(id){
   var r=await supabaseClient.from('sessions_icp').delete().eq('id',id);
   if(r.error){alert("⚠️ "+r.error.message);return;}
   chargerSessions();
+}
+
+// ===== ACCÈS DES POMPIERS =====
+// Chaque pompier de la liste a sa ligne (un nouveau pompier y apparaît tout
+// seul). L'admin saisit l'email avec la personne, puis « Activer » : compte
+// créé avec un mot de passe généré, relié à sa fiche, et message prêt.
+function renderAccesPompiers(){
+  var el=document.getElementById("accesPompiers");if(!el)return;
+  var parPompier={};comptesCache.forEach(function(c){if(c.pompier_id)parPompier[c.pompier_id]=c;});
+  var aFaire=(document.getElementById("accesAFaire")||{}).checked;
+  var liste=data.slice().sort(parNomPrenom);
+  var actifs=liste.filter(function(p){return parPompier[p.id]}).length;
+  document.getElementById("accesCompteur").textContent=actifs+" / "+liste.length+" accès activés";
+  var html=liste.filter(function(p){return !aFaire||!parPompier[p.id]}).map(function(p){
+    var c=parPompier[p.id];
+    return '<div class="atelier-ligne" style="grid-template-columns:1fr minmax(180px,260px) auto">'
+      +'<div class="atelier-nom"><span class="initiales">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'+escAttr(p.nom)+' '+escAttr(p.prenom)+'</div>'
+      +(c?'<div style="font-size:13px;color:var(--success);word-break:break-all">✅ '+escAttr(c.email)+'</div>'
+          +'<div style="display:flex;gap:6px"><button class="btn btn-sm" style="background:var(--surface);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe et renvoi" onclick="nouveauMdpPompier('+p.id+')">🔑 Renvoyer</button>'
+          +'<button class="btn btn-danger btn-sm" title="Supprimer l\'accès" onclick="supprimerAccesPompier('+p.id+')">🗑️</button></div>'
+         :'<input type="email" id="accesEmail-'+p.id+'" placeholder="email de la personne" autocomplete="off" style="height:40px;font-size:15px;text-align:left" onkeydown="if(event.key===\'Enter\')activerAccesPompier('+p.id+')">'
+          +'<div><button class="btn btn-success btn-sm" style="padding:10px 14px" onclick="activerAccesPompier('+p.id+')">✅ Activer</button></div>')
+      +'</div>';
+  }).join("");
+  el.innerHTML=html||'<p style="color:var(--success)">✅ Tous les pompiers ont leur accès.</p>';
+}
+function messageAccesPompier(p,email,pass){
+  ouvrirMessage("📤 Accès de "+p.prenom+" "+p.nom,
+    "Bonjour "+p.prenom+",\n\nVoici votre accès personnel à l'application ICP de la caserne Cruzy-Quarante. Vous y retrouverez vos résultats, vos niveaux en couleur et des conseils pour progresser.\n\n"
+    +"🔗 Lien : "+lienAppli()+"\n👤 Identifiant : "+email+"\n🔑 Mot de passe : "+pass+"\n\n"
+    +"À la première connexion, choisissez votre propre mot de passe : touchez la pastille à vos initiales, en haut à droite.\n"
+    +"Astuce : ajoutez l'appli à l'écran d'accueil du téléphone (Partager → « Sur l'écran d'accueil »).\n\nChristian",
+    "Votre accès à l'application ICP — Cruzy-Quarante",email);
+}
+async function creerAccesPompier(p,email){
+  var pass=genererMotDePasse();
+  await appelerGererComptes({action:'enregistrer',email:email,password:pass,onglets:["fiche"],pompier_id:p.id});
+  return pass;
+}
+async function activerAccesPompier(id){
+  var p=data.find(function(x){return x.id===id});if(!p)return;
+  var champ=document.getElementById("accesEmail-"+id);
+  var email=(champ.value||"").trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){champ.focus();showToast("Renseignez un email valide.","warning");return;}
+  if(comptesCache.some(function(c){return c.email===email})){showToast("Cet email a déjà un compte.","warning");return;}
+  try{
+    var pass=await creerAccesPompier(p,email);
+    await chargerComptes();renderComptes();
+    messageAccesPompier(p,email,pass);
+  }catch(e){alert("⚠️ Échec : "+e.message);}
+}
+async function nouveauMdpPompier(id){
+  var p=data.find(function(x){return x.id===id});var c=comptesCache.find(function(x){return x.pompier_id===id});
+  if(!p||!c)return;
+  if(!confirm("Créer un nouveau mot de passe pour "+p.prenom+" "+p.nom+" ? L'ancien ne marchera plus."))return;
+  try{
+    var pass=genererMotDePasse();
+    await appelerGererComptes({action:'enregistrer',email:c.email,password:pass,onglets:["fiche"],pompier_id:id});
+    messageAccesPompier(p,c.email,pass);
+  }catch(e){alert("⚠️ Échec : "+e.message);}
+}
+async function supprimerAccesPompier(id){
+  var p=data.find(function(x){return x.id===id});var c=comptesCache.find(function(x){return x.pompier_id===id});
+  if(!p||!c)return;
+  if(!confirm("Supprimer l'accès de "+p.prenom+" "+p.nom+" ("+c.email+") ?"))return;
+  try{await appelerGererComptes({action:'supprimer',email:c.email});await chargerComptes();renderComptes();}
+  catch(e){alert("⚠️ Échec : "+e.message);}
 }
 
 // ===== MESSAGE DE BIENVENUE =====
@@ -3955,12 +4040,14 @@ async function renderComptes(){
     document.getElementById("compteOngletsBlock").style.display="";
     document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
     await chargerComptes();
-    if(comptesCache.length === 0){
+    renderAccesPompiers();
+    var equipe = comptesCache.map(function(c,i){return {c:c,i:i}}).filter(function(x){return !x.c.pompier_id});
+    if(equipe.length === 0){
         document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Aucun compte secondaire pour l\'instant. Crée-en un ci-dessous.</p>';
         return;
     }
     var html = '';
-    comptesCache.forEach(function(c, idx){
+    equipe.forEach(function(x){ var c=x.c, idx=x.i;
         var pid = 'ec'+idx;
         html += '<div class="ergo-card" style="margin-bottom:12px">'
             + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">'
