@@ -476,13 +476,31 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="card">
 <div class="card-title">➕ Créer / mettre à jour un compte</div>
 <div class="form-row"><label>Email du compte</label><input type="email" id="compteEmail" placeholder="prenom.nom@sdis34.fr"></div>
-<div class="form-row"><label>Mot de passe (8 caractères minimum)</label><input type="text" id="comptePass" autocomplete="new-password" placeholder="à transmettre à la personne"></div>
+<div class="form-row"><label>Mot de passe (8 caractères minimum)</label>
+<div style="display:flex;gap:8px"><input type="text" id="comptePass" autocomplete="new-password" placeholder="à transmettre à la personne">
+<button type="button" class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="document.getElementById('comptePass').value=genererMotDePasse()">🎲 Générer</button></div></div>
 <div class="form-row"><label>Onglets visibles pour ce compte</label>
 <div id="compteOngletsBox" style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:6px"></div>
 </div>
 <button class="btn btn-success" onclick="ajouterOuMajCompte()">💾 Créer / enregistrer ce compte</button>
 <div id="compteMsg" style="margin-top:8px;font-size:13px;min-height:18px"></div>
 </div>
+</div>
+</div>
+<div id="modalEnvoi" class="modal-overlay hidden" onclick="if(event.target===this)fermerEnvoi()">
+<div class="modal">
+<h3>📤 Envoyer l'accès</h3>
+<p style="color:var(--muted);font-size:13px;margin-bottom:10px">Message prêt à envoyer (vous pouvez le modifier) :</p>
+<textarea id="envoiTexte" style="min-height:190px;font-family:inherit;font-size:13px"></textarea>
+<div class="form-row" style="margin-top:10px"><label>N° de portable (facultatif, pour le SMS)</label><input type="tel" id="envoiTel" placeholder="06 12 34 56 78"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+<button class="btn btn-primary" onclick="envoyerAcces('mail')">✉️ Email</button>
+<button class="btn btn-primary" onclick="envoyerAcces('sms')">💬 SMS</button>
+<button class="btn btn-success" id="btnPartager" onclick="envoyerAcces('partage')">📤 WhatsApp / autre</button>
+<button class="btn" style="background:var(--surface2);color:var(--text)" onclick="envoyerAcces('copie')">📋 Copier</button>
+</div>
+<div id="envoiMsg" style="font-size:13px;min-height:18px;margin-top:8px;color:var(--success)"></div>
+<div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" onclick="fermerEnvoi()" style="background:var(--surface2);color:var(--text)">Fermer</button></div>
 </div>
 </div>
 <div id="modalMdp" class="modal-overlay hidden" onclick="if(event.target===this)fermerMonMdp()">
@@ -3129,11 +3147,61 @@ async function renderComptes(){
             + '<button class="btn btn-success btn-sm" onclick="sauverCompteExistant('+idx+',\''+pid+'\')">💾 Enregistrer</button>'
             + '<button class="btn btn-danger btn-sm" onclick="supprimerCompte('+idx+')">🗑️ Supprimer</button>'
             + '</div></div>'
-            + '<div class="form-row" style="max-width:300px"><label>Nouveau mot de passe</label><input type="text" id="'+pid+'-pass" autocomplete="new-password" placeholder="laisser vide = inchangé"></div>'
+            + '<div class="form-row" style="max-width:380px"><label>Nouveau mot de passe</label><div style="display:flex;gap:8px"><input type="text" id="'+pid+'-pass" autocomplete="new-password" placeholder="laisser vide = inchangé">'
+            + '<button type="button" class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="document.getElementById(\''+pid+'-pass\').value=genererMotDePasse()">🎲 Générer</button></div></div>'
             + '<div style="display:flex;flex-wrap:wrap;gap:8px 16px" id="'+pid+'-box">'+checkboxesOnglets(pid, c.onglets||[])+'</div>'
             + '</div>';
     });
     document.getElementById("comptesListe").innerHTML = html;
+}
+// --- Envoi du lien et des identifiants (email, SMS, WhatsApp, copier) ---
+// Le mot de passe n'est connu qu'au moment où l'admin le saisit : la fenêtre
+// s'ouvre donc juste après la création du compte ou un changement de mot de passe.
+var envoiCourant=null;
+function genererMotDePasse(){
+    var lettres="abcdefghjkmnpqrstuvwxyz", chiffres="23456789", maj="ABCDEFGHJKLMNPQRSTUVWXYZ";
+    var a=new Uint32Array(10); crypto.getRandomValues(a);
+    var p=maj[a[0]%maj.length];
+    for(var i=1;i<7;i++) p+=lettres[a[i]%lettres.length];
+    p+=chiffres[a[7]%chiffres.length]+chiffres[a[8]%chiffres.length]+chiffres[a[9]%chiffres.length];
+    return p; // ex. « Kbrtmqz482 » : facile à lire et à taper sur un téléphone
+}
+function ouvrirEnvoi(email, pass){
+    var lien=location.origin+location.pathname.replace(/index\.html$/,"");
+    envoiCourant={email:email};
+    document.getElementById("envoiTexte").value=
+        "Bonjour,\n\nVoici votre accès à l'application Gestion ICP de la caserne Cruzy-Quarante :\n\n"
+        +"🔗 Lien : "+lien+"\n"
+        +"👤 Identifiant : "+email+"\n"
+        +"🔑 Mot de passe : "+pass+"\n\n"
+        +"Après votre première connexion, vous pourrez choisir votre propre mot de passe avec le bouton « 🔑 Mot de passe ».\n"
+        +"Astuce : sur téléphone, ajoutez l'appli à l'écran d'accueil (Partager → « Sur l'écran d'accueil »).\n\n"
+        +"Christian";
+    document.getElementById("envoiTel").value="";
+    document.getElementById("envoiMsg").textContent="";
+    document.getElementById("btnPartager").style.display=navigator.share?"":"none";
+    document.getElementById("modalEnvoi").classList.remove("hidden");
+}
+function fermerEnvoi(){
+    document.getElementById("modalEnvoi").classList.add("hidden");
+    document.getElementById("envoiTexte").value=""; // le mot de passe ne reste pas affiché
+    envoiCourant=null;
+}
+async function envoyerAcces(mode){
+    var texte=document.getElementById("envoiTexte").value;
+    var msg=document.getElementById("envoiMsg");
+    var sujet="Accès à l'application Gestion ICP — SDIS 34";
+    if(mode==="mail"){
+        location.href="mailto:"+encodeURIComponent(envoiCourant?envoiCourant.email:"")+"?subject="+encodeURIComponent(sujet)+"&body="+encodeURIComponent(texte);
+    }else if(mode==="sms"){
+        var tel=document.getElementById("envoiTel").value.replace(/[^0-9+]/g,"");
+        location.href="sms:"+tel+"?&body="+encodeURIComponent(texte);
+    }else if(mode==="partage"){
+        try{ await navigator.share({title:sujet,text:texte}); }catch(e){}
+    }else{
+        try{ await navigator.clipboard.writeText(texte); msg.textContent="✅ Message copié : collez-le où vous voulez."; }
+        catch(e){ var t=document.getElementById("envoiTexte"); t.select(); document.execCommand("copy"); msg.textContent="✅ Message copié."; }
+    }
 }
 async function sauverCompteExistant(idx, idPrefix){
     var c = comptesCache[idx]; if(!c) return;
@@ -3143,6 +3211,7 @@ async function sauverCompteExistant(idx, idPrefix){
         await appelerGererComptes({action:'enregistrer', email:c.email, password:pass||null, onglets:ongletsCoches(idPrefix)});
         showToast("✅ Compte mis à jour pour "+c.email,"success");
         renderComptes();
+        if(pass) ouvrirEnvoi(c.email, pass);
     }catch(e){
         alert("⚠️ Échec de l'enregistrement : "+e.message);
     }
@@ -3159,11 +3228,12 @@ async function ajouterOuMajCompte(){
     msg.style.color="var(--muted)"; msg.textContent="Enregistrement...";
     try{
         await appelerGererComptes({action:'enregistrer', email:email, password:pass||null, onglets:ongletsCoches("nc")});
-        msg.textContent="✅ Compte "+email+" créé/mis à jour. Transmets-lui son mot de passe.";
+        msg.textContent="✅ Compte "+email+" créé/mis à jour.";
         msg.style.color="var(--success)";
         document.getElementById("compteEmail").value="";
         document.getElementById("comptePass").value="";
         renderComptes();
+        if(pass) ouvrirEnvoi(email, pass);
     }catch(e){
         msg.textContent="⚠️ Échec : "+e.message;
         msg.style.color="var(--danger)";
