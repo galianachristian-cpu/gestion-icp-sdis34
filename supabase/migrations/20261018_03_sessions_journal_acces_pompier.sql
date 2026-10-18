@@ -30,3 +30,16 @@ create policy "Lecture admin" on public.journal_icp for select to authenticated 
 
 -- Sauvegardes : schéma « sauvegarde » (non exposé), copie hebdomadaire par pg_cron
 -- (8 emplacements tournants) et fonction sauvegarde_export(clé) pour la copie externe.
+
+-- Types de comptes : admin / équipe / pompier ; un compte sans rôle ne lit rien
+-- (fonction type_compte_icp(), politiques de lecture mises à jour ; un pompier
+--  supprimé supprime son accès : comptes_app.pompier_id ... on delete cascade).
+
+-- Mots de passe provisoires (générés par l'admin), lisibles par l'admin seulement,
+-- effacés dès que la personne choisit le sien (rpc mdp_personnalise()).
+create table if not exists public.mdp_provisoires (
+  email text primary key, mot_de_passe text,
+  cree_le timestamptz not null default now(), personnalise_le timestamptz
+);
+alter table public.mdp_provisoires enable row level security;
+create policy "Lecture admin" on public.mdp_provisoires for select to authenticated using (public.est_admin_icp());

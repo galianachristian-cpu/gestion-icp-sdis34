@@ -622,6 +622,15 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="accesPompiers"><div class="squelette" style="min-height:80px"></div></div>
 </div>
 <div class="card">
+<div class="card-title">🔑 Identifiants</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:10px">Tous les comptes et leur mot de passe <b>provisoire</b> (celui créé par l'appli), visible par vous seul jusqu'à ce que la personne choisisse le sien. « Renvoyer » réutilise le mot de passe provisoire ; 🎲 en crée un nouveau.</p>
+<div class="filters" style="align-items:center">
+<label class="case-terrain"><input type="checkbox" id="identVoir" onchange="renderIdentifiants()"> 👁 Afficher les mots de passe</label>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="identifiantsPDF()">🖨️ Liste à imprimer (PDF)</button>
+</div>
+<div id="identifiantsListe"><div class="squelette" style="min-height:80px"></div></div>
+</div>
+<div class="card">
 <div class="card-title">👥 Comptes de l’équipe — accès par rubrique</div>
 <p style="color:var(--muted);font-size:13px;margin-bottom:16px">Réservé à l'administrateur. Tout se fait ici, sans dashboard Supabase : email + mot de passe + onglets visibles. Ces comptes restent en lecture seule ; ils voient seulement ce que tu leur coches. Les mots de passe sont chiffrés par Supabase : personne (toi compris) ne peut les relire, mais tu peux en définir un nouveau à tout moment.</p>
 <div id="comptesListe"></div>
@@ -1409,6 +1418,77 @@ async function supprimerAccesPompier(id){
   if(!confirm("Supprimer l'accès de "+p.prenom+" "+p.nom+" ("+c.email+") ?"))return;
   try{await appelerGererComptes({action:'supprimer',email:c.email});await chargerComptes();renderComptes();}
   catch(e){alert("⚠️ Échec : "+e.message);}
+}
+
+// ===== TABLEAU DES IDENTIFIANTS =====
+// Mot de passe provisoire (généré par l'admin) visible jusqu'à ce que la
+// personne choisisse le sien ; ensuite « choisi par la personne ».
+var mdpProvisoires={};
+async function chargerMdpProvisoires(){
+  mdpProvisoires={};
+  try{var r=await supabaseClient.from('mdp_provisoires').select('*');if(!r.error)(r.data||[]).forEach(function(x){mdpProvisoires[x.email]=x});}
+  catch(e){console.warn("Identifiants :",e.message);}
+}
+function nomCompte(c){
+  if(c.pompier_id){var p=data.find(function(x){return x.id===c.pompier_id});if(p)return p.nom+" "+p.prenom;}
+  return "Équipe";
+}
+function renderIdentifiants(){
+  var el=document.getElementById("identifiantsListe");if(!el)return;
+  var voir=(document.getElementById("identVoir")||{}).checked;
+  var lignes=comptesCache.slice().sort(function(a,b){return (a.pompier_id?1:0)-(b.pompier_id?1:0)||nomCompte(a).localeCompare(nomCompte(b),'fr')});
+  if(!lignes.length){el.innerHTML='<p style="color:var(--muted)">Aucun compte pour l\'instant.</p>';return;}
+  el.innerHTML='<div class="scroll-table" style="max-height:520px"><table><thead><tr><th>Personne</th><th>Identifiant (email)</th><th>Mot de passe</th><th style="text-align:right">Actions</th></tr></thead><tbody>'
+    +lignes.map(function(c){
+      var m=mdpProvisoires[c.email],cellule;
+      if(m&&m.mot_de_passe)cellule='<code style="font-size:14px;letter-spacing:.5px">'+(voir?escAttr(m.mot_de_passe):'••••••••••')+'</code> <span style="font-size:11px;color:var(--muted)">provisoire</span>';
+      else if(m&&m.personnalise_le)cellule='<span style="color:var(--success)">✓ choisi par la personne</span>';
+      else cellule='<span style="color:var(--muted)">inconnu (créé avant)</span>';
+      var e=escAttr(c.email).replace(/'/g,"\\'");
+      return '<tr><td><b>'+escAttr(nomCompte(c))+'</b>'+(c.pompier_id?'':' <span class="badge badge-user" style="margin-left:4px">équipe</span>')+'</td><td style="word-break:break-all">'+escAttr(c.email)+'</td><td>'+cellule+'</td>'
+        +'<td style="text-align:right;white-space:nowrap"><button class="btn btn-primary btn-sm" onclick="renvoyerIdentifiants(\''+e+'\',false)">📤 Renvoyer</button> '
+        +'<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe" onclick="renvoyerIdentifiants(\''+e+'\',true)">🎲</button></td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+function messageIdentifiants(c,pass){
+  var p=c.pompier_id?data.find(function(x){return x.id===c.pompier_id}):null;
+  if(p)messageAccesPompier(p,c.email,pass);else ouvrirEnvoi(c.email,pass);
+}
+// Renvoyer : avec le mot de passe provisoire s'il existe, sinon (ou si forcé) un nouveau
+async function renvoyerIdentifiants(email,nouveau){
+  var c=comptesCache.find(function(x){return x.email===email});if(!c)return;
+  var m=mdpProvisoires[email];
+  if(!nouveau&&m&&m.mot_de_passe){messageIdentifiants(c,m.mot_de_passe);return;}
+  var pourquoi=(m&&m.personnalise_le)?"Cette personne a choisi son propre mot de passe (illisible). ":"";
+  if(!confirm(pourquoi+"Créer un nouveau mot de passe pour "+email+" ? L'ancien ne marchera plus."))return;
+  try{
+    var pass=genererMotDePasse();
+    await appelerGererComptes({action:'enregistrer',email:email,password:pass,onglets:c.onglets||[],pompier_id:c.pompier_id||null});
+    await chargerMdpProvisoires();renderIdentifiants();
+    messageIdentifiants(c,pass);
+  }catch(e){alert("⚠️ Échec : "+e.message);}
+}
+// Liste imprimable des identifiants provisoires (à découper et remettre en main propre)
+function identifiantsPDF(){
+  var lignes=comptesCache.filter(function(c){var m=mdpProvisoires[c.email];return m&&m.mot_de_passe}).sort(function(a,b){return nomCompte(a).localeCompare(nomCompte(b),'fr')});
+  if(!lignes.length){alert("Aucun mot de passe provisoire à imprimer : tout le monde a choisi le sien (ou aucun compte).");return;}
+  var { jsPDF }=window.jspdf;var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pageW=doc.internal.pageSize.getWidth(),margin=14;
+  pdfLogo(doc,margin,8,18);
+  doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,23,42);
+  doc.text("IDENTIFIANTS — APPLICATION ICP",pageW/2,16,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(100,116,139);
+  doc.text("Caserne Cruzy-Quarante — "+lienAppli(),pageW/2,21,{align:"center"});
+  doc.setTextColor(194,65,12);doc.text("Document confidentiel — à remettre en main propre",pageW/2,25,{align:"center"});
+  doc.autoTable({startY:30,theme:'grid',margin:{left:margin,right:margin},
+    head:[["Personne","Identifiant (email)","Mot de passe provisoire"]],
+    body:lignes.map(function(c){return [nomCompte(c),c.email,mdpProvisoires[c.email].mot_de_passe]}),
+    headStyles:{fillColor:[28,25,23],textColor:255,fontSize:9},styles:{fontSize:10,cellPadding:4},
+    columnStyles:{2:{font:"courier",fontStyle:"bold"}}});
+  var y=doc.lastAutoTable.finalY+8;
+  doc.setFontSize(9);doc.setTextColor(100,116,139);
+  doc.text("À la première connexion, chacun choisit son propre mot de passe (pastille à ses initiales, en haut à droite).",margin,y);
+  doc.save("Identifiants_ICP_confidentiel.pdf");
 }
 
 // ===== MESSAGE DE BIENVENUE =====
@@ -3991,6 +4071,7 @@ async function changerMonMdp(){
     if(p1!==p2){msg.textContent="Les deux saisies ne correspondent pas.";return;}
     var res=await supabaseClient.auth.updateUser({password:p1});
     if(res.error){msg.textContent="⚠️ "+res.error.message;return;}
+    try{await supabaseClient.rpc('mdp_personnalise');}catch(e){} // le mot de passe provisoire n'est plus affiché à l'admin
     fermerMonMdp();
     showToast("✅ Mot de passe modifié.","success");
 }
@@ -4041,6 +4122,7 @@ async function renderComptes(){
     document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
     await chargerComptes();
     renderAccesPompiers();
+    await chargerMdpProvisoires(); renderIdentifiants();
     var equipe = comptesCache.map(function(c,i){return {c:c,i:i}}).filter(function(x){return !x.c.pompier_id});
     if(equipe.length === 0){
         document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Aucun compte secondaire pour l\'instant. Crée-en un ci-dessous.</p>';

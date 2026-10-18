@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
     }
     const { error } = await admin.from("comptes_app").delete().eq("email", email);
     if (error) return reponse(500, { error: error.message });
+    await admin.from("mdp_provisoires").delete().eq("email", email);
     return reponse(200, { ok: true });
   }
 
@@ -87,6 +88,13 @@ Deno.serve(async (req) => {
     }
     const { error } = await admin.from("comptes_app").upsert({ email, onglets, pompier_id: pompierId }, { onConflict: "email" });
     if (error) return reponse(500, { error: error.message });
+    // Mot de passe provisoire : visible par l'admin jusqu'à ce que la personne choisisse le sien
+    if (password) {
+      await admin.from("mdp_provisoires").upsert(
+        { email, mot_de_passe: password, cree_le: new Date().toISOString(), personnalise_le: null },
+        { onConflict: "email" },
+      );
+    }
     return reponse(200, { ok: true, cree: !existant });
   }
 
