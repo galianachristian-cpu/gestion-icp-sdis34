@@ -94,6 +94,8 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .legend-box{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .legend-dot{width:12px;height:12px;border-radius:3px}
+.pastille{display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:middle;box-shadow:0 0 0 2px rgba(255,255,255,.08)}
+.pastille-vide{background:transparent;border:2px dashed var(--border);box-shadow:none}
 
 @keyframes pulse-green {
   0%, 100% { box-shadow: 0 0 8px var(--success); }
@@ -198,6 +200,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </header>
 <div class="tabs" id="navTabs">
 <div class="tab active" id="navtab-dashboard" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
+<div class="tab" id="navtab-synthese" onclick="switchTab('synthese',this)">🎯 Synthèse</div>
 <div class="tab" id="navtab-saisie" onclick="switchTab('saisie',this)">📝 Saisie</div>
 <div class="tab" id="navtab-terrain" onclick="switchTab('terrain',this)">📱 Terrain</div>
 <div class="tab" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
@@ -224,6 +227,28 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 <div class="card"><div class="card-title">⚠️ Alertes</div><div id="alertsList"></div></div>
 <div class="card"><div class="card-title">🏆 Top performances</div><div id="topPerfs"></div></div>
+</div>
+<div id="tab-synthese" class="hidden">
+<div class="card">
+<div class="card-title">🎯 Synthèse ICP — codes couleur</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:14px">Niveau de chaque pompier par test, sans aucun résultat chiffré, et taux de tests passés.</p>
+<div class="filters" style="margin-bottom:16px;align-items:center">
+<select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
+<button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
+</div>
+<div class="grid-4" id="syntheseStats" style="margin-bottom:16px"></div>
+<div class="legend-box" style="margin:0 0 14px">
+<div class="legend-item"><span class="pastille" style="background:#dc2626"></span><b>Rouge</b> — Vigilance</div>
+<div class="legend-item"><span class="pastille" style="background:#f59e0b"></span><b>Orange</b> — Engagement opérationnel</div>
+<div class="legend-item"><span class="pastille" style="background:#16a34a"></span><b>Vert</b> — Condition optimale</div>
+<div class="legend-item"><span class="pastille pastille-vide"></span>Test non passé</div>
+<div class="legend-item"><span class="pastille" style="background:#94a3b8"></span>Passé, non coté</div>
+</div>
+<div class="scroll-table"><table>
+<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Tests passés</th></tr></thead>
+<tbody id="syntheseBody"></tbody>
+</table></div>
+</div>
 </div>
 <div id="tab-saisie" class="hidden">
 <div class="card">
@@ -514,6 +539,8 @@ const ADMIN_EMAILS = ["galiana.christian@gmail.com"];
 // connectés lisent les pompiers ; seuls les administrateurs peuvent écrire
 // (fonction SQL `est_admin_icp()`).
 const TABS_INFO = [
+    {id:"dashboard",label:"📊 Tableau de bord"},
+    {id:"synthese",label:"🎯 Synthèse (couleurs)"},
     {id:"saisie",label:"📝 Saisie"},
     {id:"terrain",label:"📱 Terrain"},
     {id:"bilan",label:"📈 Bilan"},
@@ -763,7 +790,6 @@ async function onAuthSuccess(){
 // true si le compte connecté peut voir cet onglet.
 function tabAutorise(tab){
     if (isAdmin) return true;
-    if (tab === "dashboard") return true;
     if (tab === "comptes") return false; // réservé à l'admin
     return misOnglets.indexOf(tab) !== -1;
 }
@@ -779,7 +805,12 @@ function applyPermissions(){
     });
     var activeBtn=document.querySelector("#navTabs .tab.active");
     var activeId=(activeBtn&&activeBtn.id)?activeBtn.id.replace("navtab-",""):"dashboard";
-    if(!tabAutorise(activeId)) switchTab("dashboard", document.getElementById("navtab-dashboard"));
+    if(!tabAutorise(activeId)){
+        // premier onglet autorisé (ex. un compte « Synthèse » seule)
+        var premier=TABS_INFO.filter(function(t){return tabAutorise(t.id)})[0];
+        if(premier) switchTab(premier.id, document.getElementById("navtab-"+premier.id));
+        else document.querySelectorAll('[id^="tab-"]').forEach(function(d){d.classList.add("hidden")});
+    }
 }
 // Détermine les droits du compte connecté (et remplit misOnglets).
 // Administrateur si : rôle Supabase app_metadata.role = "admin", email dans
@@ -823,8 +854,8 @@ async function initAuth(){
         if(event==="SIGNED_OUT")showLoginScreen();
     });
 }
-function switchTab(tab,el){var tabs=["dashboard","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes()}
-function renderAll(){renderDashboard();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
+function switchTab(tab,el){var tabs=["dashboard","synthese","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard")renderDashboard();if(tab==="synthese")renderSynthese();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes()}
+function renderAll(){renderDashboard();renderSynthese();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var avgAge=Math.round(data.reduce(function(s,p){return s+getAge(p.annee)},0)/(total||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+getAge(p.annee)+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 function parNomPrenom(a,b){return a.nom.localeCompare(b.nom,'fr')||a.prenom.localeCompare(b.prenom,'fr');}
 function renderSaisie(){
@@ -856,6 +887,110 @@ function pompiersCampagne(campagne){
     o._niveau=l?((campagne==="__encours__")?getNiveauGlobal(p):(l.niveau||"")):"";
     return o;
   });
+}
+// ===== SYNTHÈSE CODES COULEUR (pour le chef de centre) =====
+// Aucun résultat chiffré : uniquement le niveau (rouge / orange / vert) par test,
+// le niveau global et le taux de tests passés.
+var TESTS_SYNTHESE=[{key:"rameur",label:"Rameur",field:"rameur_temps"},{key:"luc",label:"Luc Léger",field:"luc_perf"},
+  {key:"souplesse",label:"Souplesse",field:"souplesse"},{key:"pompes",label:"Pompes",field:"pompes"},{key:"tractions",label:"Tractions",field:"tractions"}];
+var COULEURS_NIVEAU={"1":{hex:"#dc2626",rgb:[220,38,38],txt:"Vigilance"},"2":{hex:"#f59e0b",rgb:[245,158,11],txt:"Engagement opérationnel"},
+  "3":{hex:"#16a34a",rgb:[22,163,74],txt:"Condition optimale"},"?":{hex:"#94a3b8",rgb:[148,163,184],txt:"Passé, non coté"}};
+function syntheseLignes(campagne){
+  var anneeRef=campagne==="__encours__"?ANNEE_COURANTE:parseInt(campagne);
+  return pompiersCampagne(campagne).map(function(o){
+    var age=anneeRef-o.annee,niv={},passes=0;
+    TESTS_SYNTHESE.forEach(function(t){
+      var v=o[t.field];
+      if(!v||v.toString().trim()===""){niv[t.key]="";return}
+      passes++;
+      var n=t.key==="rameur"?evalRameur(o.sexe,o.poids,age,v):evalTest(t.key,o.sexe,age,v);
+      niv[t.key]=n?n.toString():"?"; // ex. rameur sans poids : passé mais pas cotable
+    });
+    return {nom:o.nom,prenom:o.prenom,niv:niv,global:(o._niveau||"").toString(),passes:passes,
+            taux:Math.round(passes/TESTS_SYNTHESE.length*100)};
+  }).sort(parNomPrenom);
+}
+function syntheseResume(lignes){
+  var evalues=lignes.filter(function(l){return l.passes>0}).length;
+  var totalPasses=lignes.reduce(function(s,l){return s+l.passes},0);
+  var cpt={"1":0,"2":0,"3":0};
+  lignes.forEach(function(l){if(cpt[l.global]!==undefined)cpt[l.global]++});
+  return {total:lignes.length,evalues:evalues,
+          tauxEvalues:lignes.length?Math.round(evalues/lignes.length*100):0,
+          tauxTests:lignes.length?Math.round(totalPasses/(lignes.length*TESTS_SYNTHESE.length)*100):0,cpt:cpt};
+}
+function pastilleHtml(n){
+  if(!n)return '<span class="pastille pastille-vide" title="Test non passé"></span>';
+  var c=COULEURS_NIVEAU[n]||COULEURS_NIVEAU["?"];
+  return '<span class="pastille" style="background:'+c.hex+'" title="'+c.txt+'"></span>';
+}
+function renderSynthese(){
+  var selC=document.getElementById("syntheseCampagne");
+  if(!selC)return;
+  var cur=selC.options.length?selC.value:null;
+  var opts='<option value="__encours__">Campagne en cours</option>';
+  listeCampagnes().forEach(function(c){opts+='<option value="'+escAttr(c)+'">Campagne '+escAttr(c)+"</option>"});
+  selC.innerHTML=opts;
+  selC.value=(cur!==null&&[].slice.call(selC.options).some(function(o){return o.value===cur}))?cur:"__encours__";
+  var lignes=syntheseLignes(selC.value),r=syntheseResume(lignes);
+  document.getElementById("syntheseStats").innerHTML=
+    '<div class="stat-box"><div class="stat-value">'+r.tauxEvalues+'%</div><div class="stat-label">Pompiers ayant passé l\'ICP</div><div class="stat-sub">'+r.evalues+' sur '+r.total+'</div></div>'
+   +'<div class="stat-box"><div class="stat-value">'+r.tauxTests+'%</div><div class="stat-label">Tests passés</div><div class="stat-sub">sur l\'ensemble des tests prévus</div></div>'
+   +'<div class="stat-box"><div class="stat-value" style="display:flex;gap:14px;justify-content:center;font-size:24px">'
+     +'<span style="color:#dc2626">'+r.cpt["1"]+'</span><span style="color:#f59e0b">'+r.cpt["2"]+'</span><span style="color:#16a34a">'+r.cpt["3"]+'</span></div>'
+     +'<div class="stat-label">Rouge · Orange · Vert</div><div class="stat-sub">niveau global</div></div>';
+  var html="";
+  lignes.forEach(function(l){
+    var coulTaux=l.taux===100?"var(--success)":l.taux>0?"var(--warning)":"var(--danger)";
+    html+='<tr><td><b>'+escAttr(l.nom)+'</b></td><td>'+escAttr(l.prenom)+'</td>'
+      +TESTS_SYNTHESE.map(function(t){return '<td style="text-align:center">'+pastilleHtml(l.niv[t.key])+'</td>'}).join("")
+      +'<td style="text-align:center">'+pastilleHtml(l.global)+'</td>'
+      +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+TESTS_SYNTHESE.length+' · '+l.taux+'%</td></tr>';
+  });
+  document.getElementById("syntheseBody").innerHTML=html||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">Aucun pompier.</td></tr>';
+}
+function generateSynthesePDF(){
+  var campagne=document.getElementById("syntheseCampagne").value;
+  var libelle=campagne==="__encours__"?"Campagne en cours":"Campagne "+campagne;
+  var lignes=syntheseLignes(campagne),r=syntheseResume(lignes);
+  var { jsPDF }=window.jspdf;
+  var doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  var pageW=doc.internal.pageSize.getWidth(),margin=12,y=margin;
+  pdfLogo(doc,margin,y-4,22);
+  doc.setFont("helvetica","bold");doc.setFontSize(15);doc.setTextColor(15,23,42);
+  doc.text("SYNTHÈSE ICP — CODES COULEUR",pageW/2,y+6,{align:"center"});
+  doc.setFontSize(11);doc.setTextColor(6,182,212);
+  doc.text(libelle,pageW/2,y+13,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(100,116,139);
+  doc.text("Caserne Cruzy-Quarante — SDIS 34 — édité le "+new Date().toLocaleDateString('fr-FR'),pageW/2,y+19,{align:"center"});
+  y+=27;
+  doc.setFontSize(10);doc.setTextColor(15,23,42);
+  doc.text("Pompiers ayant passé l'ICP : "+r.evalues+" sur "+r.total+" ("+r.tauxEvalues+" %)     Tests passés : "+r.tauxTests+" %     Niveau global : "
+    +r.cpt["1"]+" rouge · "+r.cpt["2"]+" orange · "+r.cpt["3"]+" vert",margin,y);
+  y+=5;
+  var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Niveau global","Tests passés"]);
+  var body=lignes.map(function(l){
+    return [l.nom,l.prenom].concat(TESTS_SYNTHESE.map(function(t){return l.niv[t.key]||"-"})).concat([l.global||"-",l.passes+"/"+TESTS_SYNTHESE.length+" ("+l.taux+" %)"]);
+  });
+  doc.autoTable({startY:y,head:[cols],body:body,theme:'grid',margin:{left:margin,right:margin},
+    headStyles:{fillColor:[30,41,59],textColor:255,fontSize:8.5,fontStyle:'bold',halign:'center'},
+    styles:{fontSize:9,cellPadding:2.4,valign:'middle'},
+    columnStyles:{0:{fontStyle:'bold'}},
+    didParseCell:function(d){
+      if(d.section!=='body')return;
+      var c=d.column.index;
+      if(c>=2&&c<=2+TESTS_SYNTHESE.length){
+        var v=d.cell.raw;d.cell.styles.halign='center';
+        if(COULEURS_NIVEAU[v]){d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;d.cell.text=[v==="?"?"non coté":""];d.cell.styles.textColor=255;d.cell.styles.fontSize=7;}
+        else{d.cell.text=["non passé"];d.cell.styles.textColor=[148,163,184];d.cell.styles.fontSize=7;}
+      }
+      if(c===3+TESTS_SYNTHESE.length){d.cell.styles.halign='center';d.cell.styles.fontStyle='bold';}
+    }});
+  y=doc.lastAutoTable.finalY+7;
+  var leg=[["1","Rouge : vigilance (à surveiller)"],["2","Orange : engagement opérationnel"],["3","Vert : condition physique optimale"],["?","Gris : test passé mais non coté"]];
+  var x=margin;doc.setFontSize(8.5);doc.setTextColor(15,23,42);
+  leg.forEach(function(L){var c=COULEURS_NIVEAU[L[0]].rgb;doc.setFillColor(c[0],c[1],c[2]);doc.rect(x,y-3,4,4,'F');doc.text(L[1],x+6,y);x+=doc.getTextWidth(L[1])+14;});
+  doc.save("Synthese_ICP_couleurs_"+(campagne==="__encours__"?"en_cours":campagne)+".pdf");
 }
 function renderBilan(){
   var selC=document.getElementById("bilanCampagne");
