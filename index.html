@@ -48,9 +48,12 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .badge-admin{background:var(--danger);color:white}
 .badge-user{background:var(--success);color:white}
 /* Navigation ordinateur : onglets regroupés par thème */
-.tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
-.nav-groupe{font-family:var(--titre);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:0 4px 0 10px;margin-left:4px;border-left:1px solid var(--border)}
-.nav-groupe:first-child{border-left:0;margin-left:0;padding-left:2px}
+.tabs{display:flex;gap:8px 0;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.nav-bloc{display:flex;flex-wrap:nowrap;align-items:center;gap:4px;padding:3px 4px;margin-right:14px;border-radius:999px;background:color-mix(in srgb,var(--surface) 70%,transparent);border:1px solid var(--border)}
+@media(max-width:900px){.nav-bloc{flex-wrap:wrap;border-radius:16px}}
+@media(max-width:1000px){.etat #statusText{display:none}}
+.nav-groupe{font-family:var(--titre);font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);background:none;border:0;padding:6px 6px 6px 10px;cursor:pointer;border-radius:999px}
+.nav-groupe:hover{color:var(--accent)}
 .tab{padding:8px 14px;border-radius:999px;border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;transition:all .2s;font-weight:500;font-size:14px}
 .tab:hover{background:var(--surface2);color:var(--text)}
 .tab.active{background:linear-gradient(135deg,var(--rouge),var(--primary));color:#fff;box-shadow:0 4px 14px rgba(234,88,12,.35)}
@@ -278,23 +281,27 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </header>
 <nav class="tabs" id="navTabs">
-<span class="nav-groupe" data-groupe="suivi">Suivi</span>
+<div class="nav-bloc" data-groupe="suivi"><button type="button" class="nav-groupe" data-groupe="suivi" onclick="ouvrirGroupe('suivi')" title="Ouvrir la rubrique Suivi">Suivi</button>
 <div class="tab active" data-groupe="suivi" id="navtab-dashboard" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
 <div class="tab" data-groupe="suivi" id="navtab-synthese" onclick="switchTab('synthese',this)">🎯 Synthèse</div>
 <div class="tab" data-groupe="suivi" id="navtab-saisie" onclick="switchTab('saisie',this)">📝 Saisie</div>
 <div class="tab" data-groupe="suivi" id="navtab-terrain" onclick="switchTab('terrain',this)">📱 Terrain</div>
 <div class="tab" data-groupe="suivi" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
 <div class="tab" data-groupe="suivi" id="navtab-progression" onclick="switchTab('progression',this)">📉 Progression</div>
-<span class="nav-groupe" data-groupe="entrainement">Entraînement</span>
+</div>
+<div class="nav-bloc" data-groupe="entrainement"><button type="button" class="nav-groupe" data-groupe="entrainement" onclick="ouvrirGroupe('entrainement')" title="Ouvrir la rubrique Entraînement">Entraînement</button>
 <div class="tab" data-groupe="entrainement" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
 <div class="tab" data-groupe="entrainement" id="navtab-muscu" onclick="switchTab('muscu',this)">💪 Musculation</div>
 <div class="tab" data-groupe="entrainement" id="navtab-seances" onclick="switchTab('seances',this)">🗓️ Séances</div>
-<span class="nav-groupe" data-groupe="referentiels">Référentiels</span>
+</div>
+<div class="nav-bloc" data-groupe="referentiels"><button type="button" class="nav-groupe" data-groupe="referentiels" onclick="ouvrirGroupe('referentiels')" title="Ouvrir la rubrique Référentiels">Référentiels</button>
 <div class="tab" data-groupe="referentiels" id="navtab-echelles" onclick="switchTab('echelles',this)">📏 Barèmes</div>
 <div class="tab" data-groupe="referentiels" id="navtab-ppa" onclick="switchTab('ppa',this)">🧗 PPA</div>
-<span class="nav-groupe" data-groupe="admin">Administration</span>
+</div>
+<div class="nav-bloc" data-groupe="admin"><button type="button" class="nav-groupe" data-groupe="admin" onclick="ouvrirGroupe('admin')" title="Ouvrir la rubrique Administration">Administration</button>
 <div class="tab" data-groupe="admin" id="navtab-export" onclick="switchTab('export',this)">📄 Export PDF</div>
 <div class="tab hidden" data-groupe="admin" id="navtab-comptes" onclick="switchTab('comptes',this)">👥 Comptes</div>
+</div>
 </nav>
 <nav id="navBas" aria-label="Navigation"></nav>
 <div id="feuillePlus" class="modal-overlay hidden" onclick="if(event.target===this)fermerPlus()">
@@ -793,6 +800,7 @@ function updateSupabaseStatus(connected, message) {
         dot.style.animation = 'pulse-red 2s infinite';
     }
     text.textContent = message;
+    dot.title = message; // visible au survol quand le texte est masqué (écrans étroits)
 }
 
 
@@ -914,8 +922,8 @@ function applyPermissions(){
         if(el) el.classList.toggle("hidden", !tabAutorise(t.id));
     });
     // un intitulé de groupe n'apparaît que s'il reste au moins un onglet dedans
-    document.querySelectorAll("#navTabs .nav-groupe").forEach(function(g){
-        var visible=[].some.call(document.querySelectorAll('#navTabs .tab[data-groupe="'+g.dataset.groupe+'"]'),function(t){return !t.classList.contains("hidden")});
+    document.querySelectorAll("#navTabs .nav-bloc").forEach(function(g){
+        var visible=[].some.call(g.querySelectorAll(".tab"),function(t){return !t.classList.contains("hidden")});
         g.classList.toggle("hidden",!visible);
     });
     construireNavBas();
@@ -979,7 +987,7 @@ function renderDashboard(){var total=data.length;var hommes=data.filter(function
 function anneauSvg(pct,couleur){
     var r=52,c=2*Math.PI*r,v=Math.max(0,Math.min(100,pct));
     return '<svg viewBox="0 0 130 130" role="img" aria-label="'+v+' %"><circle cx="65" cy="65" r="'+r+'" fill="none" stroke="var(--surface2)" stroke-width="14"/>'
-      +'<circle cx="65" cy="65" r="'+r+'" fill="none" stroke="'+couleur+'" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+(c*v/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 65 65)"/>'
+      +(v>0?'<circle cx="65" cy="65" r="'+r+'" fill="none" stroke="'+couleur+'" stroke-width="14" stroke-linecap="round" stroke-dasharray="'+(c*v/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 65 65)"/>':'')
       +'<text x="65" y="74" text-anchor="middle" font-family="Oswald,sans-serif" font-size="30" font-weight="700" fill="var(--text)">'+v+'%</text></svg>';
 }
 function barreNiveaux(cpt,total){
@@ -3282,6 +3290,10 @@ function ouvrirPlus(){
     });
     document.getElementById("plusContenu").innerHTML=html;
     document.getElementById("feuillePlus").classList.remove("hidden");
+}
+function ouvrirGroupe(g){
+    var t=[].filter.call(document.querySelectorAll('#navTabs .tab[data-groupe="'+g+'"]'),function(x){return !x.classList.contains("hidden")})[0];
+    if(t) switchTab(t.id.replace("navtab-",""),t);
 }
 function fermerPlus(){var f=document.getElementById("feuillePlus");if(f)f.classList.add("hidden");}
 
