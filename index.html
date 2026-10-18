@@ -97,6 +97,13 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 @media(max-width:720px){.dash-visuel{grid-template-columns:1fr}.anneau svg{width:130px;height:130px}}
 .squelette{border-radius:10px;min-height:96px;background:linear-gradient(90deg,var(--surface2) 25%,color-mix(in srgb,var(--surface2) 60%,var(--border)) 50%,var(--surface2) 75%);background-size:200% 100%;animation:squelette 1.2s infinite}
 @keyframes squelette{to{background-position:-200% 0}}
+.fiche-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
+.fiche-test{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.fiche-test .nom{font-family:var(--titre);text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-size:13px}
+.fiche-test .val{font-size:20px;font-weight:700;margin:6px 0}
+.fiche-niv{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
+.fiche-conseil{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+.fiche-conseil b{color:var(--accent);font-family:var(--titre);text-transform:uppercase;font-size:13px}
 .initiales{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--accent);margin-right:8px;vertical-align:middle}
 .grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .stat-box{background:var(--surface2);border-radius:12px;padding:16px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
@@ -297,6 +304,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="nav-bloc" data-groupe="suivi"><button type="button" class="nav-groupe" data-groupe="suivi" onclick="ouvrirGroupe('suivi')" title="Ouvrir la rubrique Suivi">Suivi</button>
 <div class="tab active" data-groupe="suivi" id="navtab-dashboard" onclick="switchTab('dashboard',this)">📊 Tableau de bord</div>
 <div class="tab" data-groupe="suivi" id="navtab-synthese" onclick="switchTab('synthese',this)">🎯 Synthèse</div>
+<div class="tab" data-groupe="suivi" id="navtab-fiche" onclick="switchTab('fiche',this)">👤 Fiche</div>
 <div class="tab" data-groupe="suivi" id="navtab-saisie" onclick="switchTab('saisie',this)">📝 Saisie</div>
 <div class="tab" data-groupe="suivi" id="navtab-terrain" onclick="switchTab('terrain',this)">📱 Terrain</div>
 <div class="tab" data-groupe="suivi" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
@@ -343,6 +351,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="exportExcel()">📊 Excel</button>
 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
 </div>
@@ -358,6 +367,16 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Tests passés</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
 <tbody id="syntheseBody"></tbody>
 </table></div>
+</div>
+</div>
+<div id="tab-fiche" class="hidden">
+<div class="card">
+<div class="card-title">👤 Fiche individuelle</div>
+<div class="filters" style="align-items:center">
+<select id="fichePompier" onchange="renderFiche()" style="max-width:280px"></select>
+<button class="btn btn-primary btn-sm" onclick="ficheExportPDF()">📄 Télécharger ma fiche (PDF)</button>
+</div>
+<div id="ficheContenu"></div>
 </div>
 </div>
 <div id="tab-saisie" class="hidden">
@@ -601,11 +620,20 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="form-row"><label>Mot de passe (8 caractères minimum)</label>
 <div style="display:flex;gap:8px"><input type="text" id="comptePass" autocomplete="new-password" placeholder="à transmettre à la personne">
 <button type="button" class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="document.getElementById('comptePass').value=genererMotDePasse()">🎲 Générer</button></div></div>
-<div class="form-row"><label>Onglets visibles pour ce compte</label>
+<div class="form-row"><label>Accès personnel d'un pompier (facultatif)</label>
+<select id="comptePompier" onchange="document.getElementById('compteOngletsBlock').style.display=this.value?'none':''"><option value="">— Non : compte normal (onglets ci-dessous)</option></select>
+<div style="font-size:12px;color:var(--muted);margin-top:4px">Si vous choisissez un pompier, ce compte ne verra <b>que sa propre fiche</b> (ses résultats, ses couleurs, ses conseils).</div></div>
+<div class="form-row" id="compteOngletsBlock"><label>Onglets visibles pour ce compte</label>
 <div id="compteOngletsBox" style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:6px"></div>
 </div>
 <button class="btn btn-success" onclick="ajouterOuMajCompte()">💾 Créer / enregistrer ce compte</button>
 <div id="compteMsg" style="margin-top:8px;font-size:13px;min-height:18px"></div>
+</div>
+<div class="card">
+<div class="card-title">🕘 Journal des modifications</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Chaque changement sur une fiche pompier est enregistré automatiquement par la base : qui, quand et quoi. Les 200 derniers sont affichés.</p>
+<button class="btn btn-primary btn-sm" onclick="chargerJournal()">🔄 Afficher / actualiser</button>
+<div id="journalListe" style="margin-top:12px"></div>
 </div>
 </div>
 </div>
@@ -681,6 +709,7 @@ const ADMIN_EMAILS = ["galiana.christian@gmail.com"];
 const TABS_INFO = [
     {id:"dashboard",label:"📊 Tableau de bord"},
     {id:"synthese",label:"🎯 Synthèse (couleurs)"},
+    {id:"fiche",label:"👤 Fiche individuelle"},
     {id:"saisie",label:"📝 Saisie"},
     {id:"terrain",label:"📱 Terrain"},
     {id:"bilan",label:"📈 Bilan"},
@@ -696,6 +725,7 @@ var misOnglets = [];        // onglets autorisés pour le compte non-admin conne
 var comptesCache = [];      // dernière liste chargée depuis comptes_app (vue admin)
 var donneesChargees = false;  // true seulement après un chargement Supabase réussi
 var emailConnecte = "";
+var monPompierId = null;      // compte relié à un pompier : il ne voit que sa fiche
 
 
 // --- Anti-perte de saisie ------------------------------------------------
@@ -706,10 +736,58 @@ function updateDirtyFlag(){
     var el = document.getElementById('dirtyFlag');
     if (el) el.style.display = dirty ? 'inline' : 'none';
 }
+// --- Saisie sans réseau ----------------------------------------------------
+// Toute modification non envoyée est copiée sur l'appareil (brouillon) ; elle
+// est renvoyée dès que le réseau revient, ou proposée au prochain chargement.
+// Une copie des dernières données chargées permet aussi de rouvrir l'appli
+// hors ligne (administrateurs seulement).
+var CLE_BROUILLON="icp_brouillon", CLE_CACHE="icp_cache";
+function lireLocal(cle){try{var v=JSON.parse(localStorage.getItem(cle)||"null");return v&&v.email===emailConnecte?v:null}catch(e){return null}}
+function sauverBrouillon(){if(!isAdmin||!emailConnecte)return;try{localStorage.setItem(CLE_BROUILLON,JSON.stringify({email:emailConnecte,ts:Date.now(),data:data}))}catch(e){}}
+function effacerBrouillon(){try{localStorage.removeItem(CLE_BROUILLON)}catch(e){}}
+function sauverCache(){if(!isAdmin||!emailConnecte)return;try{localStorage.setItem(CLE_CACHE,JSON.stringify({email:emailConnecte,ts:Date.now(),data:data,histo:HISTORIQUE_IMPORT,sessions:sessionsIcp,role:{isAdmin:isAdmin,onglets:misOnglets}}))}catch(e){}}
+function effacerCache(){try{localStorage.removeItem(CLE_CACHE)}catch(e){}}
+var CHAMPS_BROUILLON=["nom","prenom","annee","sexe","poids","rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","fc_repos","fc_max","historique"];
+// Après un chargement réussi : récupère les saisies restées sur l'appareil
+function proposerBrouillon(){
+    var b=lireLocal(CLE_BROUILLON); if(!b||!isAdmin)return;
+    var diff=[];
+    (b.data||[]).forEach(function(bp){
+        var p=data.find(function(x){return x.id===bp.id});
+        if(!p){diff.push({nouveau:bp});return;}
+        var ch=CHAMPS_BROUILLON.filter(function(f){return (bp[f]||"").toString()!==(p[f]||"").toString()});
+        if(ch.length)diff.push({p:p,bp:bp,ch:ch});
+    });
+    if(!diff.length){effacerBrouillon();return;}
+    var quand=new Date(b.ts).toLocaleString("fr-FR",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
+    if(!confirm("📱 Des saisies faites sur cet appareil le "+quand+" n'ont pas été envoyées ("+diff.length+" pompier(s) concerné(s)).\n\nLes récupérer et les enregistrer maintenant ?")){effacerBrouillon();return;}
+    diff.forEach(function(d){
+        if(d.nouveau){data.push(d.nouveau);return;}
+        d.ch.forEach(function(f){d.p[f]=d.bp[f]});
+    });
+    nextId=Math.max.apply(Math,data.map(function(p){return p.id||0}))+1;
+    renderAll();
+    markDirty();
+    showToast("✅ Saisies récupérées : envoi en cours…","success");
+}
+window.addEventListener("online",function(){
+    if(!isAdmin)return;
+    if(!donneesChargees){loadFromSupabase();return;}   // données de secours : on recharge (le brouillon sera proposé)
+    if(dirty)saveToSupabase().then(function(ok){if(ok){dirty=false;updateDirtyFlag();showToast("✅ Réseau revenu : saisies envoyées.","success");}});
+});
+window.addEventListener("offline",function(){
+    updateSupabaseStatus(false,"Hors ligne — vos saisies sont gardées sur l'appareil");
+});
+// Nouvel essai toutes les 30 s tant qu'il reste des saisies non envoyées
+setInterval(function(){
+    if(dirty&&isAdmin&&donneesChargees&&navigator.onLine)saveToSupabase().then(function(ok){if(ok){dirty=false;updateDirtyFlag();}});
+},30000);
+
 function markDirty(){
     dirty = true;
     updateDirtyFlag();
     if (!isAdmin) return;                 // lecture seule : rien à enregistrer
+    sauverBrouillon();
     clearTimeout(autosaveTimer);
     autosaveTimer = setTimeout(function(){
         if (dirty) saveToSupabase().then(function(ok){
@@ -731,6 +809,7 @@ window.addEventListener('beforeunload', function(e){
 async function loadFromSupabase() {
     try {
         updateSupabaseStatus(false, "Connexion en cours...");
+        if (navigator.onLine === false) throw new Error("hors ligne"); // pas d'attente inutile
         const { data: rows, error } = await supabaseClient
             .from('pompiers')
             .select('*')
@@ -750,6 +829,8 @@ async function loadFromSupabase() {
             chargerHistoriqueDeReference();
             clearDirty();
             renderAll();
+            sauverCache();
+            proposerBrouillon();
             return true;
         } else {
             updateSupabaseStatus(true, "Connecté — Aucune donnée distante");
@@ -758,8 +839,21 @@ async function loadFromSupabase() {
             return false;
         }
     } catch (e) {
-        updateSupabaseStatus(false, "Déconnecté — " + e.message + " (enregistrement désactivé, rechargez la page)");
         console.warn('⚠️ Chargement Supabase échoué:', e.message);
+        // Hors ligne : on affiche la dernière copie connue (et le brouillon s'il existe).
+        // L'envoi reste bloqué tant que les vraies données n'ont pas été rechargées.
+        var c=lireLocal(CLE_CACHE);
+        if(c&&isAdmin){
+            var b=lireLocal(CLE_BROUILLON);
+            data=(b&&b.ts>c.ts?b.data:c.data)||[];
+            if(c.histo)HISTORIQUE_IMPORT=c.histo;
+            if(c.sessions)sessionsIcp=c.sessions;
+            nextId=Math.max.apply(Math,data.map(function(p){return p.id||0}).concat([0]))+1;
+            renderAll();
+            updateSupabaseStatus(false,"Hors ligne — données du "+new Date(c.ts).toLocaleString("fr-FR",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})+", saisies gardées sur l'appareil");
+        } else {
+            updateSupabaseStatus(false, "Déconnecté — " + e.message + " (enregistrement désactivé, rechargez la page)");
+        }
         return false;
     }
 }
@@ -803,6 +897,8 @@ async function saveToSupabase() {
             if (delErr) console.warn('⚠️ Nettoyage des pompiers supprimés impossible :', delErr.message);
         }
         updateSupabaseStatus(true, "Connecté — Sauvegarde OK");
+        effacerBrouillon();
+        sauverCache();
         console.log('✅ Données sauvegardées sur Supabase');
         setTimeout(() => updateSupabaseStatus(true, "Connecté — Données synchronisées"), 2000);
         return true;
@@ -897,6 +993,8 @@ async function doLogout(){
             return;
         }
     }
+    effacerBrouillon();
+    effacerCache();
     await supabaseClient.auth.signOut();
 }
 // Étapes communes une fois l'identité (isAdmin / misOnglets) déterminée,
@@ -973,13 +1071,20 @@ async function resoudreRole(){
     try{
         var u=(await supabaseClient.auth.getUser()).data.user||{};
         var email=(u.email||"").toLowerCase();
+        if(!email){
+            // Hors ligne : on reprend le rôle mémorisé lors de la dernière connexion
+            var ses=(await supabaseClient.auth.getSession()).data.session;
+            var em=ses&&ses.user&&(ses.user.email||"").toLowerCase();
+            if(em){emailConnecte=em;var c=lireLocal(CLE_CACHE);if(c&&c.role){misOnglets=c.role.onglets||[];return !!c.role.isAdmin;}}
+        }
         emailConnecte=email;
         var compte=null;
         try{
-            var q=await supabaseClient.from('comptes_app').select('onglets,est_admin').eq('email', email).maybeSingle();
+            var q=await supabaseClient.from('comptes_app').select('onglets,est_admin,pompier_id').eq('email', email).maybeSingle();
             if(!q.error) compte=q.data;
         }catch(e){}
         misOnglets = (compte && Array.isArray(compte.onglets)) ? compte.onglets : [];
+        monPompierId = compte && compte.pompier_id ? compte.pompier_id : null;
         if(u.app_metadata && u.app_metadata.role==="admin") return true;
         if(ADMIN_EMAILS.indexOf(email)!==-1) return true;
         return !!(compte && compte.est_admin);
@@ -998,6 +1103,7 @@ function showLoginScreen(){
     carnetEntries=[];
     carnetCharge=false;
     sessionsIcp=[];
+    monPompierId=null;
     document.getElementById("mainApp").classList.add("hidden");
     document.getElementById("loginScreen").classList.remove("hidden");
 }
@@ -1009,8 +1115,8 @@ async function initAuth(){
         if(event==="SIGNED_OUT")showLoginScreen();
     });
 }
-function switchTab(tab,el){var tabs=["dashboard","synthese","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab)}
-function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
+function switchTab(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab)}
+function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var avgAge=Math.round(data.reduce(function(s,p){return s+getAge(p.annee)},0)/(total||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+getAge(p.annee)+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
 function anneauSvg(pct,couleur){
@@ -1147,7 +1253,10 @@ function renderSynthese(){
 // ===== PLANNING DES SESSIONS ICP =====
 var sessionsIcp=[];
 async function chargerSessions(){
-  try{var r=await supabaseClient.from('sessions_icp').select('*').order('date');if(!r.error)sessionsIcp=r.data||[];}
+  try{
+    if(navigator.onLine===false||!donneesChargees){renderSessions();return;} // hors ligne : sessions de la copie locale
+    var r=await supabaseClient.from('sessions_icp').select('*').order('date');if(!r.error){sessionsIcp=r.data||[];sauverCache();}
+  }
   catch(e){console.warn("Sessions ICP :",e.message);}
   renderSessions();
 }
@@ -1295,6 +1404,97 @@ function dessinerFiche(doc,p){
   });
   var next=prochaineSession();
   if(next){if(y>275){doc.addPage();y=20;}doc.setFont("helvetica","bold");doc.setTextColor(194,65,12);doc.text("Prochaine session ICP : "+libelleSession(next),margin,y+4);}
+}
+// Onglet « Fiche » : l'administrateur choisit un pompier ; un compte relié à un
+// pompier ne reçoit de la base que sa propre ligne.
+function renderFiche(){
+  var sel=document.getElementById("fichePompier"),el=document.getElementById("ficheContenu");
+  if(!sel||!el)return;
+  var liste=data.slice().sort(parNomPrenom);
+  var cur=sel.value;
+  sel.innerHTML=liste.map(function(p){return '<option value="'+p.id+'">'+escAttr(p.nom+" "+p.prenom)+'</option>'}).join("");
+  if(cur&&liste.some(function(p){return String(p.id)===cur}))sel.value=cur;
+  sel.style.display=(liste.length>1&&!monPompierId)?"":"none";
+  var bt=document.querySelector("#tab-fiche .btn-primary");if(bt)bt.textContent=monPompierId?"📄 Télécharger ma fiche (PDF)":"📄 Télécharger cette fiche (PDF)";
+  var p=(monPompierId&&liste.find(function(x){return x.id===monPompierId}))||liste.find(function(x){return String(x.id)===sel.value})||liste[0];
+  if(!p){el.innerHTML='<p style="color:var(--muted)">Aucune fiche disponible.</p>';return;}
+  var age=getAge(p.annee),g=getNiveauGlobal(p);
+  var html='<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px"><span class="avatar" style="width:52px;height:52px;font-size:18px">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'
+    +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</div><div style="color:var(--muted);font-size:13px">'+age+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
+  if(g&&COULEURS_NIVEAU[g])html+='<div style="margin:12px 0;padding:12px;border-radius:12px;text-align:center;font-weight:700;color:#fff;background:'+COULEURS_NIVEAU[g].hex+'">Niveau global : '+TEXTE_NIVEAU[g]+'</div>';
+  html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
+    var v=p[t.field],n="";
+    if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
+    var c=COULEURS_NIVEAU[n];
+    return '<div class="fiche-test"><div class="nom">'+t.label+'</div><div class="val">'+(v&&v.toString().trim()?escAttr(v)+'<span style="font-size:12px;color:var(--muted)">'+UNITES_TEST[t.key]+'</span>':'—')+'</div>'
+      +(c?'<span class="fiche-niv" style="background:'+c.hex+'">'+TEXTE_NIVEAU[n]+'</span>':'<span style="color:var(--muted);font-size:12px">à passer</span>')+'</div>';
+  }).join("")+'</div>';
+  var hist=getHistorique(p).slice().sort(function(a,b){return (a.campagne||"").localeCompare(b.campagne||"")});
+  if(hist.length){
+    html+='<div style="font-size:13px;color:var(--muted);margin:8px 0">Évolution d\'une campagne à l\'autre</div><div style="display:flex;flex-wrap:wrap;gap:8px">'
+      +hist.concat(g?[{campagne:"En cours",niveau:g}]:[]).map(function(h){var c=COULEURS_NIVEAU[(h.niveau||"").toString()];
+        return '<span style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);font-size:13px">'+pastilleHtml(c?(h.niveau||"").toString():"")+escAttr(h.campagne)+'</span>'}).join("")+'</div>';
+  }
+  html+='<div style="font-size:13px;color:var(--muted);margin:18px 0 4px">Conseils pour progresser</div>';
+  TESTS_SYNTHESE.forEach(function(t){
+    var v=p[t.field],n="";
+    if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
+    var conseil=!n?"Test à passer lors de la prochaine session.":(n==="?"?"Résultat non coté (poids manquant) : pensez à faire renseigner votre poids.":CONSEILS_TEST[t.key][n]);
+    html+='<div class="fiche-conseil"><b>'+t.label+'</b><span>'+conseil+'</span></div>';
+  });
+  var next=prochaineSession();
+  if(next)html+='<div style="margin-top:14px;padding:12px;border-radius:12px;border:1px solid var(--primary);color:var(--text)">📅 Prochaine session ICP : <b>'+escAttr(libelleSession(next))+'</b></div>';
+  el.innerHTML=html;
+}
+function ficheExportPDF(){
+  var sel=document.getElementById("fichePompier");
+  var p=(monPompierId&&data.find(function(x){return x.id===monPompierId}))||data.find(function(x){return String(x.id)===sel.value})||data[0];
+  if(p)generateFichePDF(p.id);
+}
+
+// ===== JOURNAL DES MODIFICATIONS (administrateur) =====
+var LIB_CHAMPS={poids:"poids",rameur_temps:"rameur",luc_perf:"Luc Léger",luc_niv:"niveau Luc Léger",souplesse:"souplesse",pompes:"pompes",tractions:"tractions",
+  fc_repos:"FC repos",fc_max:"FC max",nom:"nom",prenom:"prénom",annee:"année de naissance",sexe:"sexe",historique:"historique"};
+async function chargerJournal(){
+  var el=document.getElementById("journalListe");if(!el)return;
+  el.innerHTML='<div class="squelette" style="min-height:80px"></div>';
+  var r=await supabaseClient.from('journal_icp').select('*').order('quand',{ascending:false}).limit(200);
+  if(r.error){el.innerHTML='<p style="color:var(--danger)">⚠️ '+escAttr(r.error.message)+'</p>';return;}
+  if(!r.data.length){el.innerHTML='<p style="color:var(--muted)">Aucune modification enregistrée pour l\'instant.</p>';return;}
+  var vide=function(v){return v===null||v===undefined||v===""?"vide":escAttr(v)};
+  el.innerHTML='<div class="scroll-table" style="max-height:420px"><table><thead><tr><th>Quand</th><th>Qui</th><th>Pompier</th><th>Modification</th></tr></thead><tbody>'
+    +r.data.map(function(j){
+      var det=j.operation==="ajout"?"➕ fiche créée":j.operation==="suppression"?"🗑️ fiche supprimée"
+        :Object.keys(j.changements||{}).map(function(k){var c=j.changements[k];return '<b>'+(LIB_CHAMPS[k]||escAttr(k))+'</b> : '+(Array.isArray(c)?vide(c[0])+' → '+vide(c[1]):escAttr(c))}).join(" · ");
+      return '<tr><td style="white-space:nowrap">'+new Date(j.quand).toLocaleString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})+'</td><td>'+escAttr((j.qui||"").split("@")[0])+'</td><td>'+escAttr(j.pompier||"")+'</td><td>'+det+'</td></tr>';
+    }).join("")+'</tbody></table></div>';
+}
+
+// ===== EXPORT EXCEL =====
+function chargerXlsx(){
+  if(window.XLSX)return Promise.resolve();
+  return new Promise(function(ok,ko){var sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";sc.onload=ok;sc.onerror=function(){ko(new Error("bibliothèque Excel indisponible"))};document.head.appendChild(sc);});
+}
+async function exportExcel(){
+  try{await chargerXlsx();}catch(e){alert("⚠️ "+e.message+" (connexion internet nécessaire).");return;}
+  var campagne=document.getElementById("syntheseCampagne").value;
+  var lignes=syntheseLignes(campagne);
+  var txt=function(n){return n?(TEXTE_NIVEAU[n]||n):"non passé"};
+  var synth=lignes.map(function(l){var o={"Nom":l.nom,"Prénom":l.prenom};
+    TESTS_SYNTHESE.forEach(function(t){o[t.label]=txt(l.niv[t.key])});
+    o["Niveau global"]=l.global?TEXTE_NIVEAU[l.global]:"non évalué";o["Tests passés"]=l.passes+"/"+TESTS_SYNTHESE.length;o["Taux"]=l.taux/100;return o;});
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.json_to_sheet(synth);ws["!cols"]=[{wch:16},{wch:14},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:24},{wch:12},{wch:8}];
+  XLSX.utils.book_append_sheet(wb,ws,"Synthèse couleurs");
+  if(isAdmin){
+    var anneeRef=campagne==="__encours__"?ANNEE_COURANTE:parseInt(campagne);
+    var res=pompiersCampagne(campagne).sort(parNomPrenom).map(function(o){return {"Nom":o.nom,"Prénom":o.prenom,"Âge":anneeRef-o.annee,"Sexe":o.sexe,
+      "Poids (kg)":o.poids||"","Rameur 2000 m":o.rameur_temps||"","Luc Léger (palier)":o.luc_perf||"","Souplesse (cm)":o.souplesse||"","Pompes":o.pompes||"","Tractions":o.tractions||"",
+      "Niveau global":o._niveau?TEXTE_NIVEAU[o._niveau]:"non évalué"}});
+    var ws2=XLSX.utils.json_to_sheet(res);ws2["!cols"]=[{wch:16},{wch:14},{wch:6},{wch:6},{wch:10},{wch:14},{wch:16},{wch:14},{wch:9},{wch:10},{wch:24}];
+    XLSX.utils.book_append_sheet(wb,ws2,"Résultats détaillés");
+  }
+  XLSX.writeFile(wb,"ICP_Cruzy-Quarante_"+(campagne==="__encours__"?"campagne_en_cours":campagne)+".xlsx");
 }
 function generateFichePDF(id){
   var p=data.find(function(x){return x.id===id});if(!p)return;
@@ -3530,7 +3730,7 @@ function basculerTheme(){
     try{localStorage.setItem("icp_theme",clair?"dark":"light")}catch(e){}
     majBoutonTheme();
 }
-var NAV_PRIORITE=["dashboard","synthese","saisie","seances","terrain","bilan","progression","cardio","muscu","echelles","ppa","export","comptes"];
+var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","terrain","bilan","progression","cardio","muscu","echelles","ppa","export","comptes"];
 var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès"};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
@@ -3616,7 +3816,7 @@ async function appelerGererComptes(body){
 }
 async function chargerComptes(){
     try{
-        var res=await supabaseClient.from('comptes_app').select('email,onglets,est_admin').order('email');
+        var res=await supabaseClient.from('comptes_app').select('email,onglets,est_admin,pompier_id').order('email');
         if(res.error) throw res.error;
         comptesCache = res.data || [];
     }catch(e){
@@ -3641,6 +3841,9 @@ function ongletsCoches(idPrefix){
 }
 async function renderComptes(){
     document.getElementById("compteOngletsBox").innerHTML = checkboxesOnglets("nc", []);
+    document.getElementById("comptePompier").innerHTML='<option value="">— Non : compte normal (onglets ci-dessous)</option>'
+        +data.slice().sort(parNomPrenom).map(function(p){return '<option value="'+p.id+'">'+escAttr(p.nom+" "+p.prenom)+'</option>'}).join("");
+    document.getElementById("compteOngletsBlock").style.display="";
     document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
     await chargerComptes();
     if(comptesCache.length === 0){
@@ -3652,14 +3855,14 @@ async function renderComptes(){
         var pid = 'ec'+idx;
         html += '<div class="ergo-card" style="margin-bottom:12px">'
             + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">'
-            + '<b>'+escAttr(c.email)+'</b>'
+            + '<b>'+escAttr(c.email)+'</b>'+(c.pompier_id?' <span class="badge badge-user" style="margin-left:6px">👤 Fiche de '+escAttr((data.find(function(p){return p.id===c.pompier_id})||{prenom:"?",nom:""}).prenom+" "+((data.find(function(p){return p.id===c.pompier_id})||{}).nom||""))+'</span>':'')
             + '<div style="display:flex;gap:8px">'
             + '<button class="btn btn-success btn-sm" onclick="sauverCompteExistant('+idx+',\''+pid+'\')">💾 Enregistrer</button>'
             + '<button class="btn btn-danger btn-sm" onclick="supprimerCompte('+idx+')">🗑️ Supprimer</button>'
             + '</div></div>'
             + '<div class="form-row" style="max-width:380px"><label>Nouveau mot de passe</label><div style="display:flex;gap:8px"><input type="text" id="'+pid+'-pass" autocomplete="new-password" placeholder="laisser vide = inchangé">'
             + '<button type="button" class="btn btn-primary btn-sm" style="white-space:nowrap" onclick="document.getElementById(\''+pid+'-pass\').value=genererMotDePasse()">🎲 Générer</button></div></div>'
-            + '<div style="display:flex;flex-wrap:wrap;gap:8px 16px" id="'+pid+'-box">'+checkboxesOnglets(pid, c.onglets||[])+'</div>'
+            + (c.pompier_id?'<div style="font-size:13px;color:var(--muted)">Accès limité à sa propre fiche.</div>':'<div style="display:flex;flex-wrap:wrap;gap:8px 16px" id="'+pid+'-box">'+checkboxesOnglets(pid, c.onglets||[])+'</div>')
             + '</div>';
     });
     document.getElementById("comptesListe").innerHTML = html;
@@ -3725,7 +3928,7 @@ async function sauverCompteExistant(idx, idPrefix){
     var pass = document.getElementById(idPrefix+'-pass').value;
     if(pass && pass.length<8){alert("Le mot de passe doit faire au moins 8 caractères.");return;}
     try{
-        await appelerGererComptes({action:'enregistrer', email:c.email, password:pass||null, onglets:ongletsCoches(idPrefix)});
+        await appelerGererComptes({action:'enregistrer', email:c.email, password:pass||null, onglets:ongletsCoches(idPrefix), pompier_id:c.pompier_id||null});
         showToast("✅ Compte mis à jour pour "+c.email,"success");
         renderComptes();
         if(pass) ouvrirEnvoi(c.email, pass);
@@ -3744,7 +3947,8 @@ async function ajouterOuMajCompte(){
     if(existe && pass && pass.length<8){msg.textContent="Mot de passe : 8 caractères minimum.";return;}
     msg.style.color="var(--muted)"; msg.textContent="Enregistrement...";
     try{
-        await appelerGererComptes({action:'enregistrer', email:email, password:pass||null, onglets:ongletsCoches("nc")});
+        var pidLie=parseInt(document.getElementById("comptePompier").value)||null;
+        await appelerGererComptes({action:'enregistrer', email:email, password:pass||null, onglets:ongletsCoches("nc"), pompier_id:pidLie});
         msg.textContent="✅ Compte "+email+" créé/mis à jour.";
         msg.style.color="var(--success)";
         document.getElementById("compteEmail").value="";

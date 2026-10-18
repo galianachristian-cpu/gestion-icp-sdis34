@@ -11,7 +11,7 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ONGLETS = ["dashboard", "synthese", "saisie", "terrain", "bilan", "progression", "cardio", "muscu", "seances", "echelles", "ppa", "export"];
+const ONGLETS = ["dashboard", "synthese", "fiche", "saisie", "terrain", "bilan", "progression", "cardio", "muscu", "seances", "echelles", "ppa", "export"];
 
 function reponse(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
   const { data: estAdmin, error: errAdmin } = await appelant.rpc("est_admin_icp");
   if (errAdmin || estAdmin !== true) return reponse(403, { error: "Réservé à l'administrateur" });
 
-  let body: { action?: string; email?: string; password?: string | null; onglets?: unknown };
+  let body: { action?: string; email?: string; password?: string | null; onglets?: unknown; pompier_id?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -69,7 +69,11 @@ Deno.serve(async (req) => {
   if (body.action === "enregistrer") {
     const password = body.password ? body.password.toString() : "";
     if (password && password.length < 8) return reponse(400, { error: "Mot de passe : 8 caractères minimum" });
-    const onglets = Array.isArray(body.onglets)
+    // Compte relié à un pompier : il ne voit que sa propre fiche (la base filtre aussi)
+    const pompierId = Number.isInteger(body.pompier_id) ? (body.pompier_id as number) : null;
+    const onglets = pompierId !== null
+      ? ["fiche"]
+      : Array.isArray(body.onglets)
       ? body.onglets.filter((o): o is string => typeof o === "string" && ONGLETS.includes(o))
       : [];
 
@@ -81,7 +85,7 @@ Deno.serve(async (req) => {
       const { error } = await admin.auth.admin.updateUserById(existant.id, { password });
       if (error) return reponse(500, { error: error.message });
     }
-    const { error } = await admin.from("comptes_app").upsert({ email, onglets }, { onConflict: "email" });
+    const { error } = await admin.from("comptes_app").upsert({ email, onglets, pompier_id: pompierId }, { onConflict: "email" });
     if (error) return reponse(500, { error: error.message });
     return reponse(200, { ok: true, cree: !existant });
   }

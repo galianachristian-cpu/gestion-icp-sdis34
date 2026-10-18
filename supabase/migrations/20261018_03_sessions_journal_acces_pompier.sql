@@ -1,0 +1,32 @@
+-- Planning des sessions ICP
+create table if not exists public.sessions_icp (
+  id bigint generated always as identity primary key,
+  date date not null, heure text, lieu text, note text,
+  created_at timestamptz not null default now()
+);
+alter table public.sessions_icp enable row level security;
+create policy "Lecture comptes connectés" on public.sessions_icp for select to authenticated using (true);
+create policy "Ecriture admin" on public.sessions_icp for all to authenticated
+  using (public.est_admin_icp()) with check (public.est_admin_icp());
+
+-- Accès personnel : un compte relié à un pompier ne voit que sa propre fiche
+alter table public.comptes_app add column if not exists pompier_id integer references public.pompiers(id) on delete set null;
+create or replace function public.mon_pompier_id() returns integer language sql stable security definer set search_path = '' as $$
+  select c.pompier_id from public.comptes_app c where c.email = lower(auth.jwt() ->> 'email');
+$$;
+alter policy "Lecture comptes connectés" on public.pompiers using (public.mon_pompier_id() is null or id = public.mon_pompier_id());
+alter policy "Lecture comptes connectés" on public.historique_reference using (public.mon_pompier_id() is null);
+alter policy "Lecture comptes connectés" on public.carnet_seances using (public.mon_pompier_id() is null or pompier_id = public.mon_pompier_id());
+
+-- Journal des modifications (déclencheur sur pompiers, lecture admin)
+create table if not exists public.journal_icp (
+  id bigint generated always as identity primary key,
+  quand timestamptz not null default now(), qui text, operation text not null,
+  pompier_id integer, pompier text, changements jsonb
+);
+alter table public.journal_icp enable row level security;
+create policy "Lecture admin" on public.journal_icp for select to authenticated using (public.est_admin_icp());
+-- fonction journaliser_pompier() + trigger journal_pompiers : voir le projet Supabase.
+
+-- Sauvegardes : schéma « sauvegarde » (non exposé), copie hebdomadaire par pg_cron
+-- (8 emplacements tournants) et fonction sauvegarde_export(clé) pour la copie externe.

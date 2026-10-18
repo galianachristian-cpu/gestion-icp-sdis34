@@ -1,6 +1,6 @@
 // Service worker de Gestion ICP : rend l'appli installable et accélère les
 // ouvertures suivantes. Les données (Supabase) ne passent JAMAIS par le cache.
-const VERSION = 'icp-v5';
+const VERSION = 'icp-v7';
 const COQUILLE = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (e) => {
 
   // Photos, icônes et bibliothèques (versions figées) : cache d'abord.
   const memeSite = url.origin === self.location.origin;
-  const cdn = url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'cdnjs.cloudflare.com';
+  const cdn = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.hostname);
   if (memeSite || cdn) {
     e.respondWith(
       caches.match(req).then((enCache) => enCache || fetch(req).then((r) => {
