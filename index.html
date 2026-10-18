@@ -104,6 +104,9 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .fiche-niv{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;color:#fff}
 .fiche-conseil{display:grid;grid-template-columns:110px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
 .fiche-conseil b{color:var(--accent);font-family:var(--titre);text-transform:uppercase;font-size:13px}
+.bien-ligne{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border);font-size:14px;line-height:1.45}
+.bien-ligne .ic{font-size:22px;width:30px;text-align:center;flex-shrink:0}
+.etape-ok{display:flex;gap:10px;align-items:center;padding:8px 0;font-size:14px}
 .initiales{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);font-size:10px;font-weight:700;color:var(--accent);margin-right:8px;vertical-align:middle}
 .grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .stat-box{background:var(--surface2);border-radius:12px;padding:16px;text-align:center;border:1px solid var(--border);position:relative;overflow:hidden}
@@ -296,6 +299,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="info" id="emailCompte"></div>
 <button onclick="fermerMenuCompte();ouvrirMonMdp()">🔑 Changer mon mot de passe</button>
 <button onclick="basculerTheme()" id="btnTheme">☀️ Mode clair</button>
+<button onclick="fermerMenuCompte();afficherBienvenue(true)">❓ Comprendre les couleurs</button>
 <button class="rouge" onclick="fermerMenuCompte();doLogout()">🔒 Déconnexion</button>
 </div></div>
 </div>
@@ -354,6 +358,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="exportExcel()">📊 Excel</button>
 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
+<button class="btn btn-success btn-sm admin-seul" onclick="ouvrirBilanCampagne()">🏁 Fin de campagne : bilan</button>
 </div>
 <div class="grid-4" id="syntheseStats" style="margin-bottom:16px"></div>
 <div class="legend-box" style="margin:0 0 14px">
@@ -652,6 +657,14 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="envoiMsg" style="font-size:13px;min-height:18px;margin-top:8px;color:var(--success)"></div>
 <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" onclick="fermerEnvoi()" style="background:var(--surface2);color:var(--text)">Fermer</button></div>
 </div>
+</div>
+<div id="modalBienvenue" class="modal-overlay hidden">
+<div class="modal" style="max-width:560px"><div id="bienvenueContenu"></div>
+<div style="position:sticky;bottom:-24px;background:var(--surface);margin:10px -24px -24px;padding:12px 24px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end"><button class="btn btn-primary" style="padding:10px 18px" onclick="fermerBienvenue()">C'est compris 👍</button></div></div>
+</div>
+<div id="modalBilan" class="modal-overlay hidden" onclick="if(event.target===this)fermerBilan()">
+<div class="modal" style="max-width:560px"><h3>🏁 Bilan de fin de campagne</h3><div id="bilanEtape"></div>
+<div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerBilan()">Fermer</button></div></div>
 </div>
 <div id="modalMdp" class="modal-overlay hidden" onclick="if(event.target===this)fermerMonMdp()">
 <div class="modal">
@@ -1013,7 +1026,7 @@ function finaliserConnexion(){
     // Squelettes animés le temps que les données arrivent
     ["dashboardStats","syntheseStats"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>';});
     var dv=document.getElementById("dashVisuel"); if(dv) dv.innerHTML='<div class="squelette" style="min-height:150px"></div>';
-    loadFromSupabase().then(function(){chargerSessions();});
+    loadFromSupabase().then(function(){return chargerSessions();}).then(function(){if(monPompierId)afficherBienvenue(false);});
 }
 var connexionEnCours = false;
 async function onAuthSuccess(){
@@ -1313,6 +1326,96 @@ async function supprimerSession(id){
   chargerSessions();
 }
 
+// ===== MESSAGE DE BIENVENUE =====
+// Affiché à la première connexion d'un compte relié à un pompier (mémorisé sur
+// l'appareil) ; disponible pour tous via le menu du compte.
+function afficherBienvenue(force){
+  var cle="icp_bienvenue_"+emailConnecte;
+  if(!force){try{if(localStorage.getItem(cle))return}catch(e){}}
+  var p=monPompierId?data.find(function(x){return x.id===monPompierId}):null;
+  var next=prochaineSession();
+  var pastille=function(c){return '<span class="pastille" style="background:'+c+';width:14px;height:14px"></span>'};
+  document.getElementById("bienvenueContenu").innerHTML=
+    '<div style="text-align:center;margin-bottom:6px"><img src="icons/logo.webp" alt="" width="90" height="90"></div>'
+    +'<h3 style="text-align:center">'+(p?'👋 Bienvenue '+escAttr(p.prenom)+' !':'❓ Comprendre les couleurs')+'</h3>'
+    +'<p style="color:var(--muted);font-size:14px;text-align:center;margin-bottom:10px">'+(p?'Voici votre espace ICP personnel. Vous seul y voyez vos résultats.':'Comment lire les niveaux ICP dans l\'application.')+'</p>'
+    +'<div class="bien-ligne"><span class="ic">🎯</span><span><b>5 tests</b> évaluent la condition physique : rameur 2000 m, Luc Léger, souplesse, pompes et tractions. Les barèmes officiels du SDIS 34 tiennent compte de l\'âge et du sexe.</span></div>'
+    +'<div class="bien-ligne"><span class="ic">🚦</span><span>Chaque test reçoit une couleur :<br>'+pastille("#16a34a")+' <b>Vert</b> : condition physique optimale<br>'+pastille("#f59e0b")+' <b>Orange</b> : engagement opérationnel<br>'+pastille("#dc2626")+' <b>Rouge</b> : vigilance, point à travailler<br><span style="color:var(--muted)">Le niveau global est celui du test le plus faible.</span></span></div>'
+    +'<div class="bien-ligne"><span class="ic">💡</span><span>Pour chaque test, la fiche donne des <b>conseils d\'entraînement adaptés</b> au niveau, pour progresser d\'une campagne à l\'autre.</span></div>'
+    +'<div class="bien-ligne"><span class="ic">📄</span><span>La <b>fiche se télécharge en PDF</b> à tout moment (onglet « Fiche »).</span></div>'
+    +(p?'<div class="bien-ligne"><span class="ic">🔑</span><span>Pensez à <b>choisir votre propre mot de passe</b> : touchez la pastille à vos initiales, en haut à droite, puis « Changer mon mot de passe ».</span></div>':'')
+    +(next?'<div class="bien-ligne" style="border-bottom:0"><span class="ic">📅</span><span>Prochaine session ICP : <b>'+escAttr(libelleSession(next))+'</b></span></div>':'');
+  document.getElementById("modalBienvenue").classList.remove("hidden");
+}
+function fermerBienvenue(){
+  document.getElementById("modalBienvenue").classList.add("hidden");
+  try{localStorage.setItem("icp_bienvenue_"+emailConnecte,"1")}catch(e){}
+}
+
+// ===== BILAN DE FIN DE CAMPAGNE =====
+// En un clic : PDF de synthèse pour le chef, archivage, enregistrement, puis
+// messages prêts (chef ; pompiers sans aucun niveau individuel).
+var bilanCampagne=null;
+function fermerBilan(){document.getElementById("modalBilan").classList.add("hidden");}
+function ouvrirBilanCampagne(){
+  if(!isAdmin)return;
+  var lignes=syntheseLignes("__encours__"),r=syntheseResume(lignes);
+  if(!r.evalues){alert("Aucun résultat saisi pour la campagne en cours : rien à clôturer.");return;}
+  document.getElementById("bilanEtape").innerHTML=
+    '<p style="color:var(--muted);font-size:14px;margin-bottom:10px">En un clic : synthèse PDF pour le chef, archivage de la campagne, puis messages prêts à envoyer.</p>'
+    +'<div class="grid-4" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">'
+    +'<div class="stat-box"><div class="stat-value" style="font-size:26px">'+r.evalues+'/'+r.total+'</div><div class="stat-label">évalués</div></div>'
+    +'<div class="stat-box"><div class="stat-value" style="font-size:26px">'+r.tauxTests+'%</div><div class="stat-label">tests passés</div></div>'
+    +'<div class="stat-box"><div class="stat-value" style="font-size:22px"><span style="color:#16a34a">'+r.cpt["3"]+'</span> · <span style="color:#f59e0b">'+r.cpt["2"]+'</span> · <span style="color:#dc2626">'+r.cpt["1"]+'</span></div><div class="stat-label">vert · orange · rouge</div></div></div>'
+    +'<div class="form-row"><label>Nom de la campagne</label><input type="text" id="bilanLibelle" value="'+new Date().getFullYear()+'"></div>'
+    +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:8px 0 14px;cursor:pointer"><input type="checkbox" id="bilanVider" checked style="width:auto"> Vider les résultats pour démarrer la campagne suivante</label>'
+    +'<button class="btn btn-success" style="width:100%;padding:12px;font-size:15px" onclick="validerBilanCampagne()">🏁 Clôturer et préparer le bilan</button>';
+  document.getElementById("modalBilan").classList.remove("hidden");
+}
+async function validerBilanCampagne(){
+  var libelle=(document.getElementById("bilanLibelle").value||"").replace(/[<>]/g,"").trim();
+  if(!libelle){alert("Donnez un nom à la campagne (ex. 2026).");return;}
+  if(listeCampagnes().indexOf(libelle)!==-1&&!confirm("Une campagne « "+libelle+" » existe déjà : la remplacer ?"))return;
+  var vider=document.getElementById("bilanVider").checked;
+  var lignes=syntheseLignes("__encours__");
+  bilanCampagne={libelle:libelle,resume:syntheseResume(lignes),
+    manquants:data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length}).map(function(p){var m=testsManquants(p);return p.prenom+" "+p.nom+" : "+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))})};
+  var selC=document.getElementById("syntheseCampagne");if(selC)selC.value="__encours__";
+  generateSynthesePDF("Campagne "+libelle);
+  var n=archiverCampagne(libelle,vider);
+  clearTimeout(autosaveTimer);
+  var ok=await saveToSupabase();
+  if(ok){dirty=false;updateDirtyFlag();}
+  document.getElementById("bilanEtape").innerHTML=
+    '<div class="etape-ok">✅ Synthèse PDF « Campagne '+escAttr(libelle)+' » téléchargée</div>'
+    +'<div class="etape-ok">✅ Campagne archivée pour '+n+' pompier(s)'+(vider?', résultats remis à zéro':'')+'</div>'
+    +'<div class="etape-ok">'+(ok?'✅ Enregistré':'⏳ Enregistrement en attente (réseau) : il partira automatiquement')+'</div>'
+    +'<p style="color:var(--muted);font-size:13px;margin:10px 0">Il reste à envoyer les messages :</p>'
+    +'<div style="display:grid;gap:8px"><button class="btn btn-primary" style="padding:12px" onclick="messageBilanChef()">✉️ Message pour le chef (avec le PDF)</button>'
+    +'<button class="btn btn-primary" style="padding:12px" onclick="messageBilanPompiers()">📣 Message pour les pompiers (félicitations et relance)</button></div>';
+}
+function messageBilanChef(){
+  var b=bilanCampagne;if(!b)return;var r=b.resume;
+  fermerBilan();
+  ouvrirMessage("✉️ Bilan pour le chef",
+    "Bonjour Capitaine,\n\nVeuillez trouver ci-joint la synthèse ICP de la campagne « "+b.libelle+" » de la caserne Cruzy-Quarante (fichier PDF « Synthese_ICP_couleurs », à joindre à ce message).\n\n"
+    +"En résumé :\n• "+r.evalues+" pompier(s) sur "+r.total+" ont passé l'ICP ("+r.tauxEvalues+" %)\n• Taux de tests passés : "+r.tauxTests+" %\n"
+    +"• Niveau global : "+r.cpt["3"]+" vert, "+r.cpt["2"]+" orange, "+r.cpt["1"]+" rouge\n\n"
+    +"Le détail en couleurs reste consultable dans l'application, onglet Synthèse :\n"+lienAppli()+"\n\nCordialement,\nChristian",
+    "Bilan ICP — campagne "+b.libelle+" — Cruzy-Quarante","");
+}
+function messageBilanPompiers(){
+  var b=bilanCampagne;if(!b)return;var r=b.resume,next=prochaineSession();
+  fermerBilan();
+  ouvrirMessage("📣 Message aux pompiers",
+    "Bonjour à tous,\n\nLa campagne ICP « "+b.libelle+" » est terminée. Merci à tous pour votre participation ! 💪\n\n"
+    +"Bilan de la caserne : "+r.evalues+" pompier(s) évalué(s) sur "+r.total+", dont "+r.cpt["3"]+" en condition optimale 🟢, "+r.cpt["2"]+" en engagement opérationnel 🟠 et "+r.cpt["1"]+" en vigilance 🔴.\n\n"
+    +"Bravo à toutes et à tous ! Chacun peut consulter sa fiche personnelle dans l'application (onglet « Fiche ») avec des conseils pour progresser :\n"+lienAppli()+"\n\n"
+    +(b.manquants.length?"⚠️ N'ont pas passé tous les tests cette fois-ci :\n• "+b.manquants.join("\n• ")+"\n"+(next?"Ils pourront les passer lors de la prochaine session : "+libelleSession(next)+".\n\n":"Une prochaine session sera organisée pour les passer.\n\n"):"")
+    +"Christian",
+    "Fin de campagne ICP "+b.libelle,"");
+}
+
 // ===== RELANCE DES POMPIERS NON ÉVALUÉS =====
 function genererRelance(){
   var manquants=data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length});
@@ -1508,9 +1611,9 @@ function generateToutesFichesPDF(){
   liste.forEach(function(p,i){if(i)doc.addPage();dessinerFiche(doc,p);});
   doc.save("Fiches_individuelles_ICP.pdf");
 }
-function generateSynthesePDF(){
+function generateSynthesePDF(titreForce){
   var campagne=document.getElementById("syntheseCampagne").value;
-  var libelle=campagne==="__encours__"?"Campagne en cours":"Campagne "+campagne;
+  var libelle=typeof titreForce==="string"?titreForce:(campagne==="__encours__"?"Campagne en cours":"Campagne "+campagne);
   var lignes=syntheseLignes(campagne),r=syntheseResume(lignes);
   var { jsPDF }=window.jspdf;
   var doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
@@ -1549,7 +1652,7 @@ function generateSynthesePDF(){
   var leg=[["1","Rouge : vigilance (à surveiller)"],["2","Orange : engagement opérationnel"],["3","Vert : condition physique optimale"],["?","Gris : test passé mais non coté"]];
   var x=margin;doc.setFontSize(8.5);doc.setTextColor(15,23,42);
   leg.forEach(function(L){var c=COULEURS_NIVEAU[L[0]].rgb;doc.setFillColor(c[0],c[1],c[2]);doc.rect(x,y-3,4,4,'F');doc.text(L[1],x+6,y);x+=doc.getTextWidth(L[1])+14;});
-  doc.save("Synthese_ICP_couleurs_"+(campagne==="__encours__"?"en_cours":campagne)+".pdf");
+  doc.save("Synthese_ICP_couleurs_"+(typeof titreForce==="string"?titreForce.replace(/[^\w-]+/g,"_"):(campagne==="__encours__"?"en_cours":campagne))+".pdf");
 }
 function renderBilan(){
   var selC=document.getElementById("bilanCampagne");
@@ -1820,6 +1923,13 @@ function cloturerCampagne(){
   if(!libelle)return;
   libelle=libelle.replace(/[<>]/g,"").trim();
   if(!libelle)return;
+  var vider=confirm("Archiver la campagne « "+libelle+" » pour "+concernes.length+" pompier(s).\n\nVider les performances pour démarrer une nouvelle campagne ?\n(OK = vider, Annuler = garder les valeurs actuelles)");
+  archiverCampagne(libelle,vider);
+  alert("✅ Archivage terminé. L'enregistrement est automatique.");
+}
+// Copie les valeurs en cours dans l'historique de chaque pompier (campagne « libelle »)
+function archiverCampagne(libelle,vider){
+  var concernes=data.filter(aDesDonnees);
   var date=new Date().toISOString().slice(0,10);
   concernes.forEach(function(p){
     var h=getHistorique(p);
@@ -1829,13 +1939,12 @@ function cloturerCampagne(){
     h.push(snap);
     setHistorique(p,h);
   });
-  var vider=confirm("Campagne « "+libelle+" » archivée pour "+concernes.length+" pompier(s).\n\nVider les performances pour démarrer une nouvelle campagne ?\n(OK = vider, Annuler = garder les valeurs actuelles)");
   if(vider){
     data.forEach(function(p){["rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions"].forEach(function(f){p[f]=""})});
   }
   markDirty();
   renderAll();
-  alert("✅ Archivage terminé. Pensez à cliquer sur « Enregistrer » pour synchroniser avec Supabase.");
+  return concernes.length;
 }
 function deltaHtml(cur,prev,plusEstMieux){
   var a=parseFloat((cur||"").toString().replace(",","."));
