@@ -351,7 +351,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="tab-synthese" class="hidden">
 <div class="card">
 <div class="card-title">🎯 Synthèse ICP — codes couleur</div>
-<p style="color:var(--muted);font-size:13px;margin-bottom:14px">Niveau de chaque pompier par test, sans aucun résultat chiffré, et taux de tests passés.</p>
+<p style="color:var(--muted);font-size:13px;margin-bottom:14px">Niveau de chaque pompier par test, sans aucun résultat chiffré, et taux d'épreuves passées (cardio, souplesse, force).</p>
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
@@ -366,10 +366,9 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="legend-item"><span class="pastille" style="background:#f59e0b"></span><b>Orange</b> — Engagement opérationnel</div>
 <div class="legend-item"><span class="pastille" style="background:#16a34a"></span><b>Vert</b> — Condition optimale</div>
 <div class="legend-item"><span class="pastille pastille-vide"></span>Test non passé</div>
-<div class="legend-item"><span class="pastille" style="background:#94a3b8"></span>Passé, non coté</div>
 </div>
 <div class="scroll-table"><table>
-<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Tests passés</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
+<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Épreuves passées</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
 <tbody id="syntheseBody"></tbody>
 </table></div>
 </div>
@@ -992,7 +991,7 @@ function getAge(a){return ANNEE_COURANTE-a}
 function getTranche(a){if(a<=29)return"18-29";if(a<=39)return"30-39";if(a<=49)return"40-49";return"50-65"}
 function getLevelBadge(n){var v=parseInt(n);if(!v||v<1||v>3)return"—";var cls=v===1?"level-1":v===2?"level-2":"level-3";var txt=v===1?"VIGILANCE":v===2?"ENGAGEMENT":"OPTIMAL";return'<span class="level-badge '+cls+'">'+txt+"</span>"}
 function getAppreciation(n){var v=parseInt(n);if(!v)return"—";var cls=v===1?"app-n1":v===2?"app-n2":"app-n3";var txt=v===1?"Vigilance — à surveiller":v===2?"Engagement opérationnel":"Condition physique optimale";return'<span class="appreciation-box '+cls+'">'+txt+"</span>"}
-function participationRate(p){var f=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var filled=f.filter(function(x){return p[x]&&p[x].toString().trim()!==""}).length;return Math.round((filled/f.length)*100)}
+function participationRate(p){var n=EPREUVES_ICP.length+1;var filled=epreuvesPassees(p)+(p.poids&&p.poids.toString().trim()!==""?1:0);return Math.round((filled/n)*100)}
 function getPartClass(r){if(r===100)return"part-100";if(r>=66)return"part-66";if(r>=33)return"part-33";return"part-0"}
 function timeToSec(t){if(!t)return null;var m=t.match(/(\d+)'(\d+)"?/);if(m)return parseInt(m[1])*60+parseInt(m[2]);var m2=t.match(/(\d+):(\d+)/);if(m2)return parseInt(m2[1])*60+parseInt(m2[2]);return null}
 function secToTime(s){var m=Math.floor(s/60);var sec=s%60;return m+"'"+(sec<10?"0":"")+sec+'"'}
@@ -1269,19 +1268,21 @@ var TESTS_SYNTHESE=[{key:"rameur",label:"Rameur",field:"rameur_temps"},{key:"luc
   {key:"souplesse",label:"Souplesse",field:"souplesse"},{key:"pompes",label:"Pompes",field:"pompes"},{key:"tractions",label:"Tractions",field:"tractions"}];
 var COULEURS_NIVEAU={"1":{hex:"#dc2626",rgb:[220,38,38],txt:"Vigilance"},"2":{hex:"#f59e0b",rgb:[245,158,11],txt:"Engagement opérationnel"},
   "3":{hex:"#16a34a",rgb:[22,163,74],txt:"Condition optimale"},"?":{hex:"#94a3b8",rgb:[148,163,184],txt:"Passé, non coté"}};
+// Une ICP complète = 3 épreuves : cardio (rameur OU Luc Léger), souplesse, force (pompes OU tractions)
+var EPREUVES_ICP=[["rameur_temps","luc_perf"],["souplesse"],["pompes","tractions"]];
+function epreuvesPassees(o){return EPREUVES_ICP.filter(function(g){return g.some(function(f){return o[f]&&o[f].toString().trim()!==""})}).length}
 function syntheseLignes(campagne){
   var anneeRef=campagne==="__encours__"?ANNEE_COURANTE:parseInt(campagne);
   return pompiersCampagne(campagne).map(function(o){
-    var age=anneeRef-o.annee,niv={},passes=0;
+    var age=anneeRef-o.annee,niv={},passes=epreuvesPassees(o);
     TESTS_SYNTHESE.forEach(function(t){
       var v=o[t.field];
       if(!v||v.toString().trim()===""){niv[t.key]="";return}
-      passes++;
       var n=t.key==="rameur"?evalRameur(o.sexe,o.poids,age,v):evalTest(t.key,o.sexe,age,v);
       niv[t.key]=n?n.toString():"?"; // ex. rameur sans poids : passé mais pas cotable
     });
     return {id:o.id,nom:o.nom,prenom:o.prenom,niv:niv,global:(o._niveau||"").toString(),passes:passes,
-            taux:Math.round(passes/TESTS_SYNTHESE.length*100)};
+            taux:Math.round(passes/EPREUVES_ICP.length*100)};
   }).sort(parNomPrenom);
 }
 function syntheseResume(lignes){
@@ -1291,10 +1292,10 @@ function syntheseResume(lignes){
   lignes.forEach(function(l){if(cpt[l.global]!==undefined)cpt[l.global]++});
   return {total:lignes.length,evalues:evalues,
           tauxEvalues:lignes.length?Math.round(evalues/lignes.length*100):0,
-          tauxTests:lignes.length?Math.round(totalPasses/(lignes.length*TESTS_SYNTHESE.length)*100):0,cpt:cpt};
+          tauxTests:lignes.length?Math.round(totalPasses/(lignes.length*EPREUVES_ICP.length)*100):0,cpt:cpt};
 }
 function pastilleHtml(n){
-  if(!n)return '<span class="pastille pastille-vide" title="Test non passé"></span>';
+  if(!n||n==="?")return '<span class="pastille pastille-vide" title="'+(n?"Passé, non coté":"Test non passé")+'"></span>';
   var c=COULEURS_NIVEAU[n]||COULEURS_NIVEAU["?"];
   return '<span class="pastille" style="background:'+c.hex+'" title="'+c.txt+'"></span>';
 }
@@ -1309,7 +1310,7 @@ function renderSynthese(){
   var lignes=syntheseLignes(selC.value),r=syntheseResume(lignes);
   document.getElementById("syntheseStats").innerHTML=
     '<div class="stat-box"><div class="stat-value">'+r.tauxEvalues+'%</div><div class="stat-label">Pompiers ayant passé l\'ICP</div><div class="stat-sub">'+r.evalues+' sur '+r.total+'</div></div>'
-   +'<div class="stat-box"><div class="stat-value">'+r.tauxTests+'%</div><div class="stat-label">Tests passés</div><div class="stat-sub">sur l\'ensemble des tests prévus</div></div>'
+   +'<div class="stat-box"><div class="stat-value">'+r.tauxTests+'%</div><div class="stat-label">Épreuves passées</div><div class="stat-sub">cardio, souplesse, force</div></div>'
    +'<div class="stat-box"><div class="stat-value" style="display:flex;gap:14px;justify-content:center;font-size:24px">'
      +'<span style="color:#dc2626">'+r.cpt["1"]+'</span><span style="color:#f59e0b">'+r.cpt["2"]+'</span><span style="color:#16a34a">'+r.cpt["3"]+'</span></div>'
      +'<div class="stat-label">Rouge · Orange · Vert</div><div class="stat-sub">niveau global</div></div>';
@@ -1319,7 +1320,7 @@ function renderSynthese(){
     html+='<tr><td><span class="initiales">'+escAttr(((l.prenom||" ")[0]+(l.nom||" ")[0]).toUpperCase())+'</span><b>'+escAttr(l.nom)+'</b></td><td>'+escAttr(l.prenom)+'</td>'
       +TESTS_SYNTHESE.map(function(t){return '<td style="text-align:center">'+pastilleHtml(l.niv[t.key])+'</td>'}).join("")
       +'<td style="text-align:center">'+pastilleHtml(l.global)+'</td>'
-      +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+TESTS_SYNTHESE.length+' · '+l.taux+'%</td>'
+      +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+EPREUVES_ICP.length+' · '+l.taux+'%</td>'
       +(isAdmin?'<td style="text-align:center"><button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Fiche individuelle (PDF)" onclick="generateFichePDF('+l.id+')">📄</button></td>':'')+'</tr>';
   });
   document.querySelectorAll("#tab-synthese .admin-seul").forEach(function(e){e.classList.toggle("hidden",!isAdmin)});
@@ -1340,7 +1341,8 @@ function sessionsAVenir(){var t=aujourdhuiISO();return sessionsIcp.filter(functi
 function prochaineSession(){return sessionsAVenir()[0]||null;}
 function dateLongue(iso){var t=new Date(iso+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});return t.charAt(0).toUpperCase()+t.slice(1);}
 function libelleSession(x){return dateLongue(x.date)+(x.heure?" à "+x.heure:"")+(x.lieu?" — "+x.lieu:"");}
-function testsManquants(p){return TESTS_SYNTHESE.filter(function(t){return !p[t.field]||p[t.field].toString().trim()===""}).map(function(t){return t.label});}
+var LIBELLES_EPREUVES=["rameur ou Luc Léger","souplesse","pompes ou tractions"];
+function testsManquants(p){return EPREUVES_ICP.map(function(g,i){return g.some(function(f){return p[f]&&p[f].toString().trim()!==""})?null:LIBELLES_EPREUVES[i]}).filter(Boolean);}
 function renderSessions(){
   var el=document.getElementById("sessionsContenu");if(!el)return;
   var next=prochaineSession(),html="";
@@ -1355,7 +1357,7 @@ function renderSessions(){
       +'<button class="btn btn-primary btn-sm" onclick="genererRelance()">📣 Prévenir les pompiers</button></div>';
     html+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted);font-size:13px"><b style="color:var(--text)">'+attendus.length+'</b> pompier(s) attendu(s) — tests encore à passer</summary>'
       +'<ul style="margin:8px 0 0 18px;font-size:13px;color:var(--muted);columns:2 260px">'+attendus.map(function(p){var m=testsManquants(p);
-        return '<li><b style="color:var(--text)">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</b> : '+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))+'</li>'}).join("")+'</ul></details>';
+        return '<li><b style="color:var(--text)">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</b> : '+(m.length===EPREUVES_ICP.length?"tous les tests":m.join(", "))+'</li>'}).join("")+'</ul></details>';
   }else{
     html+='<p style="color:var(--muted);font-size:14px">Aucune session prévue pour le moment.</p>';
   }
@@ -1565,7 +1567,7 @@ function ouvrirBilanCampagne(){
     '<p style="color:var(--muted);font-size:14px;margin-bottom:10px">En un clic : synthèse PDF pour le chef, archivage de la campagne, puis messages prêts à envoyer.</p>'
     +'<div class="grid-4" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">'
     +'<div class="stat-box"><div class="stat-value" style="font-size:26px">'+r.evalues+'/'+r.total+'</div><div class="stat-label">évalués</div></div>'
-    +'<div class="stat-box"><div class="stat-value" style="font-size:26px">'+r.tauxTests+'%</div><div class="stat-label">tests passés</div></div>'
+    +'<div class="stat-box"><div class="stat-value" style="font-size:26px">'+r.tauxTests+'%</div><div class="stat-label">épreuves passées</div></div>'
     +'<div class="stat-box"><div class="stat-value" style="font-size:22px"><span style="color:#16a34a">'+r.cpt["3"]+'</span> · <span style="color:#f59e0b">'+r.cpt["2"]+'</span> · <span style="color:#dc2626">'+r.cpt["1"]+'</span></div><div class="stat-label">vert · orange · rouge</div></div></div>'
     +'<div class="form-row"><label>Nom de la campagne</label><input type="text" id="bilanLibelle" value="'+new Date().getFullYear()+'"></div>'
     +'<label style="display:flex;gap:8px;align-items:center;font-size:14px;margin:8px 0 14px;cursor:pointer"><input type="checkbox" id="bilanVider" checked style="width:auto"> Vider les résultats pour démarrer la campagne suivante</label>'
@@ -1579,7 +1581,7 @@ async function validerBilanCampagne(){
   var vider=document.getElementById("bilanVider").checked;
   var lignes=syntheseLignes("__encours__");
   bilanCampagne={libelle:libelle,resume:syntheseResume(lignes),
-    manquants:data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length}).map(function(p){var m=testsManquants(p);return p.prenom+" "+p.nom+" : "+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))})};
+    manquants:data.slice().sort(parNomPrenom).filter(function(p){return testsManquants(p).length}).map(function(p){var m=testsManquants(p);return p.prenom+" "+p.nom+" : "+(m.length===EPREUVES_ICP.length?"tous les tests":m.join(", "))})};
   var selC=document.getElementById("syntheseCampagne");if(selC)selC.value="__encours__";
   generateSynthesePDF("Campagne "+libelle);
   var n=archiverCampagne(libelle,vider);
@@ -1599,7 +1601,7 @@ function messageBilanChef(){
   fermerBilan();
   ouvrirMessage("✉️ Bilan pour le chef",
     "Bonjour Capitaine,\n\nVeuillez trouver ci-joint la synthèse ICP de la campagne « "+b.libelle+" » de la caserne Cruzy-Quarante (fichier PDF « Synthese_ICP_couleurs », à joindre à ce message).\n\n"
-    +"En résumé :\n• "+r.evalues+" pompier(s) sur "+r.total+" ont passé l'ICP ("+r.tauxEvalues+" %)\n• Taux de tests passés : "+r.tauxTests+" %\n"
+    +"En résumé :\n• "+r.evalues+" pompier(s) sur "+r.total+" ont passé l'ICP ("+r.tauxEvalues+" %)\n• Taux d'épreuves passées : "+r.tauxTests+" %\n"
     +"• Niveau global : "+r.cpt["3"]+" vert, "+r.cpt["2"]+" orange, "+r.cpt["1"]+" rouge\n\n"
     +"Le détail en couleurs reste consultable dans l'application, onglet Synthèse :\n"+lienAppli()+"\n\nCordialement,\nChristian",
     "Bilan ICP — campagne "+b.libelle+" — Cruzy-Quarante","");
@@ -1624,7 +1626,7 @@ function genererRelance(){
   var texte="Bonjour à tous,\n\nPoint sur les tests ICP (indices de condition physique) de la campagne en cours :\n\n"
     +(next?"📅 Prochaine session : "+libelleSession(next)+(next.note?" ("+next.note+")":"")+"\n\n":"")
     +"Tests restant à passer :\n"
-    +manquants.map(function(p){var m=testsManquants(p);return "• "+p.prenom+" "+p.nom+" : "+(m.length===TESTS_SYNTHESE.length?"tous les tests":m.join(", "))}).join("\n")
+    +manquants.map(function(p){var m=testsManquants(p);return "• "+p.prenom+" "+p.nom+" : "+(m.length===EPREUVES_ICP.length?"tous les tests":m.join(", "))}).join("\n")
     +"\n\nMerci de vous organiser pour venir les passer"+(next?" à cette date":"")+". En cas d'empêchement, prévenez-moi.\n\nChristian";
   ouvrirMessage("📣 Relancer les pompiers",texte,"Tests ICP — tests restant à passer","");
 }
@@ -1785,7 +1787,7 @@ async function exportExcel(){
   var txt=function(n){return n?(TEXTE_NIVEAU[n]||n):"non passé"};
   var synth=lignes.map(function(l){var o={"Nom":l.nom,"Prénom":l.prenom};
     TESTS_SYNTHESE.forEach(function(t){o[t.label]=txt(l.niv[t.key])});
-    o["Niveau global"]=l.global?TEXTE_NIVEAU[l.global]:"non évalué";o["Tests passés"]=l.passes+"/"+TESTS_SYNTHESE.length;o["Taux"]=l.taux/100;return o;});
+    o["Niveau global"]=l.global?TEXTE_NIVEAU[l.global]:"non évalué";o["Épreuves passées"]=l.passes+"/"+EPREUVES_ICP.length;o["Taux"]=l.taux/100;return o;});
   var wb=XLSX.utils.book_new();
   var ws=XLSX.utils.json_to_sheet(synth);ws["!cols"]=[{wch:16},{wch:14},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:24},{wch:12},{wch:8}];
   XLSX.utils.book_append_sheet(wb,ws,"Synthèse couleurs");
@@ -1829,7 +1831,7 @@ function generateSynthesePDF(titreForce){
   y+=26;
   // Légende encadrée, en haut de page
   var leg=[["3","Vert","Condition physique optimale"],["2","Orange","Engagement opérationnel"],["1","Rouge","Vigilance — à surveiller"],
-           ["?","Gris","Test passé, non coté"],["","Blanc","Test non passé"]];
+           ["","Blanc","Test non passé"]];
   var lw=(pageW-2*margin)/leg.length;
   doc.setDrawColor(203,213,225);doc.setLineWidth(0.3);doc.roundedRect(margin,y,pageW-2*margin,11,2,2,'S');
   leg.forEach(function(L,i){
@@ -1843,7 +1845,7 @@ function generateSynthesePDF(titreForce){
   doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(15,23,42);
   doc.text("Présence à l'ICP : "+r.evalues+" pompier(s) sur "+r.total,margin,y);
   y+=3;
-  function presence(l){return l.passes===0?"Absent":l.passes===nbT?"Complet":"Partiel"}
+  function presence(l){return l.passes===0?"Absent":l.passes===EPREUVES_ICP.length?"Complet":"Partiel"}
   var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Niveau global","Présence"]);
   var body=lignes.map(function(l){
     return [l.nom,l.prenom].concat(TESTS_SYNTHESE.map(function(t){return l.niv[t.key]||"-"})).concat([l.global||"-",presence(l)]);
@@ -1857,7 +1859,7 @@ function generateSynthesePDF(titreForce){
       var c=d.column.index;
       if(c>=2&&c<=2+nbT){
         var v=d.cell.raw;d.cell.styles.halign='center';d.cell.text=[""];
-        if(COULEURS_NIVEAU[v])d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;
+        if(COULEURS_NIVEAU[v]&&v!=="?")d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;
       }
       if(c===3+nbT){
         var p=d.cell.raw;d.cell.styles.halign='center';d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=8.5;
@@ -1865,7 +1867,7 @@ function generateSynthesePDF(titreForce){
       }
     }});
   doc.setFont("helvetica","italic");doc.setFontSize(7.5);doc.setTextColor(100,116,139);
-  doc.text("Présence — Complet : tous les tests passés · Partiel : une partie des tests · Absent : aucun test. Niveau global = le plus bas des tests passés.",margin,pageH-8);
+  doc.text("Présence — Complet : cardio (rameur ou Luc Léger) + souplesse + force (pompes ou tractions) · Partiel : une partie · Absent : aucun test. Niveau global = le plus bas des tests passés.",margin,pageH-8);
   doc.save("Synthese_ICP_couleurs_"+(typeof titreForce==="string"?titreForce.replace(/[^\w-]+/g,"_"):(campagne==="__encours__"?"en_cours":campagne))+".pdf");
 }
 function renderBilan(){

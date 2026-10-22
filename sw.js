@@ -1,6 +1,6 @@
 // Service worker de Gestion ICP : rend l'appli installable et accélère les
 // ouvertures suivantes. Les données (Supabase) ne passent JAMAIS par le cache.
-const VERSION = 'icp-v14';
+const VERSION = 'icp-v15';
 const COQUILLE = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
