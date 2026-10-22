@@ -3783,7 +3783,8 @@ function generatePDF(orientation){
         var pompNiv = evalTest("pompes", p.sexe, age, p.pompes);
         var tractNiv = evalTest("tractions", p.sexe, age, p.tractions);
 
-        var lucDisp = (p.luc_niv || p.luc_perf) ? (p.luc_niv + "/" + p.luc_perf) : "—";
+        // Seul le palier atteint est affiché (le niveau figure déjà dans « Niv. global »)
+        var lucDisp = p.luc_perf ? "Palier " + p.luc_perf : "—";
 
         var nivText = nivG === "1" ? "VIGILANCE" : nivG === "2" ? "ENGAGEMENT" : nivG === "3" ? "OPTIMAL" : "—";
 
