@@ -586,7 +586,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="tab-export" class="hidden">
 <div class="card">
 <div class="card-title">📄 Exporter le rapport PDF</div>
-<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Génère un rapport complet des ICP avec statistiques, tableau des pompiers, barèmes officiels et zones cardio (FC Réserve).</p>
+<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Génère le rapport des résultats ICP : statistiques et tableau des pompiers (sans les tableaux de barèmes).</p>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
 <button class="btn btn-primary" onclick="generatePDF()">📄 Générer le PDF</button>
 <button class="btn btn-success" onclick="generatePDF('portrait')">📄 PDF Portrait</button>
@@ -598,8 +598,6 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div>✅ Tableau des 30 pompiers</div>
 <div>✅ Niveaux colorés (N1/N2/N3)</div>
 <div>✅ Taux de participation</div>
-<div>✅ Barèmes officiels SDIS 34</div>
-<div>✅ Barèmes Ergo-Avirons</div>
 </div>
 </div>
 </div>
@@ -3548,46 +3546,6 @@ function cardioRows(p){
     return {pct:z.pct,label:z.label,color:z.color,karvonen:k,direct:d};
   });
 }
-// Page "zones cardio" ajoutée au rapport collectif
-function addCardioPage(doc,pageW,margin){
-  doc.addPage();
-  var y=margin;
-  doc.setFont("helvetica","bold");doc.setFontSize(14);doc.setTextColor(15,23,42);
-  doc.text("ZONES CARDIO — MÉTHODE FC RÉSERVE (KARVONEN)",pageW/2,y,{align:"center"});
-  y+=6;
-  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(100,116,139);
-  doc.text("FC cible = FC repos + % x (FC Max - FC repos)   |   FC Max estimée = 220 - âge lorsqu'elle n'est pas mesurée",pageW/2,y,{align:"center"});
-  y+=6;
-  var body=[];
-  data.slice().sort(function(a,b){return a.nom.localeCompare(b.nom)||a.prenom.localeCompare(b.prenom)}).forEach(function(p){
-    var fcr=getFcRepos(p);if(!fcr)return;
-    var fcm=getFcMax(p);var reserve=fcm.val-fcr;var vo2=vo2maxRameur(p,false);var vo2l=vo2maxLuc(p);
-    function z(pct){return Math.round(fcr+(pct/100)*reserve)}
-    var vmal=vmaLuc(p);
-    body.push([p.nom,p.prenom,getAge(p.annee).toString(),fcm.val+(fcm.mesuree?"":" est."),fcr.toString(),
-               reserve.toString(),vo2?vo2.toString():"—",vmal?vmal.toString():"—",vo2l?vo2l.toString():"—",z(50).toString(),z(65).toString(),z(75).toString(),z(85).toString(),z(100).toString()]);
-  });
-  if(body.length===0){
-    doc.setFontSize(10);doc.setTextColor(180,83,9);
-    doc.text("Aucune FC de repos renseignée : saisissez-la dans l'onglet Saisie ou Zones cardio pour alimenter cette page.",margin,y+8);
-    return;
-  }
-  doc.autoTable({
-    startY:y,
-    head:[['NOM','PRÉNOM','ÂGE','FC MAX','FC REPOS','FC RÉSERVE','VO2 RAMEUR','VMA','VO2 LÉGER','RÉCUP 50%','END. FOND. 65%','SV1 75%','SV2 85%','MAX 100%']],
-    body:body,
-    headStyles:{fillColor:[15,23,42],textColor:255,fontSize:7,fontStyle:'bold'},
-    bodyStyles:{fontSize:7},
-    styles:{halign:'center',cellPadding:2,fontSize:7},
-    columnStyles:{0:{halign:'left',fontStyle:'bold'},1:{halign:'left'}},
-    margin:{left:margin,right:margin},
-    theme:'grid',
-    showHead:'everyPage'
-  });
-  var yEnd=doc.lastAutoTable.finalY+6;
-  doc.setFontSize(7);doc.setTextColor(100,116,139);
-  doc.text("VO2 rameur : formules Concept2 (2000 m + poids, profil non entraîné).   VMA = 8 + palier x 0,5 (Luc Léger), VO2 Léger = VMA x 3,5.",margin,yEnd);
-}
 // Fiche individuelle imprimable pour le pompier sélectionné
 function generateCardioPDF(){
   var sel=document.getElementById("cardioPompier");
@@ -3847,25 +3805,20 @@ function generatePDF(orientation){
 
     doc.autoTable({
         startY: y,
-        head: [['NOM', 'PRÉNOM', 'ÂGE', 'SEXE', 'POIDS', 'RAMEUR', 'LUC LÉGER', 'SOUPLESSE', 'POMPES', 'TRACTIONS', 'NIV. GLOBAL', 'TAUX %']],
+        head: [orientation === 'portrait'
+            ? ['NOM', 'PRÉNOM', 'ÂGE', 'S.', 'POIDS', 'RAMEUR', 'LUC', 'SOUPL.', 'POMP.', 'TRACT.', 'NIVEAU', '%']
+            : ['NOM', 'PRÉNOM', 'ÂGE', 'SEXE', 'POIDS', 'RAMEUR', 'LUC LÉGER', 'SOUPLESSE', 'POMPES', 'TRACTIONS', 'NIV. GLOBAL', 'TAUX %']],
         body: tableBody,
         headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 7, fontStyle: 'bold' },
         bodyStyles: { fontSize: 7, font: 'helvetica' },
         styles: { halign: 'center', cellPadding: 2, overflow: 'linebreak', fontSize: 7 },
-        columnStyles: {
-            0: { halign: 'left', fontStyle: 'bold', cellWidth: 'auto' },
-            1: { halign: 'left', cellWidth: 'auto' },
-            2: { cellWidth: 8 },
-            3: { cellWidth: 8 },
-            4: { cellWidth: 12 },
-            5: { cellWidth: 14 },
-            6: { cellWidth: 16 },
-            7: { cellWidth: 12 },
-            8: { cellWidth: 12 },
-            9: { cellWidth: 14 },
-            10: { cellWidth: 18 },
-            11: { cellWidth: 10 }
-        },
+        // Largeurs proportionnelles à la page (paysage ou portrait) pour des en-têtes lisibles
+        columnStyles: (function(){
+            var l = [36, 30, 15, 11, 16, 20, 22, 22, 18, 20, 26, 15], k = (pageW - 2*margin) / 253, c = {};
+            l.forEach(function(w, i){ c[i] = { cellWidth: w * k }; });
+            c[0].halign = 'left'; c[0].fontStyle = 'bold'; c[1].halign = 'left';
+            return c;
+        })(),
         margin: { left: margin, right: margin },
         theme: 'grid',
         showHead: 'everyPage',
@@ -3878,129 +3831,6 @@ function generatePDF(orientation){
             }
         }
     });
-
-    // === PAGE 2 : BARÈMES ===
-    doc.addPage();
-    y = margin;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(15, 23, 42);
-    doc.text("BARÈMES OFFICIELS SDIS 34 — HÉRAULT 2026", pageW/2, y, { align: "center" });
-    y += 10;
-
-    Object.entries(baremes).forEach(function(entry){
-        var key = entry[0], echelle = entry[1];
-
-        doc.setFontSize(9);
-        doc.setTextColor(15, 23, 42);
-        doc.text(echelle.label, margin, y);
-        y += 4;
-
-        // Hommes
-        var hBody = [];
-        Object.entries(echelle.homme).forEach(function(e){
-            hBody.push([e[0], e[1][0], e[1][1], e[1][2]]);
-        });
-
-        doc.autoTable({
-            startY: y,
-            head: [['Âge', 'N1 Vigilance', 'N2 Engagement', 'N3 Optimal']],
-            body: hBody,
-            headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 7 },
-            bodyStyles: { fontSize: 7 },
-            styles: { halign: 'center', cellPadding: 2, fontSize: 7 },
-            margin: { left: margin, right: pageW/2 + 2 },
-            theme: 'grid',
-            tableWidth: (pageW - 2*margin - 4) / 2
-        });
-
-        // Femmes
-        var fBody = [];
-        Object.entries(echelle.femme).forEach(function(e){
-            fBody.push([e[0], e[1][0], e[1][1], e[1][2]]);
-        });
-
-        doc.autoTable({
-            startY: y,
-            head: [['Âge', 'N1 Vigilance', 'N2 Engagement', 'N3 Optimal']],
-            body: fBody,
-            headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 7 },
-            bodyStyles: { fontSize: 7 },
-            styles: { halign: 'center', cellPadding: 2, fontSize: 7 },
-            margin: { left: pageW/2 + 2, right: margin },
-            theme: 'grid',
-            tableWidth: (pageW - 2*margin - 4) / 2
-        });
-
-        y = Math.max(doc.lastAutoTable.finalY, doc.lastAutoTable.finalY) + 6;
-
-        if (y > pageH - 30) {
-            doc.addPage();
-            y = margin;
-        }
-    });
-
-    // === PAGE 3 : ERGO-AVIRONS ===
-    doc.addPage();
-    y = margin;
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(15, 23, 42);
-    doc.text("BARÈMES ERGO-AVIRONS (2 000 m)", pageW/2, y, { align: "center" });
-    y += 10;
-
-    // Hommes
-    doc.setFontSize(9);
-    doc.text("Hommes", margin, y);
-    y += 4;
-
-    var ergoHBody = [];
-    ergoPoidsHomme.forEach(function(poids){
-        Object.entries(ergoHomme[poids]).forEach(function(e){
-            ergoHBody.push([poids + " kg", e[0], secToTime(e[1][0]), secToTime(e[1][1]), secToTime(e[1][2])]);
-        });
-    });
-
-    doc.autoTable({
-        startY: y,
-        head: [['Poids', 'Âge', 'N1 >', 'N2 >', 'N3 ≤']],
-        body: ergoHBody,
-        headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 7 },
-        bodyStyles: { fontSize: 7 },
-        styles: { halign: 'center', cellPadding: 2, fontSize: 7 },
-        margin: { left: margin, right: margin },
-        theme: 'grid'
-    });
-
-    y = doc.lastAutoTable.finalY + 8;
-
-    // Femmes
-    doc.setFontSize(9);
-    doc.text("Femmes", margin, y);
-    y += 4;
-
-    var ergoFBody = [];
-    ergoPoidsFemme.forEach(function(poids){
-        Object.entries(ergoFemme[poids]).forEach(function(e){
-            ergoFBody.push([poids + " kg", e[0], secToTime(e[1][0]), secToTime(e[1][1]), secToTime(e[1][2])]);
-        });
-    });
-
-    doc.autoTable({
-        startY: y,
-        head: [['Poids', 'Âge', 'N1 >', 'N2 >', 'N3 ≤']],
-        body: ergoFBody,
-        headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 7 },
-        bodyStyles: { fontSize: 7 },
-        styles: { halign: 'center', cellPadding: 2, fontSize: 7 },
-        margin: { left: margin, right: margin },
-        theme: 'grid'
-    });
-
-    // === PAGE 4 : ZONES CARDIO ===
-    addCardioPage(doc, pageW, margin);
 
     // Sauvegarder
     var filename = "Rapport_ICP_Cruzy_Quarante_2026.pdf";
