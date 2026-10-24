@@ -38,6 +38,9 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .menu-compte{position:relative}
 .btn-compte{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:4px 10px 4px 4px;cursor:pointer;font:inherit;font-size:13px}
 .btn-compte:hover{border-color:var(--primary)}
+.bandeau-apercu{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:10px 14px;
+  background:linear-gradient(90deg,#9a3412,#ea580c);color:#fff;font-size:14px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.bandeau-apercu button{background:#fff;color:#9a3412;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
 .galon svg{display:block}
 .avatar.avec-galon{background:none;border-radius:6px;width:auto;height:auto}
@@ -307,6 +310,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button onclick="fermerMenuCompte();ouvrirMonMdp()">🔑 Changer mon mot de passe</button>
 <button onclick="basculerTheme()" id="btnTheme">☀️ Mode clair</button>
 <button onclick="fermerMenuCompte();afficherBienvenue(true)">❓ Comprendre les couleurs</button>
+<button id="btnApercuChef" class="hidden" onclick="fermerMenuCompte();choisirApercuChef()">👁 Voir l'appli comme un chef</button>
 <button class="rouge" onclick="fermerMenuCompte();doLogout()">🔒 Déconnexion</button>
 </div></div>
 </div>
@@ -1045,7 +1049,43 @@ async function doLogin(){
     if(!res.error) return; // onAuthStateChange (ci-dessous) prend le relais pour afficher l'app.
     errEl.textContent="Identifiants incorrects.";
 }
+// ===== APERÇU « VUE CHEF » (administrateur) =====
+// Bascule l'appli, sans rien enregistrer, dans l'état exact d'un compte chef : mêmes onglets, sa seule fiche,
+// et la synthèse publiée (synthese_couleurs) que le serveur lui envoie. On en sort en rechargeant la page.
+var modeApercu=false;
+async function choisirApercuChef(){
+  if(!isAdmin)return;
+  if(dirty){var ok=await saveToSupabase();if(!ok){alert("Enregistrez d'abord vos modifications.");return;}clearDirty();}
+  await chargerComptes();
+  var chefs=comptesCache.filter(function(c){return c.pompier_id&&aVueChef(c)});
+  if(!chefs.length){alert("Aucun compte n'a la vue chef. Donnez-la avec le bouton 👔 dans Comptes → Accès des pompiers.");return;}
+  var choix=chefs[0];
+  if(chefs.length>1){
+    var liste=chefs.map(function(c,i){var p=data.find(function(x){return x.id===c.pompier_id});return (i+1)+". "+(p?nomGrade(p):c.email)}).join("\n");
+    var r=prompt("Voir l'appli comme :\n\n"+liste+"\n\nTapez le numéro :","1");if(r===null)return;
+    choix=chefs[parseInt(r,10)-1];if(!choix){alert("Numéro invalide.");return;}
+  }
+  await entrerApercuChef(choix);
+}
+async function entrerApercuChef(c){
+  await publierSynthese();                       // la synthèse qu'il verra est à jour
+  var moi=data.find(function(x){return x.id===c.pompier_id});
+  modeApercu=true;isAdmin=false;misOnglets=(c.onglets||[]).slice();monPompierId=c.pompier_id;
+  data=data.filter(function(x){return x.id===c.pompier_id});   // le serveur ne lui envoie que sa ligne
+  HISTORIQUE_IMPORT={};
+  await chargerSynthesePubliee();
+  var badge=document.getElementById("roleBadge");badge.textContent="Consultation";badge.className="badge badge-user";
+  afficherCompteEntete();document.getElementById("emailCompte").textContent=c.email+" (aperçu)";
+  ["btnApercuChef"].forEach(function(id){var e=document.getElementById(id);if(e)e.classList.add("hidden")});
+  var b=document.createElement("div");b.className="bandeau-apercu";b.id="bandeauApercu";
+  b.innerHTML='<span>👁 Aperçu : vous voyez exactement ce que voit '+escAttr(moi?nomGrade(moi):c.email)+'. Rien n\'est modifiable.</span><button onclick="quitterApercu()">✖ Quitter l\'aperçu</button>';
+  document.body.insertBefore(b,document.body.firstChild);
+  applyPermissions();renderAll();switchTab("synthese");
+  afficherBienvenue(true);
+}
+function quitterApercu(){location.reload();}
 async function doLogout(){
+    if(modeApercu){quitterApercu();return;}
     // Si des modifications ne sont pas encore enregistrées (l'auto-save attend
     // 4 s après la dernière saisie), on tente de sauvegarder avant de couper la
     // connexion. Sans ça, une suppression/modif faite juste avant de cliquer sur
@@ -1107,6 +1147,7 @@ function tabAutorise(tab){
 // et rebascule sur le Tableau de bord si l'onglet actuellement ouvert n'est
 // plus autorisé (ex. après un changement de rôle).
 function applyPermissions(){
+    var ba=document.getElementById("btnApercuChef");if(ba)ba.classList.toggle("hidden",!isAdmin);
     var comptesBtn=document.getElementById("navtab-comptes");
     if(comptesBtn) comptesBtn.classList.toggle("hidden", !isAdmin);
     TABS_INFO.forEach(function(t){
@@ -4062,6 +4103,7 @@ function fermerPlus(){var f=document.getElementById("feuillePlus");if(f)f.classL
 
 // --- Mon mot de passe (tout compte connecté) ---
 function ouvrirMonMdp(){
+  if(modeApercu){alert("Indisponible pendant l'aperçu.");return;}
     document.getElementById("mdpNouveau").value="";
     document.getElementById("mdpConfirme").value="";
     document.getElementById("mdpMsg").textContent="";
