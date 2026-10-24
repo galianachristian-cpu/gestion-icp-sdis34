@@ -59,3 +59,6 @@ $function$;
 
 -- 2026-10-24 : grade facultatif (affiché « CNE Chamayou » dans l'entête, l'accueil et la fiche)
 alter table public.pompiers add column if not exists grade text;
+
+-- 2026-10-24 : fonction facultative (ex. « Chef de centre »), affichée avec le grade complet et les galons
+alter table public.pompiers add column if not exists fonction text;

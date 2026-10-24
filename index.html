@@ -38,6 +38,13 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .menu-compte{position:relative}
 .btn-compte{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:4px 10px 4px 4px;cursor:pointer;font:inherit;font-size:13px}
 .btn-compte:hover{border-color:var(--primary)}
+.galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.galon svg{display:block}
+.avatar.avec-galon{background:none;border-radius:6px;width:auto;height:auto}
+.bandeau-chef{display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:16px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(234,88,12,.16),rgba(251,191,36,.08));border:1px solid rgba(251,191,36,.35)}
+.bandeau-chef .titre{font-family:var(--titre);font-size:20px;color:var(--accent);letter-spacing:.5px}
+.bandeau-chef .sous{color:var(--muted);font-size:13px}
 .avatar{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--rouge),var(--primary));color:#fff;font-weight:700;font-size:12px;flex-shrink:0}
 .menu-deroulant{position:absolute;right:0;top:calc(100% + 8px);min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--ombre);padding:6px;z-index:60}
 .menu-deroulant button{display:flex;width:100%;align-items:center;gap:10px;background:none;border:0;color:var(--text);font:inherit;font-size:14px;padding:10px 12px;border-radius:8px;cursor:pointer;text-align:left}
@@ -351,6 +358,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="tab-synthese" class="hidden">
 <div class="card">
 <div class="card-title">🎯 Synthèse ICP — codes couleur</div>
+<div id="bandeauChef"></div>
 <p style="color:var(--muted);font-size:13px;margin-bottom:14px">Niveau de chaque pompier par test, sans aucun résultat chiffré, et taux d'épreuves passées (cardio, souplesse, force).</p>
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
@@ -698,6 +706,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <input type="hidden" id="editId">
 <div class="form-row"><label>Grade (facultatif)</label><input type="text" id="editGrade" list="listeGrades" placeholder="ex. SAP 1CL, SGT, CNE…" maxlength="12"></div>
 <datalist id="listeGrades"><option value="SAP 2CL"><option value="SAP 1CL"><option value="CPL"><option value="CCH"><option value="SGT"><option value="SCH"><option value="ADJ"><option value="ADC"><option value="LTN"><option value="CNE"><option value="CDT"><option value="LCL"><option value="COL"></datalist>
+<div class="form-row"><label>Fonction (facultatif)</label><input type="text" id="editFonction" placeholder="ex. Chef de centre" maxlength="40"></div>
 <div class="form-row"><label>Nom</label><input type="text" id="editNom"></div>
 <div class="form-row"><label>Prénom</label><input type="text" id="editPrenom"></div>
 <div class="form-row"><label>Année de naissance</label><input type="number" id="editAnnee" min="1940" max="2015"></div>
@@ -793,7 +802,7 @@ function sauverBrouillon(){if(!isAdmin||!emailConnecte)return;try{localStorage.s
 function effacerBrouillon(){try{localStorage.removeItem(CLE_BROUILLON)}catch(e){}}
 function sauverCache(){if(!isAdmin||!emailConnecte)return;try{localStorage.setItem(CLE_CACHE,JSON.stringify({email:emailConnecte,ts:Date.now(),data:data,histo:HISTORIQUE_IMPORT,sessions:sessionsIcp,role:{isAdmin:isAdmin,onglets:misOnglets}}))}catch(e){}}
 function effacerCache(){try{localStorage.removeItem(CLE_CACHE)}catch(e){}}
-var CHAMPS_BROUILLON=["grade","nom","prenom","annee","sexe","poids","rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","fc_repos","fc_max","historique"];
+var CHAMPS_BROUILLON=["grade","fonction","nom","prenom","annee","sexe","poids","rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","fc_repos","fc_max","historique"];
 // Après un chargement réussi : récupère les saisies restées sur l'appareil
 function proposerBrouillon(){
     var b=lireLocal(CLE_BROUILLON); if(!b||!isAdmin)return;
@@ -1222,7 +1231,7 @@ function deletePompier(id){if(!confirm("Supprimer ce pompier ?"))return;data=dat
 function showAddPompier(){document.getElementById("modalAdd").classList.remove("hidden")}
 function ouvrirModifPompier(id){
   if(!isAdmin)return;var p=data.find(function(x){return x.id===id});if(!p)return;
-  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editNom").value=p.nom||"";
+  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editFonction").value=p.fonction||"";document.getElementById("editNom").value=p.nom||"";
   document.getElementById("editPrenom").value=p.prenom||"";document.getElementById("editAnnee").value=p.annee||"";
   document.getElementById("editSexe").value=p.sexe==="F"?"F":"M";document.getElementById("editPoids").value=p.poids||"";
   document.getElementById("modalEdit").classList.remove("hidden");
@@ -1234,7 +1243,7 @@ function validerModifPompier(){
   var annee=parseInt(document.getElementById("editAnnee").value);
   if(!nom||!prenom){alert("Renseignez le nom et le prénom");return}
   if(!annee||annee<1940||annee>ANNEE_COURANTE-15){alert("Année de naissance invalide");return}
-  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.sexe=document.getElementById("editSexe").value;
+  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.sexe=document.getElementById("editSexe").value;
   p.poids=document.getElementById("editPoids").value;
   p.luc_niv=p.luc_perf?evalTest("luc",p.sexe,getAge(p.annee),p.luc_perf):"";
   markDirty();fermerModifPompier();renderSaisie();renderDashboard();
@@ -1304,6 +1313,8 @@ function pastilleHtml(n){
   return '<span class="pastille" style="background:'+c.hex+'" title="'+c.txt+'"></span>';
 }
 function renderSynthese(){
+  var bc=document.getElementById("bandeauChef"),moi=monPompierId&&!isAdmin?data.find(function(x){return x.id===monPompierId}):null;
+  if(bc)bc.innerHTML=moi&&(moi.grade||moi.fonction)?'<div class="bandeau-chef">'+galonSvg(moi.grade,40)+'<div><div class="titre">'+escAttr(moi.grade?gradeComplet(moi.grade)+" "+moi.nom:moi.prenom+" "+moi.nom)+'</div><div class="sous">'+escAttr(moi.fonction||"")+(moi.fonction?" — ":"")+'Suivi de la condition physique du CIS Cruzy-Quarante</div></div></div>':"";
   var selC=document.getElementById("syntheseCampagne");
   if(!selC)return;
   var cur=selC.options.length?selC.value:null;
@@ -1561,8 +1572,8 @@ function afficherBienvenue(force){
   var pastille=function(c){return '<span class="pastille" style="background:'+c+';width:14px;height:14px"></span>'};
   document.getElementById("bienvenueContenu").innerHTML=
     '<div style="text-align:center;margin-bottom:6px"><img src="icons/logo.webp" alt="" width="90" height="90"></div>'
-    +'<h3 style="text-align:center">'+(p?'👋 Bienvenue '+escAttr(p.grade?p.grade+' '+p.nom:p.prenom)+' !':'❓ Comprendre les couleurs')+'</h3>'
-    +'<p style="color:var(--muted);font-size:14px;text-align:center;margin-bottom:10px">'+(p?'Voici votre espace ICP personnel. Vous seul y voyez vos résultats.':'Comment lire les niveaux ICP dans l\'application.')+'</p>'
+    +'<h3 style="text-align:center">'+(p?(galonSvg(p.grade,34)?'<div style="display:flex;justify-content:center;margin-bottom:8px">'+galonSvg(p.grade,34)+'</div>':'')+'👋 Bienvenue '+escAttr(p.grade?gradeComplet(p.grade)+' '+p.nom:p.prenom)+' !'+(p.fonction?'<div style="font-family:Inter,sans-serif;font-size:13px;color:var(--muted);font-weight:400;margin-top:4px">'+escAttr(p.fonction)+' — CIS Cruzy-Quarante</div>':''):'❓ Comprendre les couleurs')+'</h3>'
+    +'<p style="color:var(--muted);font-size:14px;text-align:center;margin-bottom:10px">'+(p?(tabAutorise("synthese")?'Votre espace de commandement : la synthèse en couleurs de tout le personnel du centre, sans aucun résultat chiffré, et votre fiche personnelle.':'Voici votre espace ICP personnel. Vous seul y voyez vos résultats.'):'Comment lire les niveaux ICP dans l\'application.')+'</p>'
     +'<div class="bien-ligne"><span class="ic">🎯</span><span><b>5 tests</b> évaluent la condition physique : rameur 2000 m, Luc Léger, souplesse, pompes et tractions. Les barèmes officiels du SDIS 34 tiennent compte de l\'âge et du sexe.</span></div>'
     +'<div class="bien-ligne"><span class="ic">🚦</span><span>Chaque test reçoit une couleur :<br>'+pastille("#16a34a")+' <b>Vert</b> : condition physique optimale<br>'+pastille("#f59e0b")+' <b>Orange</b> : engagement opérationnel<br>'+pastille("#dc2626")+' <b>Rouge</b> : vigilance, point à travailler<br><span style="color:var(--muted)">Le niveau global est celui du test le plus faible.</span></span></div>'
     +'<div class="bien-ligne"><span class="ic">💡</span><span>Pour chaque test, la fiche donne des <b>conseils d\'entraînement adaptés</b> au niveau, pour progresser d\'une campagne à l\'autre.</span></div>'
@@ -1746,8 +1757,8 @@ function renderFiche(){
   var p=(monPompierId&&liste.find(function(x){return x.id===monPompierId}))||liste.find(function(x){return String(x.id)===sel.value})||liste[0];
   if(!p){el.innerHTML='<p style="color:var(--muted)">Aucune fiche disponible.</p>';return;}
   var age=getAge(p.annee),g=getNiveauGlobal(p);
-  var html='<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px"><span class="avatar" style="width:52px;height:52px;font-size:18px">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'
-    +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(nomGrade(p))+'</div><div style="color:var(--muted);font-size:13px">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
+  var html='<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'+(galonSvg(p.grade,46)||'<span class="avatar" style="width:52px;height:52px;font-size:18px">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>')
+    +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(nomGrade(p))+'</div>'+(p.fonction?'<div style="color:var(--accent);font-size:13px;font-weight:600">'+escAttr(p.fonction)+'</div>':'')+'<div style="color:var(--muted);font-size:13px">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
   if(g&&COULEURS_NIVEAU[g])html+='<div style="margin:12px 0;padding:12px;border-radius:12px;text-align:center;font-weight:700;color:#fff;background:'+COULEURS_NIVEAU[g].hex+'">Niveau global : '+TEXTE_NIVEAU[g]+'</div>';
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
@@ -3900,13 +3911,36 @@ function generatePDF(orientation){
 }
 
 // --- Interface : en-tête, menu du compte, thème, navigation téléphone ---
-// Nom avec grade (ex. « CNE Alain Chamayou ») quand le grade est renseigné
-function nomGrade(p){return (p.grade?p.grade+" ":"")+p.prenom+" "+p.nom}
+// Grades : abréviation saisie → appellation complète, et nombre de galons (officiers)
+var GRADES={"SAP 2CL":"Sapeur 2e classe","SAP 1CL":"Sapeur 1re classe","CPL":"Caporal","CCH":"Caporal-chef","SGT":"Sergent",
+  "SCH":"Sergent-chef","ADJ":"Adjudant","ADC":"Adjudant-chef","LTN":"Lieutenant","CNE":"Capitaine","CDT":"Commandant",
+  "LCL":"Lieutenant-colonel","COL":"Colonel"};
+var GALONS={"LTN":2,"CNE":3,"CDT":4,"LCL":5,"COL":5};
+function gradeComplet(g){return g?(GRADES[g]||g):""}
+function nomGrade(p){return (p.grade?gradeComplet(p.grade)+" ":"")+p.prenom+" "+p.nom}
+// Galons d'officier dessinés (barrettes argent sur fond noir), à la taille demandée
+function galonSvg(g,h){
+  // Fourreau noir, galon blanc tissé, barrettes séparées par de fins traits noirs (comme le galon réel)
+  var n=GALONS[g];if(!n)return "";h=h||30;var w=Math.round(h*1.18),m=h*0.13,gx=m,gy=m,gw=w-2*m,gh=h-2*m,lt=Math.max(1,h*0.045),bh=(gh-(n-1)*lt)/n;
+  var traits="",trame="";
+  for(var i=1;i<n;i++){var y=gy+i*bh+(i-1)*lt;traits+='<rect x="'+gx+'" y="'+y.toFixed(2)+'" width="'+gw+'" height="'+lt.toFixed(2)+'" fill="#1a1a1a"/>';}
+  for(var t=gy+1;t<gy+gh;t+=Math.max(1.2,h*0.05))trame+='<line x1="'+gx+'" y1="'+t.toFixed(2)+'" x2="'+(gx+gw)+'" y2="'+t.toFixed(2)+'" stroke="rgba(0,0,0,.07)" stroke-width=".5"/>';
+  return '<span class="galon" title="'+escAttr(gradeComplet(g))+'"><svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-label="'+escAttr(gradeComplet(g))+'">'
+    +'<defs><linearGradient id="tissu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#eef0f3"/><stop offset="1" stop-color="#cfd4da"/></linearGradient></defs>'
+    +'<rect width="'+w+'" height="'+h+'" rx="'+(h*0.12)+'" fill="#151515"/>'
+    +'<rect x="'+gx+'" y="'+gy+'" width="'+gw+'" height="'+gh+'" rx="'+(h*0.03)+'" fill="url(#tissu)"/>'+trame+traits
+    +'<rect x="'+gx+'" y="'+gy+'" width="'+gw+'" height="'+gh+'" rx="'+(h*0.03)+'" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".6" stroke-dasharray="1.2 .8"/>'
+    +'</svg></span>';
+}
+
 function afficherCompteEntete(){
     var moi=monPompierId?data.find(function(x){return x.id===monPompierId}):null;
     if(moi){
-        document.getElementById("nomCompte").textContent=moi.grade?moi.grade+" "+moi.nom:moi.prenom+" "+moi.nom;
-        document.getElementById("avatarCompte").textContent=((moi.prenom||" ")[0]+(moi.nom||" ")[0]).toUpperCase();
+        document.getElementById("nomCompte").textContent=moi.grade?gradeComplet(moi.grade)+" "+moi.nom:moi.prenom+" "+moi.nom;
+        var av=document.getElementById("avatarCompte"),gal=galonSvg(moi.grade,26);
+        if(gal){av.innerHTML=gal;av.classList.add("avec-galon");}
+        else{av.textContent=((moi.prenom||" ")[0]+(moi.nom||" ")[0]).toUpperCase();av.classList.remove("avec-galon");}
+        if(moi.fonction){var bd=document.getElementById("roleBadge");bd.textContent=moi.fonction;}
         document.getElementById("emailCompte").textContent=emailConnecte;
         majBoutonTheme();return;
     }
