@@ -1843,7 +1843,26 @@ function generateSynthesePDF(titreForce){
   });
   y+=18;
   doc.setFont("helvetica","bold");doc.setFontSize(10);doc.setTextColor(15,23,42);
-  doc.text("Présence à l'ICP : "+r.evalues+" pompier(s) sur "+r.total,margin,y);
+  // Jauge de présence : ont passé l'ICP (au moins une épreuve) / ne l'ont pas passé
+  var nonPasses=r.total-r.evalues,pctOui=r.total?Math.round(r.evalues/r.total*100):0,pctNon=r.total?100-pctOui:0;
+  var nbComplets=lignes.filter(function(l){return l.passes===EPREUVES_ICP.length}).length;
+  doc.text("Présence à l'ICP",margin,y);
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(71,85,105);
+  doc.text(r.total+" pompiers au total — dont "+nbComplets+" complet(s) et "+(r.evalues-nbComplets)+" partiel(s)",pageW-margin,y,{align:"right"});
+  y+=3;
+  var jw=pageW-2*margin,jh=9,wOui=r.total?jw*r.evalues/r.total:0;
+  doc.setFillColor(226,232,240);doc.roundedRect(margin,y,jw,jh,2,2,'F');
+  if(wOui>0){doc.setFillColor(22,163,74);doc.roundedRect(margin,y,wOui,jh,2,2,'F');if(wOui<jw-2)doc.rect(margin+wOui-2,y,2,jh,'F');}
+  if(wOui<jw){doc.setFillColor(220,38,38);doc.roundedRect(margin+wOui,y,jw-wOui,jh,2,2,'F');if(wOui>2)doc.rect(margin+wOui,y,2,jh,'F');}
+  doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(255,255,255);
+  var tOui="Ont passé l'ICP : "+r.evalues+" ("+pctOui+" %)",tNon="Non passé : "+nonPasses+" ("+pctNon+" %)";
+  if(wOui>doc.getTextWidth(tOui)+6)doc.text(tOui,margin+3,y+6);
+  if(jw-wOui>doc.getTextWidth(tNon)+6)doc.text(tNon,pageW-margin-3,y+6,{align:"right"});
+  y+=jh+2;
+  // rappel lisible sous la jauge si un segment est trop étroit pour son texte
+  doc.setFontSize(8.5);
+  if(!(wOui>doc.getTextWidth(tOui)+6)){doc.setTextColor(22,163,74);doc.text(tOui,margin,y+3);}
+  if(!(jw-wOui>doc.getTextWidth(tNon)+6)){doc.setTextColor(220,38,38);doc.text(tNon,pageW-margin,y+3,{align:"right"});}
   y+=3;
   function presence(l){return l.passes===0?"Absent":l.passes===EPREUVES_ICP.length?"Complet":"Partiel"}
   var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Présence"]);
