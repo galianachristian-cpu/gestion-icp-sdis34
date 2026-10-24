@@ -43,3 +43,16 @@ create table if not exists public.mdp_provisoires (
 );
 alter table public.mdp_provisoires enable row level security;
 create policy "Lecture admin" on public.mdp_provisoires for select to authenticated using (public.est_admin_icp());
+
+-- 2026-10-24 : un compte relié à un pompier n'est « pompier » (sa seule ligne) que s'il n'a que l'onglet
+-- « fiche ». Avec d'autres onglets (vue chef : ["fiche","synthese"]), il est traité comme un compte d'équipe.
+CREATE OR REPLACE FUNCTION public.type_compte_icp()
+ RETURNS text LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO ''
+AS $function$
+  select case
+    when public.est_admin_icp() then 'admin'
+    when exists (select 1 from public.comptes_app c where c.email = lower(auth.jwt() ->> 'email')
+                 and c.pompier_id is not null and coalesce(c.onglets,'[]'::jsonb) <@ '["fiche"]'::jsonb) then 'pompier'
+    when exists (select 1 from public.comptes_app c where c.email = lower(auth.jwt() ->> 'email')) then 'equipe'
+    else null end;
+$function$;

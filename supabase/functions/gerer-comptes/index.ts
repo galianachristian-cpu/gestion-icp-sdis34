@@ -70,13 +70,13 @@ Deno.serve(async (req) => {
   if (body.action === "enregistrer") {
     const password = body.password ? body.password.toString() : "";
     if (password && password.length < 8) return reponse(400, { error: "Mot de passe : 8 caractères minimum" });
-    // Compte relié à un pompier : il ne voit que sa propre fiche (la base filtre aussi)
+    // Compte relié à un pompier : toujours sa fiche ; avec seulement « fiche », il ne voit que
+    // sa ligne (la base filtre aussi). D'autres onglets (ex. vue chef) en font un compte d'équipe.
     const pompierId = Number.isInteger(body.pompier_id) ? (body.pompier_id as number) : null;
-    const onglets = pompierId !== null
-      ? ["fiche"]
-      : Array.isArray(body.onglets)
+    const demandes = Array.isArray(body.onglets)
       ? body.onglets.filter((o): o is string => typeof o === "string" && ONGLETS.includes(o))
       : [];
+    const onglets = pompierId !== null ? Array.from(new Set(["fiche", ...demandes])) : demandes;
 
     if (!existant) {
       if (!password) return reponse(400, { error: "Mot de passe obligatoire pour un nouveau compte" });

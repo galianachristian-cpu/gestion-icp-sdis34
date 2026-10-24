@@ -1408,13 +1408,31 @@ function renderAccesPompiers(){
     return '<div class="atelier-ligne" style="grid-template-columns:1fr minmax(180px,260px) auto">'
       +'<div class="atelier-nom"><span class="initiales">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'+escAttr(p.nom)+' '+escAttr(p.prenom)+'</div>'
       +(c?'<div style="font-size:13px;color:var(--success);word-break:break-all">✅ '+escAttr(c.email)+'</div>'
-          +'<div style="display:flex;gap:6px"><button class="btn btn-sm" style="background:var(--surface);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe et renvoi" onclick="nouveauMdpPompier('+p.id+')">🔑 Renvoyer</button>'
+          +'<div style="display:flex;gap:6px">'+boutonVueChef(p.id,c)+'<button class="btn btn-sm" style="background:var(--surface);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe et renvoi" onclick="nouveauMdpPompier('+p.id+')">🔑 Renvoyer</button>'
           +'<button class="btn btn-danger btn-sm" title="Supprimer l\'accès" onclick="supprimerAccesPompier('+p.id+')">🗑️</button></div>'
          :'<input type="email" id="accesEmail-'+p.id+'" placeholder="email de la personne" autocomplete="off" style="height:40px;font-size:15px;text-align:left" onkeydown="if(event.key===\'Enter\')activerAccesPompier('+p.id+')">'
           +'<div><button class="btn btn-success btn-sm" style="padding:10px 14px" onclick="activerAccesPompier('+p.id+')">✅ Activer</button></div>')
       +'</div>';
   }).join("");
   el.innerHTML=html||'<p style="color:var(--success)">✅ Tous les pompiers ont leur accès.</p>';
+}
+// Vue chef : en plus de sa fiche, la personne voit la Synthèse en couleurs de toute la caserne
+function aVueChef(c){return Array.isArray(c.onglets)&&c.onglets.indexOf("synthese")!==-1}
+function boutonVueChef(id,c){
+  var on=aVueChef(c);
+  return '<button class="btn btn-sm" style="'+(on?'background:var(--primary);color:#fff':'background:var(--surface);color:var(--text);border:1px solid var(--border)')+'" title="'
+    +(on?'Vue chef activée : voit la Synthèse en couleurs de tous. Cliquer pour la retirer.':'Donner la vue chef (Synthèse en couleurs de tous, sans chiffres)')+'" onclick="basculerVueChef('+id+')">👔 '+(on?'Vue chef ✓':'Vue chef')+'</button>';
+}
+async function basculerVueChef(id){
+  var p=data.find(function(x){return x.id===id});var c=comptesCache.find(function(x){return x.pompier_id===id});
+  if(!p||!c)return;
+  var on=aVueChef(c);
+  if(!confirm((on?"Retirer":"Donner")+" la vue chef à "+p.prenom+" "+p.nom+" ?\n\n"+(on?"Il ne verra plus que sa propre fiche.":"Il verra la Synthèse en couleurs de toute la caserne (sans chiffres), en plus de sa fiche.")))return;
+  try{
+    await appelerGererComptes({action:'enregistrer',email:c.email,password:null,onglets:on?["fiche"]:["fiche","synthese"],pompier_id:id});
+    await chargerComptes();renderComptes();
+    showToast("✅ Vue chef "+(on?"retirée":"donnée")+" — "+p.prenom+" "+p.nom,"success");
+  }catch(e){alert("⚠️ Échec : "+e.message);}
 }
 function messageAccesPompier(p,email,pass){
   ouvrirMessage("📤 Accès de "+p.prenom+" "+p.nom,
@@ -1447,7 +1465,7 @@ async function nouveauMdpPompier(id){
   if(!confirm("Créer un nouveau mot de passe pour "+p.prenom+" "+p.nom+" ? L'ancien ne marchera plus."))return;
   try{
     var pass=genererMotDePasse();
-    await appelerGererComptes({action:'enregistrer',email:c.email,password:pass,onglets:["fiche"],pompier_id:id});
+    await appelerGererComptes({action:'enregistrer',email:c.email,password:pass,onglets:c.onglets||["fiche"],pompier_id:id});
     messageAccesPompier(p,c.email,pass);
   }catch(e){alert("⚠️ Échec : "+e.message);}
 }
