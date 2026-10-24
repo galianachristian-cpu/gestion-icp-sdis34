@@ -657,6 +657,11 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="compteMsg" style="margin-top:8px;font-size:13px;min-height:18px"></div>
 </div>
 <div class="card">
+<div class="card-title">🕒 Connexions</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Chaque ouverture de l'appli par un compte (pompier, chef ou équipe) est notée, au plus une fois par quart d'heure. Les vôtres ne sont pas comptées.</p>
+<div id="connexionsListe"><div class="squelette" style="min-height:60px"></div></div>
+</div>
+<div class="card">
 <div class="card-title">🕘 Journal des modifications</div>
 <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Chaque changement sur une fiche pompier est enregistré automatiquement par la base : qui, quand et quoi. Les 200 derniers sont affichés.</p>
 <button class="btn btn-primary btn-sm" onclick="chargerJournal()">🔄 Afficher / actualiser</button>
@@ -884,6 +889,7 @@ async function loadFromSupabase() {
             chargerHistoriqueDeReference();
             clearDirty();
             await chargerSynthesePubliee();
+            if(!isAdmin)supabaseClient.rpc('noter_connexion').then(function(){},function(){});
             renderAll();
             publierSyntheseDiffere();
             sauverCache();
@@ -1450,7 +1456,7 @@ function renderAccesPompiers(){
     var c=parPompier[p.id];
     return '<div class="atelier-ligne" style="grid-template-columns:1fr minmax(180px,260px) auto">'
       +'<div class="atelier-nom"><span class="initiales">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'+escAttr(p.nom)+' '+escAttr(p.prenom)+'</div>'
-      +(c?'<div style="font-size:13px;color:var(--success);word-break:break-all">✅ '+escAttr(c.email)+'</div>'
+      +(c?'<div style="font-size:13px;color:var(--success);word-break:break-all">✅ '+escAttr(c.email)+'<br>'+badgeConnexion(c.email)+'</div>'
           +'<div style="display:flex;gap:6px">'+boutonVueChef(p.id,c)+'<button class="btn btn-sm" style="background:var(--surface);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe et renvoi" onclick="nouveauMdpPompier('+p.id+')">🔑 Renvoyer</button>'
           +'<button class="btn btn-danger btn-sm" title="Supprimer l\'accès" onclick="supprimerAccesPompier('+p.id+')">🗑️</button></div>'
          :'<input type="email" id="accesEmail-'+p.id+'" placeholder="email de la personne" autocomplete="off" style="height:40px;font-size:15px;text-align:left" onkeydown="if(event.key===\'Enter\')activerAccesPompier('+p.id+')">'
@@ -4114,6 +4120,44 @@ function ongletsCoches(idPrefix){
         return el && el.checked;
     });
 }
+// ===== CONNEXIONS =====
+var connexionsCache={};var connexionsRecentes=[];
+async function chargerConnexions(){
+  connexionsCache={};connexionsRecentes=[];
+  try{var r=await supabaseClient.from('connexions_icp').select('email,quand').order('quand',{ascending:false}).limit(3000);
+    if(r.error)throw r.error;
+    connexionsRecentes=(r.data||[]).filter(function(x){return ADMIN_EMAILS.indexOf(x.email)===-1});
+    connexionsRecentes.forEach(function(x){var c=connexionsCache[x.email]||(connexionsCache[x.email]={derniere:x.quand,nb:0});c.nb++;});
+  }catch(e){console.warn("Connexions :",e.message);}
+}
+function quandLisible(iso){
+  var d=new Date(iso),maint=new Date(),min=Math.round((maint-d)/60000);
+  var h=d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  var jour=function(x){return new Date(x.getFullYear(),x.getMonth(),x.getDate())};
+  var j=Math.round((jour(maint)-jour(d))/86400000);
+  if(min<2)return "à l'instant";if(min<60)return "il y a "+min+" min";
+  if(j===0)return "aujourd'hui à "+h;if(j===1)return "hier à "+h;if(j<7)return "il y a "+j+" jours";
+  return "le "+d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" à "+h;
+}
+function badgeConnexion(email){
+  var c=connexionsCache[email];
+  if(!c)return '<span style="font-size:12px;color:var(--muted)">⚪ jamais connecté</span>';
+  var jours=(Date.now()-new Date(c.derniere))/86400000;
+  return '<span style="font-size:12px;color:'+(jours<7?'var(--success)':'var(--muted)')+'" title="'+c.nb+' ouverture(s) de l\'appli">'+(jours<7?'🟢':'🕒')+' vu '+quandLisible(c.derniere)+'</span>';
+}
+function nomPourEmail(email){
+  var c=comptesCache.find(function(x){return x.email===email});var p=c&&c.pompier_id?data.find(function(x){return x.id===c.pompier_id}):null;
+  return p?nomGrade(p):email;
+}
+function renderConnexions(){
+  var el=document.getElementById("connexionsListe");if(!el)return;
+  if(!connexionsRecentes.length){el.innerHTML='<p style="color:var(--muted)">Aucune connexion enregistrée pour l\'instant.</p>';return;}
+  var semaine=Object.keys(connexionsCache).filter(function(e){return Date.now()-new Date(connexionsCache[e].derniere)<7*86400000}).length;
+  el.innerHTML='<p style="font-size:13px;margin-bottom:10px"><b>'+semaine+'</b> personne(s) connectée(s) ces 7 derniers jours.</p>'
+    +'<div class="scroll-table" style="max-height:340px"><table><thead><tr><th>Qui</th><th>Quand</th></tr></thead><tbody>'
+    +connexionsRecentes.slice(0,60).map(function(x){return '<tr><td>'+escAttr(nomPourEmail(x.email))+'</td><td style="white-space:nowrap">'+quandLisible(x.quand)+'</td></tr>'}).join("")
+    +'</tbody></table></div>';
+}
 async function renderComptes(){
     document.getElementById("compteOngletsBox").innerHTML = checkboxesOnglets("nc", []);
     document.getElementById("comptePompier").innerHTML='<option value="">— Non : compte normal (onglets ci-dessous)</option>'
@@ -4121,7 +4165,8 @@ async function renderComptes(){
     document.getElementById("compteOngletsBlock").style.display="";
     document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
     await chargerComptes();
-    renderAccesPompiers();
+    await chargerConnexions();
+    renderAccesPompiers(); renderConnexions();
     await chargerMdpProvisoires(); renderIdentifiants();
     var equipe = comptesCache.map(function(c,i){return {c:c,i:i}}).filter(function(x){return !x.c.pompier_id});
     if(equipe.length === 0){
@@ -4133,7 +4178,7 @@ async function renderComptes(){
         var pid = 'ec'+idx;
         html += '<div class="ergo-card" style="margin-bottom:12px">'
             + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">'
-            + '<b>'+escAttr(c.email)+'</b>'+(c.pompier_id?' <span class="badge badge-user" style="margin-left:6px">👤 Fiche de '+escAttr((data.find(function(p){return p.id===c.pompier_id})||{prenom:"?",nom:""}).prenom+" "+((data.find(function(p){return p.id===c.pompier_id})||{}).nom||""))+'</span>':'')
+            + '<b>'+escAttr(c.email)+'</b> '+badgeConnexion(c.email)+(c.pompier_id?' <span class="badge badge-user" style="margin-left:6px">👤 Fiche de '+escAttr((data.find(function(p){return p.id===c.pompier_id})||{prenom:"?",nom:""}).prenom+" "+((data.find(function(p){return p.id===c.pompier_id})||{}).nom||""))+'</span>':'')
             + '<div style="display:flex;gap:8px">'
             + '<button class="btn btn-success btn-sm" onclick="sauverCompteExistant('+idx+',\''+pid+'\')">💾 Enregistrer</button>'
             + '<button class="btn btn-danger btn-sm" onclick="supprimerCompte('+idx+')">🗑️ Supprimer</button>'

@@ -70,3 +70,8 @@ alter table public.synthese_couleurs enable row level security;
 -- policies : lecture type_compte_icp() in ('admin','equipe','chef') ; écriture est_admin_icp()
 -- type_compte_icp() renvoie 'chef' si onglets ? 'synthese' et onglets <@ ["fiche","synthese"]
 -- pompiers / carnet_seances : 'pompier' et 'chef' ne lisent que id = mon_pompier_id()
+
+-- 2026-10-24 : journal des connexions (ouverture de l'appli, au plus 1 par quart d'heure et par compte)
+create table if not exists public.connexions_icp(id bigserial primary key, email text not null, quand timestamptz not null default now());
+alter table public.connexions_icp enable row level security;
+-- lecture : est_admin_icp() ; écriture uniquement via la fonction noter_connexion() (security definer)
