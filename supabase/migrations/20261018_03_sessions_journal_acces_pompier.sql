@@ -75,3 +75,8 @@ alter table public.synthese_couleurs enable row level security;
 create table if not exists public.connexions_icp(id bigserial primary key, email text not null, quand timestamptz not null default now());
 alter table public.connexions_icp enable row level security;
 -- lecture : est_admin_icp() ; écriture uniquement via la fonction noter_connexion() (security definer)
+
+-- 2026-10-24 : fiches confidentielles (chefs) : lisibles seulement par l'admin et la personne elle-même
+alter table public.pompiers add column if not exists confidentiel boolean default false;
+-- pompiers_confidentiels() (security definer) ; policies pompiers / carnet_seances : 'equipe' exclut ces fiches ;
+-- l'appli ne les publie pas dans synthese_couleurs.
