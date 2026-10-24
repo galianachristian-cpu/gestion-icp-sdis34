@@ -56,3 +56,6 @@ AS $function$
     when exists (select 1 from public.comptes_app c where c.email = lower(auth.jwt() ->> 'email')) then 'equipe'
     else null end;
 $function$;
+
+-- 2026-10-24 : grade facultatif (affiché « CNE Chamayou » dans l'entête, l'accueil et la fiche)
+alter table public.pompiers add column if not exists grade text;

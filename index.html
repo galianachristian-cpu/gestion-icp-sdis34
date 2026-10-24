@@ -696,6 +696,8 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="modal">
 <h3>✏️ Modifier un pompier</h3>
 <input type="hidden" id="editId">
+<div class="form-row"><label>Grade (facultatif)</label><input type="text" id="editGrade" list="listeGrades" placeholder="ex. SAP 1CL, SGT, CNE…" maxlength="12"></div>
+<datalist id="listeGrades"><option value="SAP 2CL"><option value="SAP 1CL"><option value="CPL"><option value="CCH"><option value="SGT"><option value="SCH"><option value="ADJ"><option value="ADC"><option value="LTN"><option value="CNE"><option value="CDT"><option value="LCL"><option value="COL"></datalist>
 <div class="form-row"><label>Nom</label><input type="text" id="editNom"></div>
 <div class="form-row"><label>Prénom</label><input type="text" id="editPrenom"></div>
 <div class="form-row"><label>Année de naissance</label><input type="number" id="editAnnee" min="1940" max="2015"></div>
@@ -791,7 +793,7 @@ function sauverBrouillon(){if(!isAdmin||!emailConnecte)return;try{localStorage.s
 function effacerBrouillon(){try{localStorage.removeItem(CLE_BROUILLON)}catch(e){}}
 function sauverCache(){if(!isAdmin||!emailConnecte)return;try{localStorage.setItem(CLE_CACHE,JSON.stringify({email:emailConnecte,ts:Date.now(),data:data,histo:HISTORIQUE_IMPORT,sessions:sessionsIcp,role:{isAdmin:isAdmin,onglets:misOnglets}}))}catch(e){}}
 function effacerCache(){try{localStorage.removeItem(CLE_CACHE)}catch(e){}}
-var CHAMPS_BROUILLON=["nom","prenom","annee","sexe","poids","rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","fc_repos","fc_max","historique"];
+var CHAMPS_BROUILLON=["grade","nom","prenom","annee","sexe","poids","rameur_temps","luc_niv","luc_perf","souplesse","pompes","tractions","fc_repos","fc_max","historique"];
 // Après un chargement réussi : récupère les saisies restées sur l'appareil
 function proposerBrouillon(){
     var b=lireLocal(CLE_BROUILLON); if(!b||!isAdmin)return;
@@ -1059,7 +1061,7 @@ function finaliserConnexion(){
     // Squelettes animés le temps que les données arrivent
     ["dashboardStats","syntheseStats"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>';});
     var dv=document.getElementById("dashVisuel"); if(dv) dv.innerHTML='<div class="squelette" style="min-height:150px"></div>';
-    loadFromSupabase().then(function(){return chargerSessions();}).then(function(){if(monPompierId)afficherBienvenue(false);});
+    loadFromSupabase().then(function(){return chargerSessions();}).then(function(){if(monPompierId){afficherCompteEntete();afficherBienvenue(false);}});
 }
 var connexionEnCours = false;
 async function onAuthSuccess(){
@@ -1204,7 +1206,7 @@ function renderDashboardVisuel(){
 }
 function parNomPrenom(a,b){return a.nom.localeCompare(b.nom,'fr')||a.prenom.localeCompare(b.prenom,'fr');}
 function renderSaisie(){
-    if(!isAdmin){var b=document.getElementById("saisieBody");if(b)b.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px">Accès réservé à l\'administrateur (compte en lecture seule).</td></tr>';return;}var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});filtered=filtered.slice().sort(parNomPrenom);var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td><b style="cursor:pointer" title="Modifier" onclick="ouvrirModifPompier('+p.id+')">'+escAttr(p.nom)+'</b></td><td>'+escAttr(p.prenom)+'</td><td>'+(isNaN(age)?'<span class="age-tag" style="background:var(--warning);color:#111;cursor:pointer" title="Renseigner l\'année de naissance" onclick="ouvrirModifPompier('+p.id+')">année ?</span>':'<span class="age-tag">'+age+' ans</span>')+'<br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+escAttr(p.poids)+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+escAttr(p.rameur_temps)+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.luc_perf)+'" placeholder="9,5" onchange="updateField('+p.id+",'luc_perf',this.value)\" "+dis+' style="width:60px"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.souplesse)+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.pompes)+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.tractions)+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td>"+'<td><input type="number" min="30" max="120" value="'+escAttr(p.fc_repos)+'" onchange="updateField('+p.id+",'fc_repos',this.value)\" "+dis+' style="width:55px"></td>'+'<td><input type="number" min="120" max="220" value="'+escAttr(p.fc_max)+'" onchange="updateField('+p.id+",'fc_max',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(p.fc_max||isNaN(age)?"":"est. "+(220-age))+'</small></td>'+"<td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-sm" title="Modifier nom, naissance, sexe…" onclick="ouvrirModifPompier('+p.id+')" style="background:var(--surface2);color:var(--text)">✏️</button><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
+    if(!isAdmin){var b=document.getElementById("saisieBody");if(b)b.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px">Accès réservé à l\'administrateur (compte en lecture seule).</td></tr>';return;}var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});filtered=filtered.slice().sort(parNomPrenom);var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td>'+(p.grade?'<small style="color:var(--accent);font-weight:700;margin-right:4px">'+escAttr(p.grade)+'</small>':'')+'<b style="cursor:pointer" title="Modifier" onclick="ouvrirModifPompier('+p.id+')">'+escAttr(p.nom)+'</b></td><td>'+escAttr(p.prenom)+'</td><td>'+(isNaN(age)?'<span class="age-tag" style="background:var(--warning);color:#111;cursor:pointer" title="Renseigner l\'année de naissance" onclick="ouvrirModifPompier('+p.id+')">année ?</span>':'<span class="age-tag">'+age+' ans</span>')+'<br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+escAttr(p.poids)+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+escAttr(p.rameur_temps)+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.luc_perf)+'" placeholder="9,5" onchange="updateField('+p.id+",'luc_perf',this.value)\" "+dis+' style="width:60px"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.souplesse)+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.pompes)+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.tractions)+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td>"+'<td><input type="number" min="30" max="120" value="'+escAttr(p.fc_repos)+'" onchange="updateField('+p.id+",'fc_repos',this.value)\" "+dis+' style="width:55px"></td>'+'<td><input type="number" min="120" max="220" value="'+escAttr(p.fc_max)+'" onchange="updateField('+p.id+",'fc_max',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(p.fc_max||isNaN(age)?"":"est. "+(220-age))+'</small></td>'+"<td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-sm" title="Modifier nom, naissance, sexe…" onclick="ouvrirModifPompier('+p.id+')" style="background:var(--surface2);color:var(--text)">✏️</button><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
 function updateField(id,field,value){var p=data.find(function(x){return x.id===id});if(p)p[field]=value;if(field==="luc_perf"){var age=getAge(p.annee);p.luc_niv=evalTest("luc",p.sexe,age,value)}markDirty();renderSaisie()}
 function saveAll(){
     saveToSupabase().then(function(ok){
@@ -1220,7 +1222,7 @@ function deletePompier(id){if(!confirm("Supprimer ce pompier ?"))return;data=dat
 function showAddPompier(){document.getElementById("modalAdd").classList.remove("hidden")}
 function ouvrirModifPompier(id){
   if(!isAdmin)return;var p=data.find(function(x){return x.id===id});if(!p)return;
-  document.getElementById("editId").value=id;document.getElementById("editNom").value=p.nom||"";
+  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editNom").value=p.nom||"";
   document.getElementById("editPrenom").value=p.prenom||"";document.getElementById("editAnnee").value=p.annee||"";
   document.getElementById("editSexe").value=p.sexe==="F"?"F":"M";document.getElementById("editPoids").value=p.poids||"";
   document.getElementById("modalEdit").classList.remove("hidden");
@@ -1232,7 +1234,7 @@ function validerModifPompier(){
   var annee=parseInt(document.getElementById("editAnnee").value);
   if(!nom||!prenom){alert("Renseignez le nom et le prénom");return}
   if(!annee||annee<1940||annee>ANNEE_COURANTE-15){alert("Année de naissance invalide");return}
-  p.nom=nom;p.prenom=prenom;p.annee=annee;p.sexe=document.getElementById("editSexe").value;
+  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.sexe=document.getElementById("editSexe").value;
   p.poids=document.getElementById("editPoids").value;
   p.luc_niv=p.luc_perf?evalTest("luc",p.sexe,getAge(p.annee),p.luc_perf):"";
   markDirty();fermerModifPompier();renderSaisie();renderDashboard();
@@ -1559,7 +1561,7 @@ function afficherBienvenue(force){
   var pastille=function(c){return '<span class="pastille" style="background:'+c+';width:14px;height:14px"></span>'};
   document.getElementById("bienvenueContenu").innerHTML=
     '<div style="text-align:center;margin-bottom:6px"><img src="icons/logo.webp" alt="" width="90" height="90"></div>'
-    +'<h3 style="text-align:center">'+(p?'👋 Bienvenue '+escAttr(p.prenom)+' !':'❓ Comprendre les couleurs')+'</h3>'
+    +'<h3 style="text-align:center">'+(p?'👋 Bienvenue '+escAttr(p.grade?p.grade+' '+p.nom:p.prenom)+' !':'❓ Comprendre les couleurs')+'</h3>'
     +'<p style="color:var(--muted);font-size:14px;text-align:center;margin-bottom:10px">'+(p?'Voici votre espace ICP personnel. Vous seul y voyez vos résultats.':'Comment lire les niveaux ICP dans l\'application.')+'</p>'
     +'<div class="bien-ligne"><span class="ic">🎯</span><span><b>5 tests</b> évaluent la condition physique : rameur 2000 m, Luc Léger, souplesse, pompes et tractions. Les barèmes officiels du SDIS 34 tiennent compte de l\'âge et du sexe.</span></div>'
     +'<div class="bien-ligne"><span class="ic">🚦</span><span>Chaque test reçoit une couleur :<br>'+pastille("#16a34a")+' <b>Vert</b> : condition physique optimale<br>'+pastille("#f59e0b")+' <b>Orange</b> : engagement opérationnel<br>'+pastille("#dc2626")+' <b>Rouge</b> : vigilance, point à travailler<br><span style="color:var(--muted)">Le niveau global est celui du test le plus faible.</span></span></div>'
@@ -1679,7 +1681,7 @@ function dessinerFiche(doc,p){
   doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(255,255,255);
   doc.text("FICHE INDIVIDUELLE ICP",pageW/2,11,{align:"center"});
   doc.setFontSize(13);doc.setTextColor(251,191,36);
-  doc.text(p.prenom+" "+p.nom,pageW/2,19,{align:"center"});
+  doc.text(nomGrade(p),pageW/2,19,{align:"center"});
   doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(214,211,209);
   doc.text(txtAge(age)+" ans — "+(p.sexe==="M"?"Homme":"Femme")+" — Caserne Cruzy-Quarante — SDIS 34 — "+new Date().toLocaleDateString('fr-FR'),pageW/2,26,{align:"center"});
   var y=40;
@@ -1745,7 +1747,7 @@ function renderFiche(){
   if(!p){el.innerHTML='<p style="color:var(--muted)">Aucune fiche disponible.</p>';return;}
   var age=getAge(p.annee),g=getNiveauGlobal(p);
   var html='<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px"><span class="avatar" style="width:52px;height:52px;font-size:18px">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>'
-    +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</div><div style="color:var(--muted);font-size:13px">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
+    +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(nomGrade(p))+'</div><div style="color:var(--muted);font-size:13px">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
   if(g&&COULEURS_NIVEAU[g])html+='<div style="margin:12px 0;padding:12px;border-radius:12px;text-align:center;font-weight:700;color:#fff;background:'+COULEURS_NIVEAU[g].hex+'">Niveau global : '+TEXTE_NIVEAU[g]+'</div>';
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
@@ -3898,7 +3900,16 @@ function generatePDF(orientation){
 }
 
 // --- Interface : en-tête, menu du compte, thème, navigation téléphone ---
+// Nom avec grade (ex. « CNE Alain Chamayou ») quand le grade est renseigné
+function nomGrade(p){return (p.grade?p.grade+" ":"")+p.prenom+" "+p.nom}
 function afficherCompteEntete(){
+    var moi=monPompierId?data.find(function(x){return x.id===monPompierId}):null;
+    if(moi){
+        document.getElementById("nomCompte").textContent=moi.grade?moi.grade+" "+moi.nom:moi.prenom+" "+moi.nom;
+        document.getElementById("avatarCompte").textContent=((moi.prenom||" ")[0]+(moi.nom||" ")[0]).toUpperCase();
+        document.getElementById("emailCompte").textContent=emailConnecte;
+        majBoutonTheme();return;
+    }
     var local=(emailConnecte||"").split("@")[0];
     var parties=local.split(/[._-]+/).filter(Boolean);
     var nom=parties.map(function(x){return x.charAt(0).toUpperCase()+x.slice(1)}).join(" ")||"Mon compte";
