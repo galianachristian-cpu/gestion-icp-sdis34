@@ -367,7 +367,6 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
-<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="exportExcel()">📊 Excel</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
 <button class="btn btn-success btn-sm admin-seul" onclick="ouvrirBilanCampagne()">🏁 Fin de campagne : bilan</button>
@@ -1888,32 +1887,6 @@ async function chargerJournal(){
     }).join("")+'</tbody></table></div>';
 }
 
-// ===== EXPORT EXCEL =====
-function chargerXlsx(){
-  if(window.XLSX)return Promise.resolve();
-  return new Promise(function(ok,ko){var sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";sc.onload=ok;sc.onerror=function(){ko(new Error("bibliothèque Excel indisponible"))};document.head.appendChild(sc);});
-}
-async function exportExcel(){
-  try{await chargerXlsx();}catch(e){alert("⚠️ "+e.message+" (connexion internet nécessaire).");return;}
-  var campagne=document.getElementById("syntheseCampagne").value;
-  var lignes=syntheseLignes(campagne);
-  var txt=function(n){return n?(TEXTE_NIVEAU[n]||n):"non passé"};
-  var synth=lignes.map(function(l){var o={"Nom":l.nom,"Prénom":l.prenom};
-    TESTS_SYNTHESE.forEach(function(t){o[t.label]=txt(l.niv[t.key])});
-    o["Niveau global"]=l.global?TEXTE_NIVEAU[l.global]:"non évalué";o["Épreuves passées"]=l.passes+"/"+EPREUVES_ICP.length;o["Taux"]=l.taux/100;return o;});
-  var wb=XLSX.utils.book_new();
-  var ws=XLSX.utils.json_to_sheet(synth);ws["!cols"]=[{wch:16},{wch:14},{wch:22},{wch:22},{wch:22},{wch:22},{wch:22},{wch:24},{wch:12},{wch:8}];
-  XLSX.utils.book_append_sheet(wb,ws,"Synthèse couleurs");
-  if(isAdmin){
-    var anneeRef=campagne==="__encours__"?ANNEE_COURANTE:parseInt(campagne);
-    var res=pompiersCampagne(campagne).sort(parNomPrenom).map(function(o){return {"Nom":o.nom,"Prénom":o.prenom,"Âge":o.annee?anneeRef-o.annee:"","Sexe":o.sexe,
-      "Poids (kg)":o.poids||"","Rameur 2000 m":o.rameur_temps||"","Luc Léger (palier)":o.luc_perf||"","Souplesse (cm)":o.souplesse||"","Pompes":o.pompes||"","Tractions":o.tractions||"",
-      "Niveau global":o._niveau?TEXTE_NIVEAU[o._niveau]:"non évalué"}});
-    var ws2=XLSX.utils.json_to_sheet(res);ws2["!cols"]=[{wch:16},{wch:14},{wch:6},{wch:6},{wch:10},{wch:14},{wch:16},{wch:14},{wch:9},{wch:10},{wch:24}];
-    XLSX.utils.book_append_sheet(wb,ws2,"Résultats détaillés");
-  }
-  XLSX.writeFile(wb,"ICP_Cruzy-Quarante_"+(campagne==="__encours__"?"campagne_en_cours":campagne)+".xlsx");
-}
 function generateFichePDF(id){
   var p=data.find(function(x){return x.id===id});if(!p)return;
   var { jsPDF }=window.jspdf;var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
