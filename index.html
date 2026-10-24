@@ -1846,9 +1846,9 @@ function generateSynthesePDF(titreForce){
   doc.text("Présence à l'ICP : "+r.evalues+" pompier(s) sur "+r.total,margin,y);
   y+=3;
   function presence(l){return l.passes===0?"Absent":l.passes===EPREUVES_ICP.length?"Complet":"Partiel"}
-  var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Niveau global","Présence"]);
+  var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Présence"]);
   var body=lignes.map(function(l){
-    return [l.nom,l.prenom].concat(TESTS_SYNTHESE.map(function(t){return l.niv[t.key]||"-"})).concat([l.global||"-",presence(l)]);
+    return [l.nom,l.prenom].concat(TESTS_SYNTHESE.map(function(t){return l.niv[t.key]||"-"})).concat([presence(l)]);
   });
   doc.autoTable({startY:y+2,head:[cols],body:body,theme:'grid',margin:{left:margin,right:margin},
     headStyles:{fillColor:[30,41,59],textColor:255,fontSize:8.5,fontStyle:'bold',halign:'center'},
@@ -1857,17 +1857,17 @@ function generateSynthesePDF(titreForce){
     didParseCell:function(d){
       if(d.section!=='body')return;
       var c=d.column.index;
-      if(c>=2&&c<=2+nbT){
+      if(c>=2&&c<2+nbT){
         var v=d.cell.raw;d.cell.styles.halign='center';d.cell.text=[""];
         if(COULEURS_NIVEAU[v]&&v!=="?")d.cell.styles.fillColor=COULEURS_NIVEAU[v].rgb;
       }
-      if(c===3+nbT){
+      if(c===2+nbT){
         var p=d.cell.raw;d.cell.styles.halign='center';d.cell.styles.fontStyle='bold';d.cell.styles.fontSize=8.5;
         d.cell.styles.textColor=p==="Complet"?[22,163,74]:p==="Partiel"?[217,119,6]:[220,38,38];
       }
     }});
   doc.setFont("helvetica","italic");doc.setFontSize(7.5);doc.setTextColor(100,116,139);
-  doc.text("Présence — Complet : cardio (rameur ou Luc Léger) + souplesse + force (pompes ou tractions) · Partiel : une partie · Absent : aucun test. Niveau global = le plus bas des tests passés.",margin,pageH-8);
+  doc.text("Présence — Complet : cardio (rameur ou Luc Léger) + souplesse + force (pompes ou tractions) · Partiel : une partie · Absent : aucun test.",margin,pageH-8);
   doc.save("Synthese_ICP_couleurs_"+(typeof titreForce==="string"?titreForce.replace(/[^\w-]+/g,"_"):(campagne==="__encours__"?"en_cours":campagne))+".pdf");
 }
 function renderBilan(){
