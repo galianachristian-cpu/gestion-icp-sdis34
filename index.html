@@ -364,7 +364,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="exportExcel()">📊 Excel</button>
-<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
+<button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
 <button class="btn btn-success btn-sm admin-seul" onclick="ouvrirBilanCampagne()">🏁 Fin de campagne : bilan</button>
 </div>
@@ -883,7 +883,9 @@ async function loadFromSupabase() {
             console.log('✅ Données chargées depuis Supabase');
             chargerHistoriqueDeReference();
             clearDirty();
+            await chargerSynthesePubliee();
             renderAll();
+            publierSyntheseDiffere();
             sauverCache();
             proposerBrouillon();
             return true;
@@ -954,6 +956,7 @@ async function saveToSupabase() {
         updateSupabaseStatus(true, "Connecté — Sauvegarde OK");
         effacerBrouillon();
         sauverCache();
+        publierSyntheseDiffere();
         console.log('✅ Données sauvegardées sur Supabase');
         setTimeout(() => updateSupabaseStatus(true, "Connecté — Données synchronisées"), 2000);
         return true;
@@ -1153,7 +1156,7 @@ async function resoudreRole(){
 function showLoginScreen(){
     fermerMenuCompte();
     isAdmin=false;
-    misOnglets=[];
+    misOnglets=[];SYNTHESE_PUBLIEE=null;
     donneesChargees=false;
     clearDirty();
     data=[];
@@ -1284,7 +1287,34 @@ var COULEURS_NIVEAU={"1":{hex:"#dc2626",rgb:[220,38,38],txt:"Vigilance"},"2":{he
 // Une ICP complète = 3 épreuves : cardio (rameur OU Luc Léger), souplesse, force (pompes OU tractions)
 var EPREUVES_ICP=[["rameur_temps","luc_perf"],["souplesse"],["pompes","tractions"]];
 function epreuvesPassees(o){return EPREUVES_ICP.filter(function(g){return g.some(function(f){return o[f]&&o[f].toString().trim()!==""})}).length}
+// ===== SYNTHÈSE PUBLIÉE (comptes « vue chef ») =====
+// Les comptes chef ne reçoivent du serveur que leur propre ligne de résultats. Pour la Synthèse, ils
+// lisent la table `synthese_couleurs`, que le compte administrateur met à jour à chaque sauvegarde :
+// noms et couleurs uniquement, aucun résultat chiffré.
+function estChef(){return !isAdmin&&misOnglets.indexOf("synthese")!==-1&&misOnglets.every(function(o){return o==="fiche"||o==="synthese"})}
+var SYNTHESE_PUBLIEE=null;
+async function chargerSynthesePubliee(){
+  SYNTHESE_PUBLIEE=null;
+  if(!estChef())return;
+  try{var r=await supabaseClient.from('synthese_couleurs').select('campagne,lignes');
+    if(!r.error){SYNTHESE_PUBLIEE={};(r.data||[]).forEach(function(x){SYNTHESE_PUBLIEE[x.campagne]=x.lignes||[]});}}
+  catch(e){console.warn("Synthèse publiée :",e.message);}
+}
+var publicationTimer=null;
+function publierSyntheseDiffere(){if(!isAdmin||!donneesChargees)return;clearTimeout(publicationTimer);publicationTimer=setTimeout(publierSynthese,1500);}
+async function publierSynthese(){
+  if(!isAdmin||!donneesChargees)return;
+  try{
+    var rows=["__encours__"].concat(listeCampagnes()).map(function(c){
+      return {campagne:c,maj:new Date().toISOString(),lignes:syntheseLignes(c).map(function(l){
+        return {id:l.id,nom:l.nom,prenom:l.prenom,niv:l.niv,global:l.global,passes:l.passes,taux:l.taux}})};
+    });
+    var r=await supabaseClient.from('synthese_couleurs').upsert(rows,{onConflict:'campagne'});
+    if(r.error)console.warn("Publication de la synthèse :",r.error.message);
+  }catch(e){console.warn("Publication de la synthèse :",e.message);}
+}
 function syntheseLignes(campagne){
+  if(SYNTHESE_PUBLIEE)return JSON.parse(JSON.stringify(SYNTHESE_PUBLIEE[campagne]||[])).sort(parNomPrenom);
   var anneeRef=campagne==="__encours__"?ANNEE_COURANTE:parseInt(campagne);
   return pompiersCampagne(campagne).map(function(o){
     var age=o.annee?anneeRef-o.annee:NaN,niv={},passes=epreuvesPassees(o);
@@ -1339,7 +1369,7 @@ function renderSynthese(){
       +(isAdmin?'<td style="text-align:center"><button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Fiche individuelle (PDF)" onclick="generateFichePDF('+l.id+')">📄</button></td>':'')+'</tr>';
   });
   document.querySelectorAll("#tab-synthese .admin-seul").forEach(function(e){e.classList.toggle("hidden",!isAdmin)});
-  document.getElementById("syntheseBody").innerHTML=html||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">Aucun pompier.</td></tr>';
+  document.getElementById("syntheseBody").innerHTML=html||'<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:20px">'+(SYNTHESE_PUBLIEE?'La synthèse sera disponible dès la prochaine mise à jour des résultats.':'Aucun pompier.')+'</td></tr>';
 }
 // ===== PLANNING DES SESSIONS ICP =====
 var sessionsIcp=[];
@@ -2233,6 +2263,7 @@ function deltaTempsHtml(cur,prev){
   return ' <span class="'+(d<0?"delta-up":"delta-down")+'">'+(d<0?"▲ -":"▼ +")+Math.abs(d)+'s</span>';
 }
 function listeCampagnes(){
+  if(SYNTHESE_PUBLIEE)return Object.keys(SYNTHESE_PUBLIEE).filter(function(c){return c!=="__encours__"}).sort().reverse();
   var set={};
   data.forEach(function(p){getHistorique(p).forEach(function(h){if(h.campagne&&!set[h.campagne])set[h.campagne]=h.date||h.campagne})});
   return Object.keys(set).sort(function(a,b){return (set[b]||"").localeCompare(set[a]||"")||b.localeCompare(a)});

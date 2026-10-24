@@ -62,3 +62,11 @@ alter table public.pompiers add column if not exists grade text;
 
 -- 2026-10-24 : fonction facultative (ex. « Chef de centre »), affichée avec le grade complet et les galons
 alter table public.pompiers add column if not exists fonction text;
+
+-- 2026-10-24 : comptes « chef » (onglets fiche + synthese) : seule leur ligne de résultats ; la synthèse
+-- de tous vient de synthese_couleurs (couleurs 1/2/3 et présence, publiée par l'admin à chaque sauvegarde).
+create table if not exists public.synthese_couleurs(campagne text primary key, lignes jsonb not null default '[]'::jsonb, maj timestamptz not null default now());
+alter table public.synthese_couleurs enable row level security;
+-- policies : lecture type_compte_icp() in ('admin','equipe','chef') ; écriture est_admin_icp()
+-- type_compte_icp() renvoie 'chef' si onglets ? 'synthese' et onglets <@ ["fiche","synthese"]
+-- pompiers / carnet_seances : 'pompier' et 'chef' ne lisent que id = mon_pompier_id()
