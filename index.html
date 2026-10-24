@@ -41,6 +41,9 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .bandeau-apercu{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;padding:10px 14px;
   background:linear-gradient(90deg,#9a3412,#ea580c);color:#fff;font-size:14px;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 .bandeau-apercu button{background:#fff;color:#9a3412;border:0;border-radius:8px;padding:6px 12px;font-weight:700;cursor:pointer}
+.bandeau-evol{margin:-4px 0 16px;padding:10px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:14px}
+.fiche-obj{font-size:12px;margin-top:6px;color:var(--text)}
+.fiche-evol{font-size:11.5px;margin-top:4px;color:var(--muted)}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
 .galon svg{display:block}
 .avatar.avec-galon{background:none;border-radius:6px;width:auto;height:auto}
@@ -372,6 +375,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-success btn-sm admin-seul" onclick="ouvrirBilanCampagne()">🏁 Fin de campagne : bilan</button>
 </div>
 <div class="grid-4" id="syntheseStats" style="margin-bottom:16px"></div>
+<div id="syntheseEvolution"></div>
 <div class="legend-box" style="margin:0 0 14px">
 <div class="legend-item"><span class="pastille" style="background:#dc2626"></span><b>Rouge</b> — Vigilance</div>
 <div class="legend-item"><span class="pastille" style="background:#f59e0b"></span><b>Orange</b> — Engagement opérationnel</div>
@@ -379,7 +383,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="legend-item"><span class="pastille pastille-vide"></span>Test non passé</div>
 </div>
 <div class="scroll-table"><table>
-<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center">Niveau global</th><th style="text-align:center">Épreuves passées</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
+<thead><tr><th>Nom</th><th>Prénom</th><th style="text-align:center">Rameur</th><th style="text-align:center">Luc Léger</th><th style="text-align:center">Souplesse</th><th style="text-align:center">Pompes</th><th style="text-align:center">Tractions</th><th style="text-align:center" id="thNiveauGlobal">Niveau global</th><th style="text-align:center">Épreuves passées</th><th class="admin-seul" style="text-align:center">Fiche</th></tr></thead>
 <tbody id="syntheseBody"></tbody>
 </table></div>
 </div>
@@ -1405,15 +1409,18 @@ function renderSynthese(){
   document.getElementById("syntheseStats").innerHTML=
     '<div class="stat-box"><div class="stat-value">'+r.tauxEvalues+'%</div><div class="stat-label">Pompiers ayant passé l\'ICP</div><div class="stat-sub">'+r.evalues+' sur '+r.total+'</div></div>'
    +'<div class="stat-box"><div class="stat-value">'+r.tauxTests+'%</div><div class="stat-label">Épreuves passées</div><div class="stat-sub">cardio, souplesse, force</div></div>'
-   +'<div class="stat-box"><div class="stat-value" style="display:flex;gap:14px;justify-content:center;font-size:24px">'
+   +(!isAdmin?'':'<div class="stat-box"><div class="stat-value" style="display:flex;gap:14px;justify-content:center;font-size:24px">'
      +'<span style="color:#dc2626">'+r.cpt["1"]+'</span><span style="color:#f59e0b">'+r.cpt["2"]+'</span><span style="color:#16a34a">'+r.cpt["3"]+'</span></div>'
-     +'<div class="stat-label">Rouge · Orange · Vert</div><div class="stat-sub">niveau global</div></div>';
+     +'<div class="stat-label">Rouge · Orange · Vert</div><div class="stat-sub">niveau global</div></div>');
+  var th=document.getElementById("thNiveauGlobal");if(th)th.style.display=isAdmin?"":"none";
+  var ev=evolutionCampagne(selC.value,lignes),evEl=document.getElementById("syntheseEvolution");
+  if(evEl)evEl.innerHTML=ev?'<div class="bandeau-evol">📈 Depuis la campagne '+escAttr(ev.depuis)+' : <b style="color:var(--success)">↗️ '+ev.haut+' en progrès</b> · <b>➡️ '+ev.egal+' stable(s)</b> · <b style="color:#f87171">↘️ '+ev.bas+' en baisse</b><span style="color:var(--muted)"> (pompiers évalués aux deux campagnes)</span></div>':"";
   var html="";
   lignes.forEach(function(l){
     var coulTaux=l.taux===100?"var(--success)":l.taux>0?"var(--warning)":"var(--danger)";
     html+='<tr><td><span class="initiales">'+escAttr(((l.prenom||" ")[0]+(l.nom||" ")[0]).toUpperCase())+'</span><b>'+escAttr(l.nom)+'</b></td><td>'+escAttr(l.prenom)+'</td>'
       +TESTS_SYNTHESE.map(function(t){return '<td style="text-align:center">'+pastilleHtml(l.niv[t.key])+'</td>'}).join("")
-      +'<td style="text-align:center">'+pastilleHtml(l.global)+'</td>'
+      +(isAdmin?'<td style="text-align:center">'+pastilleHtml(l.global)+'</td>':'')
       +'<td style="text-align:center;font-weight:600;color:'+coulTaux+'">'+l.passes+'/'+EPREUVES_ICP.length+' · '+l.taux+'%</td>'
       +(isAdmin?'<td style="text-align:center"><button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Fiche individuelle (PDF)" onclick="generateFichePDF('+l.id+')">📄</button></td>':'')+'</tr>';
   });
@@ -1782,10 +1789,12 @@ function dessinerFiche(doc,p){
     return {t:t,v:v,n:n};
   });
   doc.autoTable({startY:y,theme:'grid',margin:{left:margin,right:margin},
-    head:[["Test","Votre résultat","Niveau"]],
-    body:lignes.map(function(l){return [l.t.label,(l.v&&l.v.toString().trim())?l.v+UNITES_TEST[l.t.key]:"non passé",l.n||"-"]}),
+    head:[["Test","Votre résultat","Niveau","Objectif / évolution"]],
+    body:lignes.map(function(l){var o=objectifTest(l.t,p,age),e=evolutionTest(l.t,p,age);
+      var txt=[o?o.txt.replace(/^\S+\s/,""):"",e?e.replace(/^\S+\s/,""):""].filter(Boolean).join("\n").replace(/\u2212/g,"-");
+      return [l.t.label,(l.v&&l.v.toString().trim())?l.v+UNITES_TEST[l.t.key]:"non passé",l.n||"-",txt||"—"]}),
     headStyles:{fillColor:[28,25,23],textColor:255,fontSize:9,fontStyle:'bold'},styles:{fontSize:10,cellPadding:3},
-    columnStyles:{0:{fontStyle:'bold',cellWidth:45},2:{halign:'center',cellWidth:60}},
+    columnStyles:{0:{fontStyle:'bold',cellWidth:30},1:{cellWidth:36},2:{halign:'center',cellWidth:42},3:{fontSize:8.5,textColor:[68,64,60]}},
     didParseCell:function(d){
       if(d.section!=='body'||d.column.index!==2)return;
       var v=d.cell.raw;
@@ -1824,6 +1833,61 @@ function dessinerFiche(doc,p){
 }
 // Onglet « Fiche » : l'administrateur choisit un pompier ; un compte relié à un
 // pompier ne reçoit de la base que sa propre ligne.
+// ===== OBJECTIFS ET ÉVOLUTION PAR TEST =====
+function seuilsRameur(sexe,poids,age){
+  var p=parseFloat(poids);if(!p)return null;var tr=getTrancheErgo(age);if(!tr)return null;
+  var ergo=sexe==="M"?ergoHomme:ergoFemme,liste=sexe==="M"?ergoPoidsHomme:ergoPoidsFemme,proche=liste[0];
+  liste.forEach(function(x){if(Math.abs(p-x)<Math.abs(p-proche))proche=x});
+  return ergo[proche]?ergo[proche][tr]:null;
+}
+function niveauTest(t,sexe,poids,age,v){
+  if(!v||v.toString().trim()==="")return "";
+  var n=t.key==="rameur"?evalRameur(sexe,poids,age,v):evalTest(t.key,sexe,age,v);return n?n.toString():"?";
+}
+function nombreFr(x){return (Math.round(x*10)/10).toString().replace(".",",")}
+// « Objectif vert : 20 pompes (encore +4) » à partir des barèmes officiels
+function objectifTest(t,p,age){
+  var v=p[t.field],n=niveauTest(t,p.sexe,p.poids,age,v);
+  if(!n||n==="?")return null;
+  if(n==="3")return {txt:"✅ Vert atteint : à entretenir",c:"var(--success)"};
+  var cible=n==="1"?"orange":"vert",col=n==="1"?"#f59e0b":"var(--success)";
+  if(t.key==="rameur"){
+    var s=seuilsRameur(p.sexe,p.poids,age),sec=timeToSec(v);if(!s||!sec)return null;
+    var but=n==="1"?s[0]:s[1];
+    return {txt:"🎯 Objectif "+cible+" : "+secToTime(but)+" (encore −"+Math.max(1,sec-but)+" s)",c:col};
+  }
+  var tr=getTranche(age),b=baremes[t.key];if(!tr||!b)return null;
+  var vals=b[p.sexe==="M"?"homme":"femme"][tr];if(!vals)return null;
+  var but2=n==="1"?parseFloat(vals[0].replace("<","").replace(",",".")):parseFloat(vals[2].replace(" et +","").replace(",","."));
+  var cur=parseFloat(v.toString().replace(",","."));if(isNaN(but2)||isNaN(cur))return null;
+  var ecart=Math.max(t.key==="luc"?0.5:1,but2-cur);
+  var unite={luc:["palier ",""],souplesse:[""," cm"],pompes:[""," pompes"],tractions:[""," tractions"]}[t.key]||["",""];
+  return {txt:"🎯 Objectif "+cible+" : "+unite[0]+nombreFr(but2)+unite[1]+" (encore +"+nombreFr(ecart)+")",c:col};
+}
+// Niveau du même test à la dernière campagne archivée où il a été passé
+function niveauPrecedentTest(t,p){
+  var h=getHistorique(p).filter(function(x){return x[t.field]&&x[t.field].toString().trim()!==""})
+        .sort(function(a,b){return (b.campagne||"").localeCompare(a.campagne||"")})[0];
+  if(!h)return null;
+  var an=parseInt(h.campagne),age=p.annee&&an?an-p.annee:getAge(p.annee);
+  var n=niveauTest(t,p.sexe,h.poids||p.poids,age,h[t.field]);
+  return n&&n!=="?"?{campagne:h.campagne,n:n}:null;
+}
+function evolutionTest(t,p,age){
+  var n=niveauTest(t,p.sexe,p.poids,age,p[t.field]),pr=niveauPrecedentTest(t,p);
+  if(!pr||!n||n==="?")return null;
+  var d=parseInt(n)-parseInt(pr.n),avant=TEXTE_NIVEAU[pr.n]?pr.n==="1"?"rouge":pr.n==="2"?"orange":"vert":"";
+  return d>0?"↗️ En progrès ("+avant+" en "+pr.campagne+")":d<0?"↘️ En baisse ("+avant+" en "+pr.campagne+")":"➡️ Stable ("+avant+" en "+pr.campagne+")";
+}
+// Évolution du niveau global entre une campagne et la précédente (pompiers évalués les deux fois)
+function evolutionCampagne(campagne,lignes){
+  var camps=listeCampagnes(),prec=campagne==="__encours__"?camps[0]:camps[camps.indexOf(campagne)+1];
+  if(!prec)return null;
+  var avant={};syntheseLignes(prec).forEach(function(l){if(l.global&&l.global!=="?")avant[l.id]=parseInt(l.global)});
+  var r={depuis:prec,haut:0,egal:0,bas:0,n:0};
+  lignes.forEach(function(l){if(!l.global||l.global==="?"||!(l.id in avant))return;var d=parseInt(l.global)-avant[l.id];r.n++;if(d>0)r.haut++;else if(d<0)r.bas++;else r.egal++;});
+  return r.n?r:null;
+}
 function renderFiche(){
   var sel=document.getElementById("fichePompier"),el=document.getElementById("ficheContenu");
   if(!sel||!el)return;
@@ -1844,7 +1908,8 @@ function renderFiche(){
     if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
     var c=COULEURS_NIVEAU[n];
     return '<div class="fiche-test"><div class="nom">'+t.label+'</div><div class="val">'+(v&&v.toString().trim()?escAttr(v)+'<span style="font-size:12px;color:var(--muted)">'+UNITES_TEST[t.key]+'</span>':'—')+'</div>'
-      +(c?'<span class="fiche-niv" style="background:'+c.hex+'">'+TEXTE_NIVEAU[n]+'</span>':'<span style="color:var(--muted);font-size:12px">à passer</span>')+'</div>';
+      +(c?'<span class="fiche-niv" style="background:'+c.hex+'">'+TEXTE_NIVEAU[n]+'</span>':'<span style="color:var(--muted);font-size:12px">à passer</span>')
+      +(function(){var o=objectifTest(t,p,age),e=evolutionTest(t,p,age);return (o?'<div class="fiche-obj" style="color:'+o.c+'">'+o.txt+'</div>':'')+(e?'<div class="fiche-evol">'+e+'</div>':'');})()+'</div>';
   }).join("")+'</div>';
   var hist=getHistorique(p).slice().sort(function(a,b){return (a.campagne||"").localeCompare(b.campagne||"")});
   if(hist.length){
@@ -1950,6 +2015,13 @@ function generateSynthesePDF(titreForce){
   if(!(wOui>doc.getTextWidth(tOui)+6)){doc.setTextColor(22,163,74);doc.text(tOui,margin,y+3);}
   if(!(jw-wOui>doc.getTextWidth(tNon)+6)){doc.setTextColor(220,38,38);doc.text(tNon,pageW-margin,y+3,{align:"right"});}
   y+=3;
+  var ev=evolutionCampagne(campagne,lignes);
+  if(ev){doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(15,23,42);
+    doc.text("Depuis la campagne "+ev.depuis+" :",margin,y+3);var xe=margin+doc.getTextWidth("Depuis la campagne "+ev.depuis+" :")+3;
+    [[ev.haut+" en progrès",[22,163,74]],[ev.egal+" stable(s)",[71,85,105]],[ev.bas+" en baisse",[220,38,38]]].forEach(function(z,i){
+      doc.setTextColor(z[1][0],z[1][1],z[1][2]);doc.text((i?"·  ":"")+z[0],xe,y+3);xe+=doc.getTextWidth((i?"·  ":"")+z[0])+3;});
+    doc.setFont("helvetica","normal");doc.setTextColor(100,116,139);doc.setFontSize(8);doc.text("(pompiers évalués aux deux campagnes)",xe+1,y+3);
+    y+=6;}
   function presence(l){return l.passes===0?"Absent":l.passes===EPREUVES_ICP.length?"Complet":"Partiel"}
   var cols=["Nom","Prénom"].concat(TESTS_SYNTHESE.map(function(t){return t.label})).concat(["Présence"]);
   var body=lignes.map(function(l){
