@@ -44,6 +44,12 @@ h1,h2,h3,.card-title,.stat-value,.entete-titre,.modal h3{font-family:var(--titre
 .bandeau-evol{margin:-4px 0 16px;padding:10px 14px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);font-size:14px}
 .fiche-obj{font-size:12px;margin-top:6px;color:var(--text)}
 .fiche-evol{font-size:11.5px;margin-top:4px;color:var(--muted)}
+.prog-bloc{border:1px solid var(--border);border-left:4px solid var(--primary);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--surface2)}
+.prog-bloc h4{margin:0 0 6px;font-family:var(--titre);letter-spacing:.4px;font-size:16px}
+.prog-bloc ul{margin:6px 0 0 18px;padding:0;font-size:13.5px;line-height:1.55}
+.prog-semaine{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.prog-semaine td,.prog-semaine th{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+.prog-semaine th{background:var(--surface2);font-weight:600}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
 .galon svg{display:block}
 .avatar.avec-galon{background:none;border-radius:6px;width:auto;height:auto}
@@ -396,6 +402,12 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-primary btn-sm" onclick="ficheExportPDF()">📄 Télécharger ma fiche (PDF)</button>
 </div>
 <div id="ficheContenu"></div>
+</div>
+<div class="card" id="programmeCarte">
+<div class="card-title">🏋️ Mon programme d'entraînement (4 semaines)</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Construit à partir des résultats ICP : on travaille d'abord les tests en rouge, puis en orange. Allures et charges sont calculées sur les résultats réels.</p>
+<div class="filters"><button class="btn btn-success btn-sm" onclick="programmePDF()">📄 Télécharger mon programme (PDF)</button></div>
+<div id="programmeContenu"></div>
 </div>
 </div>
 <div id="tab-saisie" class="hidden">
@@ -1888,6 +1900,129 @@ function evolutionCampagne(campagne,lignes){
   lignes.forEach(function(l){if(!l.global||l.global==="?"||!(l.id in avant))return;var d=parseInt(l.global)-avant[l.id];r.n++;if(d>0)r.haut++;else if(d<0)r.bas++;else r.egal++;});
   return r.n?r:null;
 }
+// ===== PROGRAMME D'ENTRAÎNEMENT PERSONNALISÉ =====
+// Priorités : tests en rouge, puis orange, puis non passés. Cardio = Luc Léger ou rameur ; force = pompes ou tractions.
+function allureKmh(v){var s=Math.round(3600/v);return Math.floor(s/60)+"'"+String(s%60).padStart(2,"0")+"/km"}
+function tempsSur(m,v){var s=Math.round(m*3.6/v);return s>=60?Math.floor(s/60)+"'"+String(s%60).padStart(2,"0")+'"':s+'"'}
+function construireProgramme(p){
+  var age=getAge(p.annee),niv={};
+  TESTS_SYNTHESE.forEach(function(t){niv[t.key]=niveauTest(t,p.sexe,p.poids,age,p[t.field])});
+  var poids=function(n){return n==="1"?0:n==="2"?1:n==="?"||!n?2:3};
+  var blocs=[];
+  // --- Cardio
+  var cardioCle=(niv.luc||!niv.rameur)?(niv.rameur&&poids(niv.rameur)<poids(niv.luc)?"rameur":"luc"):"rameur";
+  var nC=niv[cardioCle],vma=vmaLuc(p),debutant=nC==="1"||!nC;
+  var c={cle:"cardio",titre:"❤️ Cardio — "+(cardioCle==="luc"?"Luc Léger":"rameur 2000 m"),niv:nC,lignes:[],seances:{}};
+  if(cardioCle==="luc"||!niv.rameur){
+    if(vma){
+      c.lignes.push("Votre VMA estimée : <b>"+nombreFr(vma)+" km/h</b> (palier "+escAttr(p.luc_perf)+").");
+      c.lignes.push("Endurance (70 %) : <b>"+allureKmh(vma*0.7)+"</b> · Seuil (85 %) : <b>"+allureKmh(vma*0.85)+"</b> · VMA (100 %) : <b>"+tempsSur(400,vma)+" au 400 m</b>, "+tempsSur(200,vma)+" au 200 m.");
+    }else c.lignes.push("Pas encore de VMA mesurée : courez à l'aisance respiratoire (vous pouvez parler) pour l'endurance, et « à fond mais régulier » pour le fractionné.");
+    c.seances.A=(debutant?"2 séries de 8 × 30\" vite / 30\" lent":"2 séries de 10 × 30\" vite / 30\" lent")+(vma?" (vite = "+allureKmh(vma*1.02)+")":"")+", 3' de récupération entre les séries. Échauffement 15' + retour au calme 10'.";
+    c.seances.B=(debutant?"3 × 6'":"3 × 8'")+" à allure seuil"+(vma?" ("+allureKmh(vma*0.87)+")":"")+", 2' de marche/trot entre chaque.";
+    c.seances.C=(debutant?"35'":"45'")+" de footing en endurance"+(vma?" ("+allureKmh(vma*0.7)+")":"")+", sans s'essouffler.";
+  }else{
+    var obj=objectifTest(TESTS_SYNTHESE[0],p,age),sec=timeToSec(p.rameur_temps);
+    var seuil=seuilsRameur(p.sexe,p.poids,age),but=(seuil&&(nC==="1"||nC==="2"))?(nC==="1"?seuil[0]:seuil[1]):sec;
+    if(sec)c.lignes.push("Votre 2000 m : <b>"+escAttr(p.rameur_temps)+"</b>"+(obj&&nC!=="3"?" — objectif <b>"+secToTime(but)+"</b>":"")+".");
+    var p500=but?secToTime(Math.round(but/4)):null;
+    c.seances.A="6 × 500 m"+(p500?" à "+p500+" / 500 m ("+(nC==="3"?"votre allure de test":"allure objectif")+")":" rapide")+", 1'30 de récupération rameur lent.";
+    c.seances.B="3 × 1500 m à allure modérée"+(p500?" ("+secToTime(Math.round(but/4)+8)+" / 500 m)":"")+", 2' de récupération.";
+    c.seances.C=(debutant?"25'":"35'")+" de rameur ou de footing en endurance, cadence 20-22 coups/min.";
+  }
+  blocs.push(c);
+  // --- Souplesse
+  var nS=niv.souplesse,sp={cle:"souplesse",titre:"🤸 Souplesse",niv:nS,lignes:[],seances:{}};
+  sp.lignes.push((nS==="3"?"Entretien : 2 fois par semaine.":"Tous les jours, 10 minutes, après l'effort ou le soir.")+" Chaque position 3 × 30 secondes, en respirant, sans à-coups :");
+  sp.lignes.push("arrière des cuisses (assis jambes tendues, buste vers l'avant) · bas du dos (genoux poitrine) · hanches (fente basse) · mollets contre un mur.");
+  sp.quotidien=nS!=="3";
+  blocs.push(sp);
+  // --- Force
+  var forceCle=(niv.pompes||!niv.tractions)?(niv.tractions&&poids(niv.tractions)<poids(niv.pompes)?"tractions":"pompes"):"tractions";
+  var nF=niv[forceCle],maxi=parseInt(p[forceCle])||0,f={cle:"force",titre:"💪 Force — "+(forceCle==="pompes"?"pompes":"tractions"),niv:nF,lignes:[],seances:{}};
+  if(forceCle==="pompes"){
+    var rep=maxi?Math.max(3,Math.round(maxi*0.6)):8;
+    f.lignes.push(maxi?"Votre maximum : <b>"+maxi+" pompes</b>.":"Maximum non mesuré : testez-vous puis adaptez.");
+    f.seances.F="4 séries de <b>"+rep+" pompes</b> (60 % de votre maximum), 1' de repos. Ajoutez 1 répétition par série chaque semaine."+(nF==="1"?" Si c'est trop dur : pompes genoux au sol pour la dernière série.":"")+" + gainage 3 × 30\".";
+  }else{
+    f.lignes.push(maxi?"Votre maximum : <b>"+maxi+" tractions</b>.":"Maximum non mesuré : testez-vous puis adaptez.");
+    f.seances.F=maxi<4?"5 tractions « négatives » (descente lente en 5 secondes) × 4 séries + 3 × 8 tirages avec élastique ou rowing, 1'30 de repos.":"5 séries de <b>"+Math.max(2,Math.round(maxi*0.6))+" tractions</b>, 1'30 de repos. Ajoutez 1 répétition au total chaque semaine. + gainage 3 × 30\".";
+  }
+  blocs.push(f);
+  blocs.forEach(function(b){b.prio=poids(b.niv)});
+  var ordre=blocs.slice().sort(function(a,b){return a.prio-b.prio});
+  var forceIntense=f.prio<=1;
+  var semaine=[
+    ["Lundi","Cardio — fractionné : "+c.seances.A],
+    ["Mardi",forceIntense?"Force : "+f.seances.F:"Repos actif (marche, vélo tranquille)"],
+    ["Mercredi","Cardio — seuil : "+c.seances.B],
+    ["Jeudi","Repos"+(sp.quotidien?" + souplesse":"")],
+    ["Vendredi","Force : "+f.seances.F],
+    ["Samedi","Cardio — endurance : "+c.seances.C],
+    ["Dimanche","Repos complet"]
+  ];
+  if(sp.quotidien)semaine.forEach(function(j){if(j[1].indexOf("souplesse")===-1)j[1]+=" · 10' de souplesse"});
+  else{semaine[1][1]+=" · souplesse";semaine[4][1]+=" · souplesse";}
+  var progression=["Semaines 1 et 2 : appliquer le programme tel quel, en soignant la technique.",
+    "Semaine 3 : +1 répétition (fractionné et force), +5' à l'endurance.",
+    "Semaine 4 : allègement (volume réduit d'un tiers) pour récupérer, puis refaire un test pour mesurer les progrès."];
+  return {ordre:ordre,semaine:semaine,progression:progression};
+}
+function texteNiveauCourt(n){return n==="1"?"rouge — priorité":n==="2"?"orange — à améliorer":n==="3"?"vert — entretien":"à passer — préparation"}
+function renderProgramme(p){
+  var el=document.getElementById("programmeContenu");if(!el)return;
+  if(!p){el.innerHTML="";return;}
+  var pr=construireProgramme(p),h="";
+  pr.ordre.forEach(function(b){var c=COULEURS_NIVEAU[b.niv];
+    h+='<div class="prog-bloc" style="border-left-color:'+(c&&b.niv!=="?"?c.hex:'var(--border)')+'"><h4>'+b.titre+' <span style="font-family:Inter,sans-serif;font-size:12px;color:var(--muted);font-weight:400">— '+texteNiveauCourt(b.niv)+'</span></h4>'
+      +'<div style="font-size:13.5px;line-height:1.55">'+b.lignes.join("<br>")+'</div>'
+      +(b.seances.A?'<ul><li><b>Fractionné :</b> '+b.seances.A+'</li><li><b>Seuil :</b> '+b.seances.B+'</li><li><b>Endurance :</b> '+b.seances.C+'</li></ul>':'')
+      +(b.seances.F?'<ul><li>'+b.seances.F+'</li></ul>':'')+'</div>';});
+  h+='<div style="font-family:var(--titre);font-size:16px;margin:16px 0 4px;color:var(--accent)">📅 Ma semaine type</div><div class="scroll-table"><table class="prog-semaine"><tbody>'
+    +pr.semaine.map(function(j){return '<tr><th style="width:90px">'+j[0]+'</th><td>'+j[1]+'</td></tr>'}).join("")+'</tbody></table></div>';
+  h+='<div style="font-family:var(--titre);font-size:16px;margin:16px 0 4px;color:var(--accent)">📈 Progression sur 4 semaines</div><ul style="margin:0 0 0 18px;font-size:13.5px;line-height:1.6">'+pr.progression.map(function(x){return '<li>'+x+'</li>'}).join("")+'</ul>'
+    +'<p style="color:var(--muted);font-size:12px;margin-top:12px">⚠️ En cas de douleur, de reprise après blessure ou de problème de santé, demandez l\'avis du médecin ou de l\'EAP avant de commencer.</p>';
+  el.innerHTML=h;
+}
+function textePdf(x){return x.replace(/<[^>]+>/g,"").replace(/[\u2212]/g,"-").replace(/[^\x00-\xFF'’·—–…«»"]/g,"").replace(/\s+/g," ").trim()}
+function programmePDF(){
+  var sel=document.getElementById("fichePompier");
+  var p=(monPompierId&&data.find(function(x){return x.id===monPompierId}))||data.find(function(x){return String(x.id)===sel.value})||data[0];
+  if(!p)return;
+  var pr=construireProgramme(p),{ jsPDF }=window.jspdf,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var pageW=doc.internal.pageSize.getWidth(),margin=14,y;
+  doc.setFillColor(12,10,9);doc.rect(0,0,pageW,30,'F');doc.setFillColor(234,88,12);doc.rect(0,30,pageW,1.4,'F');
+  pdfLogo(doc,margin-4,3,24);
+  doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(255,255,255);doc.text("MON PROGRAMME D'ENTRAÎNEMENT",pageW/2,12,{align:"center"});
+  doc.setFontSize(12);doc.setTextColor(251,191,36);doc.text(nomGrade(p)+" — 4 semaines",pageW/2,20,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(214,211,209);doc.text("D'après les résultats ICP — Caserne Cruzy-Quarante — SDIS 34 — "+new Date().toLocaleDateString('fr-FR'),pageW/2,26,{align:"center"});
+  y=40;
+  pr.ordre.forEach(function(b){
+    var c=COULEURS_NIVEAU[b.niv],rgb=c&&b.niv!=="?"?c.rgb:[148,163,184];
+    var items=b.lignes.map(textePdf).concat(b.seances.A?["Fractionné : "+textePdf(b.seances.A),"Seuil : "+textePdf(b.seances.B),"Endurance : "+textePdf(b.seances.C)]:[]).concat(b.seances.F?[textePdf(b.seances.F)]:[]);
+    var txt=[];items.forEach(function(i){txt=txt.concat(doc.splitTextToSize("• "+i,pageW-2*margin-8))});
+    var hBloc=9+txt.length*4.6;
+    if(y+hBloc>285){doc.addPage();y=18;}
+    doc.setFillColor(rgb[0],rgb[1],rgb[2]);doc.rect(margin,y,1.6,hBloc,'F');
+    doc.setFont("helvetica","bold");doc.setFontSize(11.5);doc.setTextColor(28,25,23);doc.text(textePdf(b.titre),margin+5,y+5);
+    var lt=doc.getTextWidth(textePdf(b.titre));
+    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(rgb[0],rgb[1],rgb[2]);doc.text("("+texteNiveauCourt(b.niv)+")",margin+7+lt,y+5);
+    doc.setFontSize(9.5);doc.setTextColor(28,25,23);doc.text(txt,margin+5,y+11);
+    y+=hBloc+4;
+  });
+  y+=3;if(y>200){doc.addPage();y=18;}
+  pdfSectionTitle(doc,margin,y,"Ma semaine type",11);y+=4;
+  doc.autoTable({startY:y,theme:'grid',margin:{left:margin,right:margin},body:pr.semaine.map(function(j){return [j[0],textePdf(j[1])]}),
+    styles:{fontSize:9,cellPadding:2.4,valign:'top'},columnStyles:{0:{fontStyle:'bold',cellWidth:24,fillColor:[245,245,244]}}});
+  y=doc.lastAutoTable.finalY+7;
+  if(y>255){doc.addPage();y=18;}
+  pdfSectionTitle(doc,margin,y,"Progression sur 4 semaines",11);y+=6;
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(28,25,23);
+  pr.progression.forEach(function(x){var t=doc.splitTextToSize("• "+x,pageW-2*margin);doc.text(t,margin,y);y+=t.length*4.6+1.5;});
+  doc.setFontSize(8.5);doc.setTextColor(120,113,108);
+  doc.text(doc.splitTextToSize("En cas de douleur, de reprise après blessure ou de problème de santé, demandez l'avis du médecin ou de l'EAP avant de commencer.",pageW-2*margin),margin,y+4);
+  doc.save("Programme_ICP_"+p.nom+"_"+p.prenom+".pdf");
+}
 function renderFiche(){
   var sel=document.getElementById("fichePompier"),el=document.getElementById("ficheContenu");
   if(!sel||!el)return;
@@ -1898,7 +2033,7 @@ function renderFiche(){
   sel.style.display=(liste.length>1&&!monPompierId)?"":"none";
   var bt=document.querySelector("#tab-fiche .btn-primary");if(bt)bt.textContent=monPompierId?"📄 Télécharger ma fiche (PDF)":"📄 Télécharger cette fiche (PDF)";
   var p=(monPompierId&&liste.find(function(x){return x.id===monPompierId}))||liste.find(function(x){return String(x.id)===sel.value})||liste[0];
-  if(!p){el.innerHTML='<p style="color:var(--muted)">Aucune fiche disponible.</p>';return;}
+  if(!p){el.innerHTML='<p style="color:var(--muted)">Aucune fiche disponible.</p>';renderProgramme(null);return;}
   var age=getAge(p.annee),g=getNiveauGlobal(p);
   var html='<div style="display:flex;align-items:center;gap:14px;margin:6px 0 4px">'+(galonSvg(p.grade,46)||'<span class="avatar" style="width:52px;height:52px;font-size:18px">'+escAttr(((p.prenom||" ")[0]+(p.nom||" ")[0]).toUpperCase())+'</span>')
     +'<div><div style="font-family:var(--titre);font-size:26px">'+escAttr(nomGrade(p))+'</div>'+(p.fonction?'<div style="color:var(--accent);font-size:13px;font-weight:600">'+escAttr(p.fonction)+'</div>':'')+'<div style="color:var(--muted);font-size:13px">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+'</div></div></div>';
@@ -1927,6 +2062,7 @@ function renderFiche(){
   var next=prochaineSession();
   if(next)html+='<div style="margin-top:14px;padding:12px;border-radius:12px;border:1px solid var(--primary);color:var(--text)">📅 Prochaine session ICP : <b>'+escAttr(libelleSession(next))+'</b></div>';
   el.innerHTML=html;
+  renderProgramme(p);
 }
 function ficheExportPDF(){
   var sel=document.getElementById("fichePompier");
