@@ -103,6 +103,51 @@ body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none
 @media(max-width:560px){.carte-joueur{grid-template-columns:auto 1fr}.carte-joueur .cj-spark{grid-column:1/-1}}
 /* 5. Confettis */
 #confettis{position:fixed;inset:0;pointer-events:none;z-index:9999}
+/* ===== DEUXIÈME VAGUE ===== */
+/* 1. Transition fluide entre onglets (View Transitions) */
+::view-transition-old(root){animation:vt-sort .22s ease both}
+::view-transition-new(root){animation:vt-entre .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes vt-sort{to{opacity:0;transform:translateY(-6px)}}
+@keyframes vt-entre{from{opacity:0;transform:translateY(8px)}}
+html.vt-theme::view-transition-old(root),html.vt-theme::view-transition-new(root){animation:none;mix-blend-mode:normal}
+/* 2. Écran de démarrage */
+#demarrage{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:radial-gradient(600px 400px at 50% 45%,rgba(234,88,12,.28),transparent 70%),#0c0a09;transition:opacity .45s,visibility .45s}
+#demarrage img{width:150px;height:150px;animation:dem-logo 1.1s cubic-bezier(.2,.8,.2,1) both,halo 2s ease-in-out .9s infinite}
+#demarrage .dem-titre{font-family:Oswald,sans-serif;font-size:22px;letter-spacing:2px;color:#fff;animation:monte .6s .35s both}
+#demarrage .dem-titre span{color:#fbbf24}
+#demarrage .dem-barre{width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+#demarrage .dem-barre i{display:block;height:100%;width:40%;background:linear-gradient(90deg,#ea580c,#fbbf24);animation:dem-charge 1s ease-in-out infinite}
+#demarrage.fini{opacity:0;visibility:hidden}
+@keyframes dem-logo{from{opacity:0;transform:scale(.6) rotate(-8deg)}60%{opacity:1;transform:scale(1.06) rotate(1deg)}to{transform:none}}
+@keyframes dem-charge{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+/* 4. Onde au toucher */
+.btn,.tab,#navBas button,.plus-liste button,.menu-deroulant button{position:relative;overflow:hidden}
+.onde{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.28;transform:scale(0);animation:onde .55s ease-out forwards}
+@keyframes onde{to{transform:scale(1);opacity:0}}
+/* 5. Coche de sauvegarde */
+#cocheSauvegarde{position:fixed;top:18px;left:50%;z-index:9000;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 88%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid color-mix(in srgb,var(--success) 50%,var(--border));
+  box-shadow:0 10px 30px rgba(0,0,0,.35);font-size:13px;font-weight:600;color:var(--text);animation:coche-in .35s cubic-bezier(.2,.8,.2,1) both}
+#cocheSauvegarde.sort{animation:coche-out .35s ease forwards}
+#cocheSauvegarde svg circle{stroke-dasharray:63;stroke-dashoffset:63;animation:trace .45s ease-out forwards}
+#cocheSauvegarde svg path{stroke-dasharray:20;stroke-dashoffset:20;animation:trace .3s .35s ease-out forwards}
+@keyframes trace{to{stroke-dashoffset:0}}
+@keyframes coche-in{from{opacity:0;transform:translate(-50%,-14px) scale(.9)}}
+@keyframes coche-out{to{opacity:0;transform:translate(-50%,-10px)}}
+/* 7. Badges */
+.badges-fiche{display:flex;flex-wrap:wrap;gap:8px;margin:-4px 0 14px}
+.badge-trophee{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,var(--surface2)),var(--surface2));border:1px solid color-mix(in srgb,var(--accent) 45%,var(--border));
+  animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
+.badge-trophee:nth-child(2){animation-delay:.12s}.badge-trophee:nth-child(3){animation-delay:.24s}.badge-trophee:nth-child(4){animation-delay:.36s}
+@keyframes pop{from{opacity:0;transform:scale(.4)}}
+/* 8. Jauge par test */
+.jauge-test{position:relative;height:8px;margin:12px 4px 16px;border-radius:999px;background:linear-gradient(90deg,#dc2626 0 33.3%,#f59e0b 33.3% 66.6%,#16a34a 66.6%);opacity:.9}
+.jauge-test .curseur{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:#fff;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--text),0 3px 8px rgba(0,0,0,.4);animation:curseur 1.1s cubic-bezier(.2,.8,.2,1) .2s both}
+.jauge-test .cible{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--text);opacity:.7}
+.jauge-test .cible::after{content:"🎯";position:absolute;top:13px;left:-6px;font-size:11px}
+@keyframes curseur{from{left:0!important}}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -337,6 +382,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
 <body>
+<div id="demarrage" aria-hidden="true"><img src="icons/logo.webp" alt="" width="150" height="150"><div class="dem-titre">ICP <span>CRUZY-QUARANTE</span></div><div class="dem-barre"><i></i></div></div>
 <div id="toastContainer"></div>
 <div class="app">
 <div id="loginScreen" class="login-box card">
@@ -372,7 +418,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="menuCompte" class="menu-deroulant hidden">
 <div class="info" id="emailCompte"></div>
 <button onclick="fermerMenuCompte();ouvrirMonMdp()">🔑 Changer mon mot de passe</button>
-<button onclick="basculerTheme()" id="btnTheme">☀️ Mode clair</button>
+<button onclick="basculerThemeAnime(event)" id="btnTheme">☀️ Mode clair</button>
 <button onclick="fermerMenuCompte();afficherBienvenue(true)">❓ Comprendre les couleurs</button>
 <button id="btnApercuChef" class="hidden" onclick="fermerMenuCompte();choisirApercuChef()">👁 Voir l'appli comme un chef</button>
 <button class="rouge" onclick="fermerMenuCompte();doLogout()">🔒 Déconnexion</button>
@@ -1035,6 +1081,7 @@ async function saveToSupabase() {
             if (delErr) console.warn('⚠️ Nettoyage des pompiers supprimés impossible :', delErr.message);
         }
         updateSupabaseStatus(true, "Connecté — Sauvegarde OK");
+        if (isAdmin) cocheSauvegarde();
         effacerBrouillon();
         sauverCache();
         publierSyntheseDiffere();
@@ -1190,6 +1237,8 @@ function finaliserConnexion(){
     // Squelettes animés le temps que les données arrivent
     ["dashboardStats","syntheseStats"].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='<div class="squelette"></div><div class="squelette"></div><div class="squelette"></div>';});
     var dv=document.getElementById("dashVisuel"); if(dv) dv.innerHTML='<div class="squelette" style="min-height:150px"></div>';
+    var sb=document.getElementById("syntheseBody"); if(sb) sb.innerHTML=new Array(6).join('<tr><td colspan="10"><div class="squelette" style="min-height:26px"></div></td></tr>');
+    var fc=document.getElementById("ficheContenu"); if(fc) fc.innerHTML='<div class="squelette" style="min-height:120px;margin-bottom:12px"></div><div class="grid-4"><div class="squelette"></div><div class="squelette"></div><div class="squelette"></div><div class="squelette"></div></div>';
     loadFromSupabase().then(function(){return chargerSessions();}).then(function(){if(monPompierId){afficherCompteEntete();afficherBienvenue(false);}});
 }
 var connexionEnCours = false;
@@ -1293,7 +1342,15 @@ async function initAuth(){
         if(event==="SIGNED_OUT")showLoginScreen();
     });
 }
-function switchTab(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+var ongletCourant=null;
+function switchTab(tab,el){
+  // transition animée seulement pour un clic de l'utilisateur (les appels internes restent immédiats)
+  var clic=window.event&&window.event.isTrusted&&/click|pointerup|keydown/.test(window.event.type);
+  if(clic&&document.startViewTransition&&!MOUVEMENT_REDUIT&&ongletCourant&&ongletCourant!==tab&&tabAutorise(tab)){
+    ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
+  ongletCourant=tab;switchTabInterne(tab,el);
+}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -1938,6 +1995,72 @@ function courbeNiveaux(points){
   return '<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path d="'+chemin+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/>'
     +points.map(function(p,i){return '<circle cx="'+(pad+i*dx).toFixed(1)+'" cy="'+y(p.n).toFixed(1)+'" r="4.5" fill="'+coul[p.n]+'" stroke="var(--surface2)" stroke-width="2"><title>'+escAttr(p.c)+'</title></circle>'}).join("")+'</svg>';
 }
+// ===== DEUXIÈME VAGUE =====
+// 2. Écran de démarrage : une fois par ouverture, retiré dès que la page est prête (1,2 s maximum)
+(function(){
+  var d=document.getElementById("demarrage");if(!d)return;
+  var deja=false;try{deja=sessionStorage.getItem("icp_demarrage")}catch(e){}
+  if(deja||MOUVEMENT_REDUIT){d.remove();return;}
+  try{sessionStorage.setItem("icp_demarrage","1")}catch(e){}
+  var t0=Date.now();
+  function fin(){setTimeout(function(){d.classList.add("fini");setTimeout(function(){d.remove()},500)},Math.max(0,1200-(Date.now()-t0)));}
+  if(document.readyState==="complete")fin();else window.addEventListener("load",fin);
+  setTimeout(fin,1800);
+})();
+// 4. Onde au toucher sur les boutons
+document.addEventListener("pointerdown",function(e){
+  if(MOUVEMENT_REDUIT)return;
+  var b=e.target.closest&&e.target.closest(".btn,.tab,#navBas button,.plus-liste button,.menu-deroulant button");if(!b||b.disabled)return;
+  var r=b.getBoundingClientRect(),t=Math.max(r.width,r.height)*2.2,o=document.createElement("span");
+  o.className="onde";o.style.width=o.style.height=t+"px";o.style.left=(e.clientX-r.left-t/2)+"px";o.style.top=(e.clientY-r.top-t/2)+"px";
+  b.appendChild(o);setTimeout(function(){o.remove()},600);
+},{passive:true});
+// 5. Coche animée à chaque sauvegarde réussie
+function cocheSauvegarde(){
+  var ancien=document.getElementById("cocheSauvegarde");if(ancien)ancien.remove();
+  var c=document.createElement("div");c.id="cocheSauvegarde";c.setAttribute("role","status");
+  c.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="var(--success)" stroke-width="2.4"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="var(--success)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Enregistré';
+  document.body.appendChild(c);
+  setTimeout(function(){c.classList.add("sort");setTimeout(function(){c.remove()},380)},1500);
+}
+// 7. Badges de la fiche
+function badgesFiche(p,age,pts){
+  var b=[],nivs=TESTS_SYNTHESE.map(function(t){return niveauTest(t,p.sexe,p.poids,age,p[t.field])}).filter(function(n){return n&&n!=="?"});
+  if(epreuvesPassees(p)===EPREUVES_ICP.length)b.push("💯 ICP complète");
+  if(nivs.length&&nivs.every(function(n){return n==="3"}))b.push("🏆 Tout vert");
+  if(TESTS_SYNTHESE.some(function(t){var e=evolutionTest(t,p,age);return e&&e.indexOf("En progrès")!==-1}))b.push("📈 En progrès");
+  if(pts.length>=3)b.push("🎖️ Fidèle : "+(pts.length-(pts[pts.length-1].c==="En cours"?1:0))+" campagnes");
+  return b;
+}
+// 8. Position du résultat sur la jauge rouge / orange / vert (0 à 100) et repère de l'objectif
+function jaugeTest(t,p,age){
+  var v=p[t.field],n=niveauTest(t,p.sexe,p.poids,age,v);if(!n||n==="?")return null;
+  var pos;
+  if(t.key==="rameur"){
+    var s=seuilsRameur(p.sexe,p.poids,age),sec=timeToSec(v);if(!s||!sec)return null;
+    pos=sec>s[0]?33*Math.max(0,1-(sec-s[0])/(s[0]*.25)):sec>s[1]?33+(s[0]-sec)/Math.max(1,s[0]-s[1])*33:66.6+Math.min(1,(s[1]-sec)/(s[1]*.15))*33;
+  }else{
+    var tr=getTranche(age),bm=baremes[t.key];if(!tr||!bm)return null;var vals=bm[p.sexe==="M"?"homme":"femme"][tr];if(!vals)return null;
+    var a=parseFloat(vals[0].replace("<","").replace(",",".")),c=parseFloat(vals[2].replace(" et +","").replace(",",".")),x=parseFloat(v.toString().replace(",","."));
+    if(isNaN(a)||isNaN(c)||isNaN(x))return null;
+    pos=x<a?33*Math.max(0,x/a):x<c?33+(x-a)/Math.max(.5,c-a)*33:66.6+Math.min(1,(x-c)/Math.max(1,c*.4))*33;
+  }
+  pos=Math.max(3,Math.min(97,pos));
+  return {pos:pos,cible:n==="1"?33.3:n==="2"?66.6:null};
+}
+function jaugeHtml(j){
+  if(!j)return "";
+  return '<div class="jauge-test" aria-hidden="true">'+(j.cible?'<span class="cible" style="left:'+j.cible+'%"></span>':'')+'<span class="curseur" style="left:'+j.pos.toFixed(1)+'%"></span></div>';
+}
+// 3. Bascule clair / sombre qui s'étend en cercle depuis le bouton
+function basculerThemeAnime(e){
+  if(!document.startViewTransition||MOUVEMENT_REDUIT||!e){basculerTheme();return;}
+  var x=e.clientX||innerWidth-40,y=e.clientY||40,r=Math.hypot(Math.max(x,innerWidth-x),Math.max(y,innerHeight-y));
+  document.documentElement.classList.add("vt-theme");
+  var vt=document.startViewTransition(function(){basculerTheme()});
+  vt.ready.then(function(){document.documentElement.animate({clipPath:["circle(0 at "+x+"px "+y+"px)","circle("+r+"px at "+x+"px "+y+"px)"]},{duration:550,easing:"cubic-bezier(.2,.8,.2,1)",pseudoElement:"::view-transition-new(root)"});}).catch(function(){});
+  vt.finished.then(function(){document.documentElement.classList.remove("vt-theme")},function(){document.documentElement.classList.remove("vt-theme")});
+}
 // ===== OBJECTIFS ET ÉVOLUTION PAR TEST =====
 function seuilsRameur(sexe,poids,age){
   var p=parseFloat(poids);if(!p)return null;var tr=getTrancheErgo(age);if(!tr)return null;
@@ -2138,13 +2261,15 @@ function renderFiche(){
     +'<div class="cj-sous">'+txtAge(age)+' ans — '+(p.sexe==="M"?"Homme":"Femme")+' — CIS Cruzy-Quarante</div>'
     +(g&&COULEURS_NIVEAU[g]&&g!=="?"?'<span class="cj-niv" style="background:'+COULEURS_NIVEAU[g].hex+'">Niveau global : '+TEXTE_NIVEAU[g]+'</span>':'<span class="cj-niv" style="background:var(--border)">Niveau global : à évaluer</span>')+'</div>'
     +(courbe?'<div class="cj-spark">'+courbe+'<div>Évolution par campagne</div></div>':'')+'</div>';
+  var bgs=badgesFiche(p,age,pts);
+  if(bgs.length)html+='<div class="badges-fiche">'+bgs.map(function(x){return '<span class="badge-trophee">'+escAttr(x)+'</span>'}).join("")+'</div>';
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
     if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
     var c=COULEURS_NIVEAU[n];
     return '<div class="fiche-test"><div class="nom">'+t.label+'</div><div class="val">'+(v&&v.toString().trim()?escAttr(v)+'<span style="font-size:12px;color:var(--muted)">'+UNITES_TEST[t.key]+'</span>':'—')+'</div>'
       +(c?'<span class="fiche-niv" style="background:'+c.hex+'">'+TEXTE_NIVEAU[n]+'</span>':'<span style="color:var(--muted);font-size:12px">à passer</span>')
-      +(function(){var o=objectifTest(t,p,age),e=evolutionTest(t,p,age);return (o?'<div class="fiche-obj" style="color:'+o.c+'">'+o.txt+'</div>':'')+(e?'<div class="fiche-evol">'+e+'</div>':'');})()+'</div>';
+      +jaugeHtml(jaugeTest(t,p,age))+(function(){var o=objectifTest(t,p,age),e=evolutionTest(t,p,age);return (o?'<div class="fiche-obj" style="color:'+o.c+'">'+o.txt+'</div>':'')+(e?'<div class="fiche-evol">'+e+'</div>':'');})()+'</div>';
   }).join("")+'</div>';
   var hist=getHistorique(p).slice().sort(function(a,b){return (a.campagne||"").localeCompare(b.campagne||"")});
   if(hist.length){
