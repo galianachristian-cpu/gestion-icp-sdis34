@@ -8,7 +8,7 @@ create table public.menage_taches (
   mois integer not null check (mois between 1 and 12),
   jour integer not null check (jour between 1 and 31),
   mission text not null check (mission in ('aspirateur','sols','poussiere','materiel','autres')),
-  initiales text not null check (initiales ~ '^[A-ZÀ-Ý]{2,3}$'),
+  initiales text not null check (initiales ~ '^[A-ZÀ-Ý]{2,4}$'),
   detail text,
   created_at timestamptz not null default now(),
   unique (annee, mois, jour, mission, initiales)
@@ -16,11 +16,12 @@ create table public.menage_taches (
 create index menage_taches_periode_idx on public.menage_taches (annee, mois);
 alter table public.menage_taches enable row level security;
 
--- Initiales du compte connecté (prénom + nom de sa fiche pompier).
+-- Code du compte connecté : 2 premières lettres du prénom + 2 du nom (Christian Galiana -> CHGA).
+-- Sur 2 lettres, 7 paires de pompiers du centre se retrouvaient avec le même code.
 create or replace function public.mes_initiales_icp()
 returns text language sql stable security definer set search_path = ''
 as $$
-  select upper(left(btrim(p.prenom),1) || left(btrim(p.nom),1))
+  select upper(left(btrim(p.prenom),2) || left(btrim(p.nom),2))
   from public.comptes_app c join public.pompiers p on p.id = c.pompier_id
   where c.email = lower(auth.jwt() ->> 'email')
   limit 1;

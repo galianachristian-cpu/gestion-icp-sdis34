@@ -396,7 +396,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .men-tuile.autres-ok{border-style:solid;border-color:var(--accent);background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface2)),var(--surface2))}
 .men-coche{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--success);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .men-pastilles{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:8px;min-height:22px}
-.men-pastille{width:22px;height:22px;border-radius:50%;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.25)}
+.men-pastille{min-width:22px;height:22px;padding:0 7px;border-radius:999px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.3px;border:1.5px solid rgba(255,255,255,.25)}
 .men-pastille.moi{outline:2px solid var(--success);outline-offset:1px}
 .men-podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:4px 0 6px;min-height:150px}
 .men-marche{flex:1;max-width:120px;text-align:center}
@@ -3603,8 +3603,8 @@ var menageRows=[],menageCharge=false,menageEdits={},menageErreur="",menageOccupe
 
 function menEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
 function menMission(id){for(var i=0;i<MENAGE_MISSIONS.length;i++)if(MENAGE_MISSIONS[i].id===id)return MENAGE_MISSIONS[i];return {id:id,lib:id,ic:"•"}}
-function menIniDe(p){return (((p.prenom||"").trim()[0]||"")+((p.nom||"").trim()[0]||"")).toUpperCase()}
-function menIniValide(t){return /^[A-ZÀ-Ý]{2,3}$/.test(t)}
+function menIniDe(p){return ((p.prenom||"").trim().slice(0,2)+(p.nom||"").trim().slice(0,2)).toUpperCase()}
+function menIniValide(t){return /^[A-ZÀ-Ý]{2,4}$/.test(t)}
 function menTokens(txt){return String(txt||"").toUpperCase().split(/[\s,;+/]+/).filter(function(t){return t})}
 function menCouleur(ini){var h=0;for(var i=0;i<ini.length;i++)h=(h*31+ini.charCodeAt(i))%360;return "hsl("+h+" 58% 42%)"}
 function menPastille(ini,moi){return '<span class="men-pastille'+(moi?" moi":"")+'" style="background:'+menCouleur(ini)+'" title="'+menEsc(ini)+'">'+menEsc(ini)+'</span>'}
@@ -3825,7 +3825,7 @@ function renderMenageGrille(){
   var P=menagePeriode(),st=document.getElementById("menStatut");
   document.getElementById("menActions").style.display=isAdmin?"":"none";
   st.innerHTML=menageErreur?'<span style="color:var(--danger)">⚠️ '+menEsc(menageErreur)+'</span>'
-    :(isAdmin?'Recopie ici la feuille papier : les initiales de chacun, séparées par un espace (ex. <b>CG LM</b>). Puis « Enregistrer le mois ».'
+    :(isAdmin?'Recopie ici la feuille papier : le code de chacun (2 lettres du prénom + 2 du nom), séparés par un espace (ex. <b>CHGA LUMA</b>). Puis « Enregistrer le mois ».'
              :'Lecture seule : seul l\'administrateur recopie la feuille papier.');
   var rows=menageRows.filter(function(r){return r.annee===P.annee&&r.mois===P.mois});
   var cell={};
@@ -3847,7 +3847,7 @@ function renderMenageGrille(){
       var key=j+"|"+m.id,ek=P.annee+"|"+P.mois+"|"+key;
       var v=(menageEdits[ek]!==undefined)?menageEdits[ek]:(cell[key]||"");
       h+='<td>'+(isAdmin
-        ? '<input type="text" maxlength="40" value="'+menEsc(v)+'" oninput="menageSaisie(\''+ek+'\',this.value)">'
+        ? '<input type="text" maxlength="48" value="'+menEsc(v)+'" oninput="menageSaisie(\''+ek+'\',this.value)">'
         : menEsc(v))+'</td>';
     });
     h+='</tr>';
@@ -3856,14 +3856,27 @@ function renderMenageGrille(){
 }
 function menageSaisie(key,val){menageEdits[key]=val}
 
-// Découpe « CG LM (vitres) » → {inis:["CG","LM"], detail:"vitres"}
+// Si quelqu'un n'écrit que 2 lettres sur la feuille papier, on retrouve le code complet
+// quand une seule personne correspond ; sinon on garde ce qui est écrit.
+function menNormaliserCode(t){
+  if((data||[]).some(function(p){return menIniDe(p)===t})) return t;
+  var cands;
+  if(t.length===2){ // ancienne façon : 1re lettre du prénom + 1re du nom (CG)
+    cands=(data||[]).filter(function(p){
+      return (((p.prenom||"").trim()[0]||"")+((p.nom||"").trim()[0]||"")).toUpperCase()===t});
+    if(cands.length===1) return menIniDe(cands[0]);
+  }
+  cands=(data||[]).filter(function(p){return menIniDe(p).slice(0,t.length)===t});
+  return cands.length===1?menIniDe(cands[0]):t;
+}
+// Découpe « CHGA LUMA (vitres) » → {inis:["CHGA","LUMA"], detail:"vitres"}
 function menageParseCase(txt){
   var detail=null;
   var s=String(txt||"").replace(/\(([^)]*)\)/,function(_,d){detail=d.trim()||null;return " "});
   var inis=[],vus={};
   menTokens(s).forEach(function(t){
-    if(menIniValide(t)){if(!vus[t]){vus[t]=1;inis.push(t)}}
-    else if(!detail&&t.length>3)detail=t.toLowerCase();
+    if(menIniValide(t)){var c=menNormaliserCode(t);if(!vus[c]){vus[c]=1;inis.push(c)}}
+    else if(!detail&&t.length>4)detail=t.toLowerCase();
   });
   return {inis:inis,detail:detail&&detail.slice(0,60)};
 }
