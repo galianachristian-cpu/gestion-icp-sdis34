@@ -443,19 +443,68 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme h2,#tab-programme h3{font-weight:800;letter-spacing:-.3px}
 #tab-programme .sec{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);margin:0 2px 10px;font-weight:800}
 #tab-programme .pmuted{color:var(--pmuted)}
-@keyframes prg-rise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-@keyframes prg-pop{0%{transform:scale(.7)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
-@keyframes prg-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@keyframes prg-float{50%{transform:translateY(-3px)}}
-@keyframes prg-shine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-@keyframes prg-done{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}100%{box-shadow:0 0 0 18px rgba(52,211,153,0)}}
-@keyframes prg-burst{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.9) rotate(45deg);opacity:0}}
-@keyframes prg-ring{to{stroke-dashoffset:var(--off)}}
-#tab-programme .stagger{animation:prg-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+/* Animations reprises telles quelles de mon-app-sport (mêmes durées, mêmes courbes,
+   mêmes étapes) — seul le nom porte le préfixe mp- pour ne pas écraser celles de l'appli ICP. */
+@keyframes mp-ring{to{stroke-dashoffset:var(--off)}}
+@property --mp-ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes mp-pulse{50%{transform:scale(1.4);opacity:.6}}
+@keyframes mp-pop{0%{transform:scale(.7)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes mp-wline{to{width:calc((100% - 44px) * var(--lw))}}
+@keyframes mp-wpop{to{transform:scale(1);opacity:1}}
+@keyframes mp-wfill{to{width:var(--w)}}
+@keyframes mp-blink{50%{opacity:.25}}
+@keyframes mp-stbar{to{width:100%}}
+@keyframes mp-stpop{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes mp-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes mp-rise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes mp-navpop{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes mp-shine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes mp-float{50%{transform:translateY(-3px)}}
+@keyframes mp-slideL{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
+@keyframes mp-slideR{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
+@keyframes mp-ripple{to{transform:scale(1);opacity:0}}
+@keyframes mp-donepulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}100%{box-shadow:0 0 0 18px rgba(52,211,153,0)}}
+@keyframes mp-burst{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.9) rotate(45deg);opacity:0}}
+@keyframes mp-spinb{to{--mp-ang:360deg}}
+/* entrée d'un onglet : les cartes arrivent l'une après l'autre */
+#tab-programme.enter .stagger{animation:mp-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+/* changement de séance : glisse dans le sens de la navigation */
+#tab-programme.slideL{animation:mp-slideL .38s cubic-bezier(.2,.8,.2,1)}
+#tab-programme.slideR{animation:mp-slideR .38s cubic-bezier(.2,.8,.2,1)}
+#tab-programme .fade{animation:mp-fade .3s ease}
+#tab-programme .rip{position:relative;overflow:hidden}
+#tab-programme .ripple{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.22;transform:scale(0);animation:mp-ripple .55s ease-out forwards}
+#tab-programme .set.pop{animation:mp-pop .4s cubic-bezier(.3,1.5,.5,1)}
+#tab-programme .day.on b{animation:mp-navpop .35s cubic-bezier(.3,1.5,.5,1);display:block}
+#tab-programme .st-big{animation:mp-stpop .6s cubic-bezier(.3,1.6,.5,1)}
+#tab-programme .dot.saving{animation:mp-pulse .8s infinite}
+/* badge : reflet qui passe et icône qui flotte */
+#tab-programme .badge.ok{position:relative;overflow:hidden}
+#tab-programme .badge.ok::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.18) 50%,transparent 65%);transform:translateX(-100%);animation:mp-shine 4.5s ease-in-out infinite}
+#tab-programme .badge.ok:nth-child(3n)::after{animation-delay:2.4s}
+#tab-programme .badge.ok span{animation:mp-float 3s ease-in-out infinite}
+/* semaine en flammes */
+#tab-programme .wk{display:flex;flex-direction:column;gap:10px}
+#tab-programme .wkr{position:relative;display:flex;justify-content:space-between;padding:0 2px}
+#tab-programme .wline{position:absolute;left:22px;top:19px;height:4px;border-radius:2px;background:linear-gradient(90deg,#fb923c,#facc15);width:0;animation:mp-wline 1.4s .2s ease-out forwards}
+#tab-programme .wf{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:40px;z-index:1}
+#tab-programme .wf span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:17px;background:var(--pcard);border:2px solid var(--pline);transform:scale(.4);opacity:0;animation:mp-wpop .45s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d,0ms)}
+#tab-programme .wf.on span{border-color:#fb923c;box-shadow:0 0 14px rgba(251,146,60,.45)}
+#tab-programme .wf em{font-style:normal;font-size:10.5px;color:var(--pmuted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+#tab-programme .wb{height:4px;border-radius:2px;background:var(--pline);margin:5px 8px 0;overflow:hidden}
+#tab-programme .wb i{display:block;height:100%;width:0;border-radius:2px;animation:mp-wfill 1.4s .4s ease-out forwards}
+#tab-programme .wct{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+#tab-programme .wct>div{background:var(--pcard2);border:1px solid var(--pline);border-radius:14px;padding:11px 10px;text-align:center}
+#tab-programme .wct b{display:block;font-size:21px;font-weight:800}
+#tab-programme .wct em{font-style:normal;display:block;font-size:11px;color:var(--pmuted);font-weight:700;margin-top:1px}
+/* bordure vivante de la carte d'en-tête */
+#tab-programme .hero{position:relative}
+#tab-programme .hero.live::after{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--mp-ang),transparent 0 60%,var(--a1),var(--a2),transparent 85%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:mp-spinb 4s linear infinite;pointer-events:none}
+@media (prefers-reduced-motion: reduce){#tab-programme *{animation:none!important}}
 /* en-tête */
 #tab-programme .ptop{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between}
 #tab-programme .ptitre{font-size:22px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:9px}
-#tab-programme .ptitre i{font-style:normal;font-size:26px;animation:prg-float 3s ease-in-out infinite}
+#tab-programme .ptitre i{font-style:normal;font-size:26px;animation:mp-float 3s ease-in-out infinite}
 #tab-programme .psous{font-size:12.5px;color:var(--pmuted);margin-top:3px}
 #tab-programme .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;background:var(--pcard2);
   border:1px solid var(--pline);font-size:12px;font-weight:700;color:var(--psoft);white-space:nowrap}
@@ -466,7 +515,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .ring svg{transform:rotate(-90deg)}
 #tab-programme .ring .rv{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:19px}
 #tab-programme .ring .rv small{display:block;font-size:10px;font-weight:700;color:var(--pmuted);letter-spacing:.4px}
-#tab-programme .ring circle.arc{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:prg-ring 1s cubic-bezier(.2,.8,.2,1) forwards .15s}
+#tab-programme .ring circle.arc{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:mp-ring 1s cubic-bezier(.2,.8,.2,1) forwards .15s}
 /* barre des 3 semaines */
 #tab-programme .bar{height:7px;border-radius:9px;background:var(--pbg2);overflow:hidden;margin-top:9px}
 #tab-programme .bar i{display:block;height:100%;background:var(--grad);border-radius:9px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
@@ -480,12 +529,12 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .day.on{background:var(--grad);border-color:transparent;color:#0b0f19;box-shadow:0 8px 20px color-mix(in srgb,var(--a1) 25%,transparent)}
 #tab-programme .day.on span{color:rgba(11,15,25,.75)}
 #tab-programme .day.ok::after{content:'✓';position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;
-  background:var(--pok);color:#0b0f19;font-size:12px;font-weight:900;display:grid;place-items:center;animation:prg-pop .4s cubic-bezier(.3,1.5,.5,1)}
+  background:var(--pok);color:#0b0f19;font-size:12px;font-weight:900;display:grid;place-items:center;animation:mp-pop .4s cubic-bezier(.3,1.5,.5,1)}
 /* séance */
 #tab-programme .ex{background:var(--pcard);border:1px solid var(--pline);border-radius:var(--pr);padding:14px;transition:.25s;position:relative;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
 #tab-programme .ex.done{border-color:rgba(52,211,153,.45);background:linear-gradient(180deg,rgba(52,211,153,.08),var(--pcard) 60%)}
-#tab-programme .ex.justdone{animation:prg-done .9s ease-out}
+#tab-programme .ex.justdone{animation:mp-donepulse .9s ease-out}
 #tab-programme .exh{display:flex;align-items:center;gap:13px}
 #tab-programme .exh .t{flex:1;min-width:0}
 #tab-programme .exh .t b{display:block;font-size:16px;font-weight:800;letter-spacing:-.2px}
@@ -493,15 +542,15 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .check{width:46px;height:46px;border-radius:50%;border:2px solid var(--pline);background:transparent;display:grid;place-items:center;
   font-size:21px;font-weight:900;color:transparent;flex:0 0 auto;transition:.2s;cursor:pointer;position:relative}
 #tab-programme .check:hover{border-color:var(--a1);color:rgba(255,255,255,.18)}
-#tab-programme .ex.done .check{border-color:var(--pok);background:var(--pok);color:#0b0f19;animation:prg-pop .45s cubic-bezier(.3,1.5,.5,1)}
-#tab-programme .ex.justdone .check::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--pok);animation:prg-burst .7s ease-out}
+#tab-programme .ex.done .check{border-color:var(--pok);background:var(--pok);color:#0b0f19;animation:mp-pop .45s cubic-bezier(.3,1.5,.5,1)}
+#tab-programme .ex.justdone .check::after{content:'';position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,#34d399 0 2px,transparent 3px) 50% 0/6px 6px no-repeat,radial-gradient(circle,#fbbf24 0 2px,transparent 3px) 100% 50%/6px 6px no-repeat,radial-gradient(circle,#22d3ee 0 2px,transparent 3px) 50% 100%/6px 6px no-repeat,radial-gradient(circle,#f472b6 0 2px,transparent 3px) 0 50%/6px 6px no-repeat;animation:mp-burst .6s ease-out forwards}
 /* blocs d'une séance */
-#tab-programme .blk{margin-top:14px;padding-left:13px;border-left:3px solid transparent;border-image:var(--grad) 1;animation:prg-fade .35s both}
+#tab-programme .blk{margin-top:14px;padding-left:13px;border-left:3px solid transparent;border-image:var(--grad) 1;animation:mp-fade .35s both}
 #tab-programme .blk .bt{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;
   background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #tab-programme .blk .bx{font-size:13px;color:var(--psoft);margin-top:4px;line-height:1.5}
 #tab-programme .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:11px}
-#tab-programme .exo{border:1px solid var(--pline);border-radius:14px;overflow:hidden;background:var(--pcard2);animation:prg-rise .4s both;animation-delay:var(--d,0ms)}
+#tab-programme .exo{border:1px solid var(--pline);border-radius:14px;overflow:hidden;background:var(--pcard2);animation:mp-rise .4s both;animation-delay:var(--d,0ms)}
 #tab-programme .exo img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--pbg2)}
 #tab-programme .exo .n{font-size:12.5px;font-weight:700;padding:8px 9px 0;line-height:1.25}
 #tab-programme .exo .c{font-size:11px;color:var(--pmuted);padding:2px 9px 9px}
@@ -527,11 +576,11 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .note{font-size:12.5px;color:var(--pmuted);margin-top:13px;line-height:1.55}
 #tab-programme .choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px}
 #tab-programme .carte{text-align:left;border:1.5px solid var(--pline);background:var(--pcard);border-radius:16px;padding:14px;cursor:pointer;
-  font:inherit;color:var(--ptext);transition:.22s;animation:prg-rise .4s both;animation-delay:var(--d,0ms);position:relative;overflow:hidden}
+  font:inherit;color:var(--ptext);transition:.22s;animation:mp-rise .4s both;animation-delay:var(--d,0ms);position:relative;overflow:hidden}
 #tab-programme .carte:hover{transform:translateY(-3px);border-color:var(--a1);box-shadow:0 10px 24px color-mix(in srgb,var(--a1) 18%,transparent)}
 #tab-programme .carte.sel{border-color:transparent;background:var(--grad);color:#0b0f19}
 #tab-programme .carte.sel .s{color:rgba(11,15,25,.72)}
-#tab-programme .carte.sel::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.35),transparent);animation:prg-shine 1.6s ease-out}
+#tab-programme .carte.sel::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.35),transparent);animation:mp-shine 1.6s ease-out}
 #tab-programme .carte i{font-style:normal;font-size:25px;display:block;margin-bottom:7px}
 #tab-programme .carte b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
 #tab-programme .carte .s{display:block;font-size:12px;color:var(--pmuted);margin-top:3px}
@@ -539,7 +588,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .chip{border:1.5px solid var(--pline);background:var(--pcard);color:var(--ptext);border-radius:12px;padding:9px 15px;
   cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;transition:.2s}
 #tab-programme .chip:hover{border-color:var(--a1)}
-#tab-programme .chip.sel{background:var(--grad);border-color:transparent;color:#0b0f19;animation:prg-pop .35s cubic-bezier(.3,1.5,.5,1)}
+#tab-programme .chip.sel{background:var(--grad);border-color:transparent;color:#0b0f19;animation:mp-pop .35s cubic-bezier(.3,1.5,.5,1)}
 #tab-programme .ligne{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 0;cursor:pointer}
 #tab-programme .ligne input{width:auto;accent-color:var(--a1)}
 #tab-programme .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px}
@@ -3908,7 +3957,41 @@ function renderProgramme(){
     if(prgEtape===0)prgEtape=1;
     box.innerHTML=prgInitiation(moi);
   } else box.innerHTML=prgVueProgramme(moi);
+  prgEnterFx();
 }
+
+// ---- Effets repris de mon-app-sport (même logique, mêmes durées) ----
+var prgEnterAt=0,prgEnterT=null;
+function prgReduit(){try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return false}}
+function prgTagStagger(){
+  var app=document.getElementById("tab-programme");if(!app)return;
+  var el=performance.now()-prgEnterAt;
+  [].slice.call(app.querySelectorAll(".hero,.pcard,.stat,.ex,.days,.wk")).slice(0,14)
+    .forEach(function(x,i){x.style.setProperty("--d",(i*45-el)+"ms");x.classList.add("stagger")});
+}
+function prgEnterFx(){
+  if(prgReduit())return;
+  var app=document.getElementById("tab-programme");if(!app)return;
+  clearTimeout(prgEnterT);prgEnterAt=performance.now();
+  app.classList.remove("enter");void app.offsetWidth;app.classList.add("enter");prgTagStagger();
+  prgEnterT=setTimeout(function(){app.classList.remove("enter")},1200);
+}
+function prgSlide(dir){
+  if(!dir||prgReduit())return;
+  var a=document.getElementById("tab-programme");if(!a)return;
+  a.classList.remove("slideL","slideR");void a.offsetWidth;
+  a.classList.add(dir>0?"slideL":"slideR");
+  setTimeout(function(){a.classList.remove("slideL","slideR")},450);
+}
+document.addEventListener("pointerdown",function(e){
+  var t=e.target.closest&&e.target.closest("#tab-programme .pbtn,#tab-programme .check,#tab-programme .day,#tab-programme .chip,#tab-programme .carte");
+  if(!t||prgReduit())return;
+  var r=t.getBoundingClientRect(),d=Math.max(r.width,r.height)*2.2,sp=document.createElement("span");
+  sp.className="ripple";
+  sp.style.cssText="width:"+d+"px;height:"+d+"px;left:"+(e.clientX-r.left-d/2)+"px;top:"+(e.clientY-r.top-d/2)+"px";
+  if(getComputedStyle(t).position==="static")t.style.position="relative";
+  t.classList.add("rip");t.appendChild(sp);setTimeout(function(){sp.remove()},600);
+},{passive:true});
 
 // ---- Parcours d'initiation ----
 var PRG_ETAPES=["Objectif","Dispos","Santé","Rappels","C'est parti"];
@@ -4006,22 +4089,40 @@ function prgVueProgramme(moi){
     prgSel=auj;
   }
   var R=42,C=2*Math.PI*R,off=C*(1-(seances.length?faites/seances.length:0));
-  var h='<div class="pcard stagger"><div class="ptop">'
+  var h='<div class="pcard hero live"><div class="ptop">'
     +'<div><div class="ptitre"><i>'+o.ic+'</i>'+prgEsc(o.lib)+'</div>'
     +'<div class="psous">'+prgEsc(moi.prenom+" "+moi.nom)+' • '+prgProfil.seances_sem+' séance'
     +(prgProfil.seances_sem>1?'s':'')+' de '+prgProfil.duree_min+' min par semaine</div></div>'
-    +'<span class="pill grad">Cycle '+pos.cycle+' · semaine '+S.n+'/3</span></div>'
+    +'<span class="pill grad badge ok"><span>🔥</span>Cycle '+pos.cycle+' · semaine '+S.n+'/3</span></div>'
     +'<div class="pring" style="margin-top:16px"><div class="ring">'
     +'<svg width="92" height="92"><circle cx="46" cy="46" r="'+R+'" fill="none" stroke="#0f1524" stroke-width="8"/>'
     +'<defs><linearGradient id="prgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>'
     +'<circle class="arc" cx="46" cy="46" r="'+R+'" fill="none" stroke="url(#prgG)" stroke-width="8" stroke-linecap="round" '
     +'style="--len:'+C.toFixed(1)+';--off:'+off.toFixed(1)+'"/></svg>'
-    +'<div class="rv">'+faites+'/'+seances.length+'<small>séances</small></div></div>'
+    +'<div class="rv"><span class="st-big" style="font-size:19px">'+faites+'/'+seances.length+'</span><small>séances</small></div></div>'
     +'<div style="flex:1;min-width:150px"><b style="font-size:15px">'+prgEsc(S.nom)+'</b>'
     +'<div class="psous">'+prgEsc(S.sous)+'</div>'
     +'<div class="bar"><i style="width:'+Math.round(((pos.semaine)+1)/3*100)+'%"></i></div>'
     +'<div class="psous" style="margin-top:6px">'+prgEsc(S.allure)+'</div></div></div>'
     +'<p class="note">Au bip, tu lâches tout : la séance peut être coupée sans remords.</p></div>';
+
+  // la semaine en flammes, comme l'appli sport
+  var prevus={};seances.forEach(function(s){prevus[(s.date.getDay()+6)%7]=s});
+  var auj0=new Date();auj0.setHours(0,0,0,0),dernier=-1;
+  for(var w=0;w<7;w++){var dw=new Date(lundi);dw.setDate(dw.getDate()+w);if(prevus[w]&&prgEstFaite(dw))dernier=w}
+  h+='<div class="pcard wk"><div class="wkr">'
+    +'<div class="wline" style="--lw:'+(dernier>0?(dernier/6).toFixed(2):0)+'"></div>'
+    +[0,1,2,3,4,5,6].map(function(w){
+      var dw=new Date(lundi);dw.setDate(dw.getDate()+w);
+      var prevu=!!prevus[w],fait=prevu&&prgEstFaite(dw),passe=dw<auj0;
+      var ic=fait?"🔥":(prevu?(passe?"✕":"💪"):"😴");
+      return '<div class="wf'+(fait?" on":"")+'" style="--d:'+(w*70)+'ms"><span>'+ic+'</span><em>'+PRG_JOURS[w].slice(0,3)+'</em></div>';
+    }).join("")+'</div>'
+    +'<div class="wct">'
+    +'<div><b>'+faites+'/'+seances.length+'</b><em>séances</em><div class="wb"><i style="--w:'+(seances.length?Math.round(100*faites/seances.length):0)+'%;background:#f472b6"></i></div></div>'
+    +'<div><b>'+(faites*prgProfil.duree_min)+'</b><em>minutes</em><div class="wb"><i style="--w:'+Math.min(100,Math.round(faites*prgProfil.duree_min/3))+'%;background:#fb923c"></i></div></div>'
+    +'<div><b>'+(dernier>=0?dernier+1:0)+'</b><em>jours d\'affilée</em><div class="wb"><i style="--w:'+Math.round(100*(dernier+1)/7)+'%;background:#22d3ee"></i></div></div>'
+    +'</div></div>';
 
   h+='<div class="days">'+seances.map(function(s,i){
       return '<button type="button" class="day'+(i===prgSel?" on":"")+(prgEstFaite(s.date)?" ok":"")+'" onclick="prgVoir('+i+')">'
@@ -4061,7 +4162,7 @@ function prgVueProgramme(moi){
 function prgBloc(titre,texte,extra){
   return '<div class="blk"><div class="bt">'+titre+'</div>'+(texte?'<div class="bx">'+texte+'</div>':'')+(extra||'')+'</div>';
 }
-function prgVoir(i){prgSel=i;renderProgramme()}
+function prgVoir(i){var dir=i-prgSel;prgSel=i;renderProgramme();prgSlide(dir)}
 async function prgFait(){
   var moi=prgMoi();if(!moi||prgOccupe)return;
   var s=prgSeancesSemaine(prgSemaineCourante().semaine,prgLundiCourant())[prgSel];if(!s)return;
