@@ -3610,19 +3610,45 @@ function menCouleur(ini){var h=0;for(var i=0;i<ini.length;i++)h=(h*31+ini.charCo
 function menPastille(ini,moi){return '<span class="men-pastille'+(moi?" moi":"")+'" style="background:'+menCouleur(ini)+'" title="'+menEsc(ini)+'">'+menEsc(ini)+'</span>'}
 function menDateCle(d){return d.getFullYear()+"|"+(d.getMonth()+1)+"|"+d.getDate()}
 
-// Qui suis-je ? Compte relié à une fiche pompier, sinon (admin) choix mémorisé sur l'appareil.
+function menSansAccent(s){return String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim()}
+// Qui suis-je ? 1) compte relié à une fiche pompier ; 2) choix déjà fait sur cet appareil ;
+// 3) administrateur : on déduit la fiche de l'adresse e-mail (prenom.nom@…), comme l'en-tête.
 function menageMoi(){
   var p=null;
   if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
   if(!p&&isAdmin){
     var id=null;try{id=localStorage.getItem("menage_moi")}catch(e){}
     if(id) p=(data||[]).filter(function(x){return String(x.id)===String(id)})[0];
+    if(!p){
+      var bouts=menSansAccent((emailConnecte||"").split("@")[0]).split(/[^a-z]+/).filter(Boolean);
+      if(bouts.length>=2){
+        var cands=(data||[]).filter(function(x){
+          return bouts.indexOf(menSansAccent(x.prenom))!==-1 && bouts.indexOf(menSansAccent(x.nom))!==-1;
+        });
+        if(cands.length===1) p=cands[0];
+      }
+    }
   }
   if(!p)return null;
   var ini=menIniDe(p);
   return menIniValide(ini)?{id:p.id,ini:ini,nom:((p.prenom||"")+" "+(p.nom||"")).trim()}:null;
 }
-function menageChoisirMoi(id){try{localStorage.setItem("menage_moi",id)}catch(e){}renderMenage()}
+var menageMoiEdit=false;
+function menageChoisirMoi(sel){
+  var id=sel&&sel.value;if(!id){return}
+  try{localStorage.setItem("menage_moi",id)}catch(e){}
+  menageMoiEdit=false;renderMenage();
+}
+function menageChangerMoi(){menageMoiEdit=true;renderMenageAujourdhui()}
+function menageSelectQui(moi){
+  var liste=(data||[]).slice().sort(function(a,b){
+    return (a.nom||"").localeCompare(b.nom||"")||(a.prenom||"").localeCompare(b.prenom||"")});
+  return '<select onchange="menageChoisirMoi(this)" style="max-width:230px"><option value="">— Qui es-tu ? —</option>'
+    +liste.map(function(p){
+      return '<option value="'+p.id+'"'+(moi&&moi.id===p.id?' selected':'')+'>'
+        +menEsc(((p.prenom||"")+" "+(p.nom||"")).trim())+'</option>'}).join("")
+    +'</select>';
+}
 function nomPourInitiales(ini){
   var out=(data||[]).filter(function(p){return menIniDe(p)===ini});
   return out.length===1?((out[0].prenom||"")+" "+(out[0].nom||"")).trim():"";
@@ -3670,9 +3696,9 @@ function renderMenageAujourdhui(){
   document.getElementById("menDateJour").innerHTML="🧹 "+MENAGE_JOURS[now.getDay()]+" "+now.getDate()+" "+MENAGE_MOIS[now.getMonth()].toLowerCase()
     +"<small>Ce que tu fais aujourd'hui dans la salle</small>";
   var bloc=document.getElementById("menMoiBloc");
-  if(moi) bloc.innerHTML='Je suis '+menPastille(moi.ini,true)+' <b style="color:var(--text)">'+menEsc(moi.nom)+'</b>'
-    +(isAdmin&&!monPompierId?' <button class="btn btn-sm" onclick="menageChangerMoi()">changer</button>':'');
-  else if(isAdmin) bloc.innerHTML='<button class="btn btn-primary btn-sm" onclick="menageChangerMoi()">👤 Dis-moi qui tu es</button>';
+  if(isAdmin&&(menageMoiEdit||!moi)) bloc.innerHTML=(moi?'Je suis ':'Je ne te reconnais pas : ')+menageSelectQui(moi);
+  else if(moi) bloc.innerHTML='Je suis '+menPastille(moi.ini,true)+' <b style="color:var(--text)">'+menEsc(moi.nom)+'</b>'
+    +(isAdmin?' <button class="btn btn-sm" onclick="menageChangerMoi()">changer</button>':'');
   else bloc.innerHTML='<span style="color:var(--warning)">Ton compte n\'est relié à aucune fiche pompier : demande à l\'administrateur.</span>';
 
   var cle=menDateCle(now);
@@ -3694,15 +3720,6 @@ function renderMenageAujourdhui(){
   document.getElementById("menAide").textContent=moi
     ? "Touche une mission dès que tu l'as faite. Re-touche pour l'enlever. Tu peux rattraper la veille, pas au-delà : sinon, note-le sur la feuille papier."
     : "Tu peux consulter, mais pas cocher : il faut que ton compte soit relié à ta fiche pompier.";
-}
-async function menageChangerMoi(){
-  var liste=(data||[]).slice().sort(function(a,b){return (a.nom||"").localeCompare(b.nom||"")});
-  var txt=prompt("Qui es-tu ? Tape ton nom :\n"+liste.slice(0,40).map(function(p){return (p.prenom||"")+" "+(p.nom||"")}).join("\n"));
-  if(!txt)return;
-  var t=txt.toLowerCase().trim();
-  var p=liste.filter(function(x){return (((x.prenom||"")+" "+(x.nom||"")).toLowerCase().indexOf(t)!==-1)})[0];
-  if(!p){showToast("Personne trouvée pour « "+txt+" »","error");return;}
-  menageChoisirMoi(p.id);
 }
 async function basculerMaMission(mission){
   var moi=menageMoi();if(!moi||menageOccupe)return;
