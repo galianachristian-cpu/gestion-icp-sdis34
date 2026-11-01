@@ -849,6 +849,7 @@ function sbDoc(coll, id){
         { coll, doc_id: key, pompier_id: ICP_PID, data: obj, maj: new Date().toISOString() },
         { onConflict: 'coll,doc_id' });
       if (r.error) throw r.error;
+      sbPing(); // trace d'usage (jour seulement, aucun contenu) pour le suivi de participation
     },
     async get(){
       if (!sb) throw new Error('hors ligne');
@@ -876,6 +877,16 @@ function sbCollection(coll){
       } };
     }
   };
+}
+/* Une ligne par jour d'utilisation, sans aucun détail : permet à l'administrateur de
+   voir combien de pompiers se servent de l'appli, sans jamais voir ce qu'ils y font. */
+let sbPingFait = '';
+function sbPing(){
+  if (!sb || !ICP_PID) return;
+  const j = new Date().toISOString().slice(0, 10);
+  if (sbPingFait === j) return;
+  sbPingFait = j;
+  sb.from('sport_activite').upsert({ pompier_id: ICP_PID, jour: j }).then(() => {}, () => { sbPingFait = ''; });
 }
 let db = sb ? { collection: sbCollection } : null;
 /* Version caserne : un seul profil, celui du pompier connecté à l'appli ICP. */

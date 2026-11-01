@@ -493,6 +493,17 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 @media(max-width:720px){#tab-programme{padding:8px;border-radius:14px}
   #tab-programme iframe{height:82vh}#tab-programme .ptitre{font-size:19px}}
 @media (prefers-reduced-motion: reduce){#tab-programme *{animation:none!important}}
+#tab-programme .spt-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:11px}
+#tab-programme .spt-stats>div{background:var(--pcard2);border:1px solid var(--pline);border-radius:14px;padding:13px}
+#tab-programme .spt-stats b{display:block;font-size:28px;font-weight:800;letter-spacing:-1px}
+#tab-programme .spt-stats em{font-style:normal;display:block;font-size:11.5px;color:var(--pmuted);font-weight:700;margin-top:2px}
+#tab-programme .spt-b{height:5px;border-radius:9px;background:var(--pbg);overflow:hidden;margin-top:9px}
+#tab-programme .spt-b i{display:block;height:100%;border-radius:9px;background:var(--grad)}
+#tab-programme .spt-pfg{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+#tab-programme .spt-pfg b{font-size:19px;font-weight:800}
+#tab-programme .spt-niv{border-radius:99px;padding:4px 11px;font-size:11px;font-weight:800;text-transform:uppercase}
+#tab-programme .spt-niv.n1{background:#f87171;color:#0b0f19}
+#tab-programme .spt-niv.n2{background:#fbbf24;color:#0b0f19}
 /* ===== DÉFIS COLLECTIFS ===== */
 #tab-defis{--a1:#22d3ee;--a2:#a78bfa;--grad:linear-gradient(135deg,var(--a1),var(--a2));
   --pbg:#0b0f19;--pcard:#141b2d;--pcard2:#1a2338;--pline:#24304a;--ptext:#eef2f8;--pmuted:#8b9ab4;--pok:#34d399;
@@ -3873,7 +3884,8 @@ function sptCadre(moi){
   var src="sport/index.html?pid="+encodeURIComponent(moi.id)
     +"&prenom="+encodeURIComponent(moi.prenom||"")
     +"&nom="+encodeURIComponent(moi.nom||"");
-  return '<div class="barre"><span class="pill grad">💪 Mon sport</span>'
+  return sptCarteParticipation()+sptCartePointFaible(moi)
+    +'<div class="barre"><span class="pill grad">💪 Mon sport</span>'
     +'<span class="pill">Espace de '+sptEsc(((moi.prenom||"")+" "+(moi.nom||"")).trim())+'</span>'
     +'<span style="flex:1"></span>'
     +'<button class="pbtn" onclick="sptRevoir()">❔ Revoir la présentation</button>'
@@ -3882,6 +3894,68 @@ function sptCadre(moi){
     +'allow="fullscreen" referrerpolicy="same-origin"></iframe></div>'
     +'<p class="note">L\'application fonctionne aussi hors réseau une fois ouverte. '
     +'Pour l\'avoir sur ton écran d\'accueil, ouvre-la en plein écran puis « Ajouter à l\'écran d\'accueil ».</p>';
+}
+
+// ---- Participation du centre (administrateur) et point faible ICP ----
+var sptPart=null,sptPartCharge=false;
+async function sptChargerPart(){
+  if(sptPartCharge||!isAdmin)return;
+  sptPartCharge=true;
+  try{
+    var d=new Date(),debut=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01";
+    var a=await supabaseClient.from("sport_activite").select("pompier_id,jour").gte("jour",debut);
+    var b=await supabaseClient.from("sport_docs").select("pompier_id").eq("coll","app");
+    var actifs={},jours=0;
+    (a.data||[]).forEach(function(x){actifs[x.pompier_id]=(actifs[x.pompier_id]||0)+1;jours++});
+    var ouverts={};(b.data||[]).forEach(function(x){ouverts[x.pompier_id]=1});
+    sptPart={ouverts:Object.keys(ouverts).length,actifs:Object.keys(actifs).length,jours:jours,
+             total:(data||[]).length,detail:actifs};
+  }catch(e){sptPart=null}
+  renderProgramme();
+}
+function sptCarteParticipation(){
+  if(!isAdmin)return "";
+  if(!sptPart){sptChargerPart();return '<div class="pcard" style="margin-bottom:12px"><div class="psous">Participation : chargement…</div></div>'}
+  var p=sptPart,pct=p.total?Math.round(100*p.ouverts/p.total):0;
+  return '<div class="pcard" style="margin-bottom:12px">'
+    +'<div class="barre" style="margin-bottom:12px"><span class="pill grad">👥 Participation du centre</span>'
+    +'<span class="pill">ce mois-ci</span></div>'
+    +'<div class="spt-stats">'
+    +'<div><b>'+p.ouverts+'</b><em>espaces ouverts sur '+p.total+'</em><div class="spt-b"><i style="width:'+pct+'%"></i></div></div>'
+    +'<div><b>'+p.actifs+'</b><em>pompiers actifs ce mois</em><div class="spt-b"><i style="width:'
+      +(p.total?Math.round(100*p.actifs/p.total):0)+'%;background:#34d399"></i></div></div>'
+    +'<div><b>'+p.jours+'</b><em>journées d\'utilisation</em><div class="spt-b"><i style="width:'
+      +Math.min(100,p.jours*3)+'%;background:#fb923c"></i></div></div></div>'
+    +'<p class="note">Seuls des totaux : tu vois combien de personnes se servent de l\'appli, jamais ce qu\'elles y font. '
+    +'Leurs séances, leur poids et leurs repas restent privés.</p></div>';
+}
+// Le test ICP le plus faible, pour orienter l'entraînement
+function sptPointFaible(moi){
+  if(typeof TESTS_SYNTHESE==="undefined"||typeof niveauTest!=="function")return null;
+  var age=(typeof getAge==="function")?getAge(moi.annee):null,faibles=[];
+  TESTS_SYNTHESE.forEach(function(t){
+    var n=niveauTest(t,moi.sexe,moi.poids,age,moi[t.field]);
+    if(n==="1"||n==="2")faibles.push({t:t,n:+n});
+  });
+  if(!faibles.length)return null;
+  faibles.sort(function(a,b){return a.n-b.n});
+  var f=faibles[0],obj=(typeof objectifTest==="function")?objectifTest(f.t,moi,age):null;
+  var conseil={rameur:"endurance : du rameur en allure régulière, 15 à 20 min",
+    luc:"endurance : du fractionnement court, et de la course régulière",
+    souplesse:"souplesse : des étirements tenus 30 s après chaque séance",
+    pompes:"haut du corps : pompes et développés, en séries faciles mais fréquentes",
+    tractions:"dos et bras : tractions australiennes et tirages"}[f.t.key]||"ce test";
+  return {label:f.t.label,niveau:f.n,conseil:conseil,objectif:obj?obj.txt:null};
+}
+function sptCartePointFaible(moi){
+  var pf=sptPointFaible(moi);
+  if(!pf)return "";
+  return '<div class="pcard spt-pf" style="margin-bottom:12px">'
+    +'<div class="barre" style="margin-bottom:10px"><span class="pill grad">🎯 Ton point faible aux ICP</span></div>'
+    +'<div class="spt-pfg"><b>'+sptEsc(pf.label)+'</b>'
+    +'<span class="spt-niv n'+pf.niveau+'">niveau '+pf.niveau+'</span></div>'
+    +(pf.objectif?'<p class="psous">'+sptEsc(pf.objectif)+'</p>':'')
+    +'<p class="psous">Dans ton espace, travaille en priorité '+sptEsc(pf.conseil)+'.</p></div>';
 }
 
 // ===== DÉFIS COLLECTIFS =====
