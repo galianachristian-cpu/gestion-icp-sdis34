@@ -493,6 +493,85 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 @media(max-width:720px){#tab-programme{padding:8px;border-radius:14px}
   #tab-programme iframe{height:82vh}#tab-programme .ptitre{font-size:19px}}
 @media (prefers-reduced-motion: reduce){#tab-programme *{animation:none!important}}
+/* ===== DÉFIS COLLECTIFS ===== */
+#tab-defis{--a1:#22d3ee;--a2:#a78bfa;--grad:linear-gradient(135deg,var(--a1),var(--a2));
+  --pbg:#0b0f19;--pcard:#141b2d;--pcard2:#1a2338;--pline:#24304a;--ptext:#eef2f8;--pmuted:#8b9ab4;--pok:#34d399;
+  background:radial-gradient(1200px 600px at 80% -10%,color-mix(in srgb,var(--a2) 12%,transparent),transparent 60%),
+             radial-gradient(900px 500px at -10% 10%,color-mix(in srgb,var(--a1) 10%,transparent),transparent 60%),var(--pbg);
+  color:var(--ptext);border-radius:20px;padding:16px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+#tab-defis.enter .stagger{animation:mp-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+#tab-defis .pcard{background:var(--pcard);border:1px solid var(--pline);border-radius:18px;padding:18px;margin-bottom:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 10px 30px rgba(0,0,0,.35)}
+#tab-defis .ptitre{font-size:21px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
+#tab-defis .ptitre i{font-style:normal;font-size:25px;animation:mp-float 3s ease-in-out infinite}
+#tab-defis .psous,#tab-defis .note{font-size:12.5px;color:var(--pmuted);line-height:1.55;margin-top:10px}
+#tab-defis .sec{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);font-weight:800;margin-bottom:12px}
+#tab-defis .ss{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);margin:16px 0 7px;font-weight:800}
+#tab-defis .dfs-barre{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+#tab-defis .prow,#tab-defis .nav{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+#tab-defis .nav{justify-content:space-between}
+#tab-defis .pbtn{padding:11px 17px;border-radius:13px;border:1px solid var(--pline);background:var(--pcard2);
+  color:var(--ptext);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.18s}
+#tab-defis .pbtn:hover{border-color:var(--a1)}
+#tab-defis .pbtn.pri{background:var(--grad);border-color:transparent;color:#0b0f19}
+#tab-defis .chips{display:flex;flex-wrap:wrap;gap:8px}
+#tab-defis .chip{border:1.5px solid var(--pline);background:var(--pcard2);color:var(--ptext);border-radius:12px;
+  padding:9px 14px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;transition:.2s}
+#tab-defis .chip:hover{border-color:var(--a1)}
+#tab-defis .chip.sel{background:var(--grad);border-color:transparent;color:#0b0f19;animation:mp-pop .35s cubic-bezier(.3,1.5,.5,1)}
+#tab-defis input{background:var(--pcard2);border:1px solid var(--pline);color:var(--ptext);border-radius:12px;
+  padding:11px;font:inherit;font-size:14px}
+#tab-defis .dfs-g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#tab-defis .dfs-pal{display:flex;gap:9px;flex-wrap:wrap}
+#tab-defis .dfs-c{width:34px;height:34px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+#tab-defis .dfs-c.sel{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+#tab-defis .dfs-ongl{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+#tab-defis .dfs-ongl::-webkit-scrollbar{display:none}
+#tab-defis .dfs-o{flex:0 0 auto;border:1.5px solid var(--pline);background:var(--pcard);color:var(--ptext);
+  border-radius:13px;padding:9px 14px;cursor:pointer;font:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+#tab-defis .dfs-o i{font-style:normal;font-size:16px}
+#tab-defis .dfs-o.on{background:var(--grad);border-color:transparent;color:#0b0f19}
+#tab-defis .dfs-o.fini{opacity:.55}
+#tab-defis .dfs-h{border-top:3px solid var(--c)}
+#tab-defis .dfs-t{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
+#tab-defis .dfs-t i{font-style:normal;font-size:34px;animation:mp-float 3s ease-in-out infinite}
+#tab-defis .dfs-t b{display:block;font-size:19px;font-weight:800;letter-spacing:-.3px}
+#tab-defis .dfs-t span{display:block;font-size:12px;color:var(--pmuted);margin-top:2px}
+#tab-defis .dfs-pill{margin-left:auto;background:var(--c);color:#0b0f19;border-radius:99px;padding:5px 12px;font-size:11.5px;font-weight:800}
+#tab-defis .dfs-pill.fin{background:var(--pline);color:var(--pmuted)}
+#tab-defis .dfs-chiffres{display:flex;align-items:baseline;gap:9px;margin:16px 0 8px}
+#tab-defis .dfs-chiffres b{font-size:42px;font-weight:800;letter-spacing:-1.5px;color:var(--c)}
+#tab-defis .dfs-chiffres em{font-style:normal;font-size:15px;color:var(--pmuted);font-weight:700}
+#tab-defis .dfs-jauge{position:relative;height:18px;border-radius:99px;background:var(--pbg);border:1px solid var(--pline);overflow:hidden}
+#tab-defis .dfs-jauge i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--c),var(--a2));
+  transition:width 1s cubic-bezier(.2,.8,.2,1)}
+#tab-defis .dfs-jauge s{position:absolute;top:0;width:1px;height:100%;background:rgba(255,255,255,.22)}
+#tab-defis .dfs-sous{display:flex;justify-content:space-between;font-size:12.5px;color:var(--pmuted);margin-top:7px;font-weight:700}
+#tab-defis .dfs-ok{color:var(--pok)}
+#tab-defis .dfs-reco{margin-top:13px;background:var(--pcard2);border:1px solid var(--pline);border-radius:13px;padding:11px 13px;font-size:13px}
+#tab-defis .dfs-moi{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#tab-defis .dfs-mv b{font-size:33px;font-weight:800;color:var(--a1)}
+#tab-defis .dfs-mv em{font-style:normal;font-size:12px;color:var(--pmuted);margin-left:5px;font-weight:700}
+#tab-defis .dfs-add{display:flex;gap:9px;flex:1;min-width:210px}
+#tab-defis .dfs-add input{flex:1;min-width:90px}
+#tab-defis .dfs-hist{margin-top:13px;display:flex;flex-wrap:wrap;gap:7px}
+#tab-defis .dfs-hl{display:flex;align-items:center;gap:8px;background:var(--pcard2);border:1px solid var(--pline);
+  border-radius:99px;padding:5px 7px 5px 12px;font-size:12px}
+#tab-defis .dfs-hl b{color:var(--a1)}
+#tab-defis .dfs-x{width:20px;height:20px;border-radius:50%;border:0;background:var(--pline);color:var(--pmuted);
+  cursor:pointer;font-size:11px;line-height:1}
+#tab-defis .dfs-x:hover{background:#f87171;color:#fff}
+#tab-defis .dfs-cl{display:flex;flex-direction:column;gap:9px}
+#tab-defis .dfs-l{display:grid;grid-template-columns:30px 1fr 90px 60px;align-items:center;gap:10px;font-size:13.5px}
+#tab-defis .dfs-l .r{font-size:15px;text-align:center}
+#tab-defis .dfs-l .n{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tab-defis .dfs-l .n em{font-style:normal;color:var(--a1);font-size:11.5px}
+#tab-defis .dfs-l .b{height:8px;border-radius:9px;background:var(--pbg);overflow:hidden}
+#tab-defis .dfs-l .b i{display:block;height:100%;border-radius:9px;background:var(--grad)}
+#tab-defis .dfs-l .v{text-align:right;font-weight:800}
+@media(max-width:720px){#tab-defis{padding:10px}#tab-defis .dfs-g2{grid-template-columns:1fr}
+  #tab-defis .dfs-chiffres b{font-size:33px}#tab-defis .dfs-l{grid-template-columns:26px 1fr 50px}
+  #tab-defis .dfs-l .b{display:none}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -550,6 +629,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="tab" data-groupe="suivi" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
 <div class="tab" data-groupe="suivi" id="navtab-progression" onclick="switchTab('progression',this)">📉 Progression</div>
 <div class="tab" data-groupe="suivi" id="navtab-menage" onclick="switchTab('menage',this)">🧹 Ménage</div>
+<div class="tab" data-groupe="suivi" id="navtab-defis" onclick="switchTab('defis',this)">🏆 Défis</div>
 </div>
 <div class="nav-bloc" data-groupe="entrainement"><button type="button" class="nav-groupe" data-groupe="entrainement" onclick="ouvrirGroupe('entrainement')" title="Ouvrir la rubrique Entraînement">Entraînement</button>
 <div class="tab" data-groupe="entrainement" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
@@ -815,6 +895,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </div>
 <div id="tab-programme" class="hidden"><div id="prgContent"></div></div>
+<div id="tab-defis" class="hidden"><div id="dfsContent"></div></div>
 <div id="tab-menage" class="hidden">
 <div class="card">
 <div class="men-jour">
@@ -1052,6 +1133,7 @@ const TABS_INFO = [
     {id:"bilan",label:"📈 Bilan"},
     {id:"progression",label:"📊 Progression"},
     {id:"menage",label:"🧹 Ménage"},
+    {id:"defis",label:"🏆 Défis"},
     {id:"cardio",label:"❤️ Zones cardio"},
     {id:"muscu",label:"💪 Musculation"},
     {id:"seances",label:"🗓️ Séances"},
@@ -1508,7 +1590,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -3802,6 +3884,307 @@ function sptCadre(moi){
     +'Pour l\'avoir sur ton écran d\'accueil, ouvre-la en plein écran puis « Ajouter à l\'écran d\'accueil ».</p>';
 }
 
+// ===== DÉFIS COLLECTIFS =====
+// Christian crée un défi (thème, objectif, période, récompense) ; chacun saisit sa
+// contribution et la jauge collective monte. Tables Supabase : defis, defis_contrib.
+// Lecture ouverte aux comptes connectés (c'est collectif), écriture de sa seule
+// contribution, création et correction réservées à l'administrateur.
+var DFS_THEMES=[
+ {id:"rameur",    ic:"🚣",lib:"Rameur",            unite:"km",      pas:1,    sugg:100},
+ {id:"velo",      ic:"🚴",lib:"Vélo / Assault",    unite:"km",      pas:1,    sugg:300},
+ {id:"course",    ic:"🏃",lib:"Course à pied",     unite:"km",      pas:1,    sugg:150},
+ {id:"gainage",   ic:"🛡️",lib:"Gainage",           unite:"minutes", pas:1,    sugg:300},
+ {id:"pompes",    ic:"💪",lib:"Pompes",            unite:"répétitions",pas:10,sugg:5000},
+ {id:"tractions", ic:"🧗",lib:"Tractions",         unite:"répétitions",pas:1, sugg:1000},
+ {id:"escaliers", ic:"🪜",lib:"Étages montés",     unite:"étages",  pas:1,    sugg:500},
+ {id:"seances",   ic:"🔥",lib:"Séances faites",    unite:"séances", pas:1,    sugg:100},
+ {id:"libre",     ic:"🏆",lib:"Autre (à préciser)",unite:"points",  pas:1,    sugg:100}
+];
+var DFS_COULEURS=["#22d3ee","#a78bfa","#f472b6","#fb923c","#34d399","#fbbf24","#f87171"];
+var dfsListe=[],dfsContrib=[],dfsCharge=false,dfsErreur="",dfsOccupe=false,dfsSel=0,dfsForm=null;
+
+function dfsEsc(s){return menEsc(s)}
+function dfsMoi(){
+  var p=null;
+  if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
+  if(!p&&isAdmin){var m=menageMoi();if(m)p=(data||[]).filter(function(x){return x.id===m.id})[0]}
+  return p||null;
+}
+function dfsTheme(id){
+  for(var i=0;i<DFS_THEMES.length;i++)if(DFS_THEMES[i].id===id)return DFS_THEMES[i];
+  return DFS_THEMES[DFS_THEMES.length-1];
+}
+function dfsNom(pid){
+  var p=(data||[]).filter(function(x){return x.id===pid})[0];
+  return p?((p.prenom||"")+" "+(p.nom||"")).trim():"Pompier "+pid;
+}
+function dfsNum(v){var n=Math.round(v*10)/10;return (n%1===0?n.toFixed(0):n.toFixed(1)).replace(".",",")}
+function dfsIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+
+async function chargerDefis(force){
+  if(dfsCharge&&!force)return;
+  dfsCharge=true;dfsErreur="";
+  try{
+    var a=await supabaseClient.from("defis").select("*").order("actif",{ascending:false}).order("fin",{ascending:false});
+    if(a.error)throw a.error;
+    dfsListe=a.data||[];
+    var b=await supabaseClient.from("defis_contrib").select("*").order("date",{ascending:false});
+    if(b.error)throw b.error;
+    dfsContrib=b.data||[];
+  }catch(e){
+    dfsErreur=/defis/i.test(e.message||"")
+      ? "Les tables « defis » n'existent pas encore dans Supabase."
+      : "Chargement impossible : "+(e.message||e);
+    dfsListe=[];dfsContrib=[];
+  }
+  renderDefis();
+}
+function dfsStats(d){
+  var c=dfsContrib.filter(function(x){return x.defi_id===d.id});
+  var total=c.reduce(function(a,x){return a+Number(x.valeur||0)},0);
+  var par={};
+  c.forEach(function(x){par[x.pompier_id]=(par[x.pompier_id]||0)+Number(x.valeur||0)});
+  var classement=Object.keys(par).map(function(k){return {pid:+k,v:par[k]}})
+    .sort(function(a,b){return b.v-a.v});
+  var fin=new Date(d.fin+"T23:59:59"),reste=Math.ceil((fin-new Date())/86400000);
+  return {contribs:c,total:total,pct:Math.min(100,Math.round(100*total/Number(d.objectif))),
+          classement:classement,reste:reste,atteint:total>=Number(d.objectif)};
+}
+
+// ---- rendu ----
+function renderDefis(){
+  var box=document.getElementById("dfsContent");if(!box)return;
+  if(!dfsCharge){chargerDefis();box.innerHTML='<div class="pcard">Chargement…</div>';return}
+  if(dfsErreur){box.innerHTML='<div class="pcard"><p style="color:#f87171">⚠️ '+dfsEsc(dfsErreur)+'</p></div>';return}
+  if(dfsForm){box.innerHTML=dfsFormulaire();dfsEnterFx();return}
+  var h="";
+  if(isAdmin) h+='<div class="dfs-barre"><button class="pbtn pri" onclick="dfsNouveau()">➕ Lancer un défi</button></div>';
+  if(!dfsListe.length){
+    h+='<div class="pcard"><div class="ptitre"><i>🏆</i> Pas de défi en cours</div>'
+      +'<p class="psous">'+(isAdmin?"Lance le premier : choisis un thème, un objectif et une récompense."
+        :"Christian n'a pas encore lancé de défi. Reviens bientôt.")+'</p></div>';
+  } else {
+    if(dfsSel>=dfsListe.length)dfsSel=0;
+    if(dfsListe.length>1) h+='<div class="dfs-ongl">'+dfsListe.map(function(d,i){
+      var t=dfsTheme(d.theme);
+      return '<button type="button" class="dfs-o'+(i===dfsSel?" on":"")+(d.actif?"":" fini")+'" onclick="dfsVoir('+i+')">'
+        +'<i>'+t.ic+'</i>'+dfsEsc(d.titre)+'</button>'}).join("")+'</div>';
+    h+=dfsCarte(dfsListe[dfsSel]);
+  }
+  box.innerHTML=h;
+  dfsEnterFx();
+}
+function dfsVoir(i){dfsSel=i;renderDefis()}
+function dfsCarte(d){
+  var S=dfsStats(d),t=dfsTheme(d.theme),moi=dfsMoi();
+  var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
+  var h='<div class="pcard dfs-h" style="--c:'+dfsEsc(d.couleur)+'">'
+    +'<div class="dfs-t"><i>'+dfsEsc(d.icone)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'
+    +'<span>'+dfsEsc(t.lib)+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
+    +' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+'</span></div>'
+    +(d.actif?(S.reste>=0?'<span class="dfs-pill">'+(S.reste===0?"dernier jour":S.reste+" jour"+(S.reste>1?"s":""))+'</span>'
+                        :'<span class="dfs-pill fin">terminé</span>')
+             :'<span class="dfs-pill fin">clos</span>')+'</div>'
+    +'<div class="dfs-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em></div>'
+    +'<div class="dfs-jauge"><i style="width:'+S.pct+'%"></i>'
+    +[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")+'</div>'
+    +'<div class="dfs-sous"><span>'+S.pct+' %</span>'
+    +(S.atteint?'<span class="dfs-ok">🎉 Objectif atteint !</span>'
+               :'<span>il reste '+dfsNum(Number(d.objectif)-S.total)+' '+dfsEsc(d.unite)+'</span>')+'</div>'
+    +(d.recompense?'<div class="dfs-reco">🎁 <b>À la clé :</b> '+dfsEsc(d.recompense)+'</div>':'')
+    +'</div>';
+  // ma contribution
+  if(moi&&d.actif){
+    h+='<div class="pcard"><div class="sec">Ma part</div>'
+      +'<div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(maPart?maPart.v:0)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
+      +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
+      +'<button class="pbtn pri" onclick="dfsAjouter('+d.id+')">Ajouter</button></div></div>'
+      +'<p class="note">Tu ajoutes ce que tu viens de faire : ça s\'additionne à ta part et au total du centre.</p>'
+      +dfsMesLignes(d,moi)+'</div>';
+  }
+  // classement
+  h+='<div class="pcard"><div class="sec">Qui a fait quoi</div>';
+  if(!S.classement.length) h+='<p class="note">Personne n\'a encore contribué. Sois le premier.</p>';
+  else{
+    var max=S.classement[0].v,medals=["🥇","🥈","🥉"];
+    h+='<div class="dfs-cl">'+S.classement.map(function(c,i){
+      return '<div class="dfs-l"><span class="r">'+(medals[i]||(i+1))+'</span>'
+        +'<span class="n">'+dfsEsc(dfsNom(c.pid))+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+'</span>'
+        +'<span class="b"><i style="width:'+Math.round(100*c.v/max)+'%"></i></span>'
+        +'<span class="v">'+dfsNum(c.v)+'</span></div>'}).join("")+'</div>';
+    h+='<p class="note">'+S.classement.length+' participant'+(S.classement.length>1?'s':'')
+      +' • le défi est collectif : chaque contribution compte, même petite.</p>';
+  }
+  h+='</div>';
+  if(isAdmin){
+    h+='<div class="pcard"><div class="sec">Administration</div><div class="prow">'
+      +'<button class="pbtn" onclick="dfsModifier('+d.id+')">✏️ Modifier</button>'
+      +'<button class="pbtn" onclick="dfsBasculer('+d.id+','+(d.actif?'false':'true')+')">'
+      +(d.actif?'⏹️ Clore le défi':'▶️ Rouvrir')+'</button>'
+      +'<button class="pbtn" onclick="dfsSupprimer('+d.id+')">🗑️ Supprimer</button>'
+      +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button></div></div>';
+  }
+  return h;
+}
+function dfsMesLignes(d,moi){
+  var mine=dfsContrib.filter(function(x){return x.defi_id===d.id&&x.pompier_id===moi.id}).slice(0,6);
+  if(!mine.length)return "";
+  return '<div class="dfs-hist">'+mine.map(function(x){
+    return '<div class="dfs-hl"><span>'+new Date(x.date+"T00:00:00").toLocaleDateString("fr-FR")+'</span>'
+      +'<b>+'+dfsNum(x.valeur)+'</b>'
+      +'<button class="dfs-x" title="Retirer" onclick="dfsRetirer('+x.id+')">✕</button></div>'}).join("")+'</div>';
+}
+
+// ---- actions ----
+async function dfsAjouter(id){
+  var moi=dfsMoi();if(!moi||dfsOccupe)return;
+  var inp=document.getElementById("dfsVal"),v=parseFloat(String(inp.value).replace(",","."));
+  if(!(v>0)){showToast("Saisis une valeur","error");return}
+  dfsOccupe=true;
+  try{
+    var r=await supabaseClient.from("defis_contrib")
+      .insert({defi_id:id,pompier_id:moi.id,valeur:v,date:dfsIso(new Date())});
+    if(r.error)throw r.error;
+    showToast("💪 +"+dfsNum(v)+" pour le centre","success");
+    await chargerDefis(true);
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
+}
+async function dfsRetirer(cid){
+  if(dfsOccupe)return;dfsOccupe=true;
+  try{
+    var r=await supabaseClient.from("defis_contrib").delete().eq("id",cid);
+    if(r.error)throw r.error;
+    await chargerDefis(true);
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
+}
+function dfsNouveau(){
+  var f=new Date(),fin=new Date(f.getFullYear(),f.getMonth()+1,0);
+  dfsForm={id:null,titre:"",theme:"rameur",unite:"km",objectif:100,
+    debut:dfsIso(f),fin:dfsIso(fin),recompense:"",icone:"🚣",couleur:DFS_COULEURS[0]};
+  renderDefis();
+}
+function dfsModifier(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  dfsForm={id:d.id,titre:d.titre,theme:d.theme,unite:d.unite,objectif:Number(d.objectif),
+    debut:d.debut,fin:d.fin,recompense:d.recompense||"",icone:d.icone,couleur:d.couleur};
+  renderDefis();
+}
+function dfsAnnuler(){dfsForm=null;renderDefis()}
+function dfsSetTheme(id){
+  var t=dfsTheme(id);
+  dfsForm.theme=id;dfsForm.unite=t.unite;dfsForm.icone=t.ic;
+  if(!dfsForm.titre||dfsForm.auto!==false){dfsForm.objectif=t.sugg}
+  renderDefis();
+}
+function dfsSetCouleur(c){dfsForm.couleur=c;dfsLireForm();renderDefis()}
+function dfsLireForm(){
+  ["titre","unite","recompense","debut","fin"].forEach(function(k){
+    var el=document.getElementById("dfs_"+k);if(el)dfsForm[k]=el.value;
+  });
+  var o=document.getElementById("dfs_objectif");
+  if(o)dfsForm.objectif=parseFloat(String(o.value).replace(",","."))||0;
+}
+function dfsFormulaire(){
+  var f=dfsForm;
+  var h='<div class="pcard"><div class="ptitre"><i>'+dfsEsc(f.icone)+'</i>'
+    +(f.id?"Modifier le défi":"Lancer un défi")+'</div>'
+    +'<div class="ss">Le thème</div><div class="chips">'
+    +DFS_THEMES.map(function(t){return '<button type="button" class="chip'+(f.theme===t.id?" sel":"")
+      +'" onclick="dfsLireForm();dfsSetTheme(\''+t.id+'\')">'+t.ic+' '+t.lib+'</button>'}).join("")+'</div>'
+    +'<div class="ss">Le titre, tel qu\'il s\'affichera</div>'
+    +'<input type="text" id="dfs_titre" maxlength="60" value="'+dfsEsc(f.titre)+'" placeholder="Ex. : 100 km au rameur avant Noël" style="width:100%">'
+    +'<div class="dfs-g2"><div><div class="ss">L\'objectif du centre</div>'
+    +'<input type="number" id="dfs_objectif" min="1" step="1" value="'+f.objectif+'" style="width:100%"></div>'
+    +'<div><div class="ss">L\'unité</div>'
+    +'<input type="text" id="dfs_unite" maxlength="20" value="'+dfsEsc(f.unite)+'" style="width:100%"></div></div>'
+    +'<div class="dfs-g2"><div><div class="ss">Du</div>'
+    +'<input type="date" id="dfs_debut" value="'+dfsEsc(f.debut)+'" style="width:100%"></div>'
+    +'<div><div class="ss">Au</div>'
+    +'<input type="date" id="dfs_fin" value="'+dfsEsc(f.fin)+'" style="width:100%"></div></div>'
+    +'<div class="ss">La récompense si c\'est gagné</div>'
+    +'<input type="text" id="dfs_recompense" maxlength="80" value="'+dfsEsc(f.recompense)+'" placeholder="Ex. : barbecue offert par le chef" style="width:100%">'
+    +'<div class="ss">La couleur</div><div class="dfs-pal">'
+    +DFS_COULEURS.map(function(c){return '<button type="button" class="dfs-c'+(f.couleur===c?" sel":"")
+      +'" style="background:'+c+'" onclick="dfsSetCouleur(\''+c+'\')"></button>'}).join("")+'</div>'
+    +'<p class="note">Tout le monde voit le défi et peut y contribuer. Toi seul peux le modifier, le clore ou le supprimer.</p>'
+    +'<div class="nav"><button class="pbtn" onclick="dfsAnnuler()">Annuler</button>'
+    +'<button class="pbtn pri" onclick="dfsEnregistrer()">'+(f.id?"Enregistrer":"🚀 Lancer le défi")+'</button></div></div>';
+  return h;
+}
+async function dfsEnregistrer(){
+  if(!isAdmin||dfsOccupe)return;
+  dfsLireForm();
+  var f=dfsForm;
+  if(!f.titre.trim()){showToast("Donne un titre au défi","error");return}
+  if(!(f.objectif>0)){showToast("L'objectif doit être supérieur à zéro","error");return}
+  if(f.fin<f.debut){showToast("La fin ne peut pas précéder le début","error");return}
+  dfsOccupe=true;
+  var ligne={titre:f.titre.trim(),theme:f.theme,unite:f.unite.trim()||"points",objectif:f.objectif,
+    debut:f.debut,fin:f.fin,recompense:f.recompense.trim()||null,icone:f.icone,couleur:f.couleur};
+  try{
+    var r=f.id ? await supabaseClient.from("defis").update(ligne).eq("id",f.id)
+               : await supabaseClient.from("defis").insert(ligne);
+    if(r.error)throw r.error;
+    showToast(f.id?"Défi mis à jour":"🏆 Défi lancé !","success");
+    dfsForm=null;dfsSel=0;await chargerDefis(true);
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
+}
+async function dfsBasculer(id,actif){
+  if(!isAdmin||dfsOccupe)return;dfsOccupe=true;
+  try{
+    var r=await supabaseClient.from("defis").update({actif:actif}).eq("id",id);
+    if(r.error)throw r.error;
+    await chargerDefis(true);
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
+}
+async function dfsSupprimer(id){
+  if(!isAdmin||dfsOccupe)return;
+  var d=dfsListe.filter(function(x){return x.id===id})[0];
+  if(!confirm("Supprimer « "+(d?d.titre:"ce défi")+" » et toutes les contributions ? C'est définitif."))return;
+  dfsOccupe=true;
+  try{
+    var r=await supabaseClient.from("defis").delete().eq("id",id);
+    if(r.error)throw r.error;
+    dfsSel=0;await chargerDefis(true);
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
+}
+function dfsAffiche(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  var S=dfsStats(d),t=dfsTheme(d.theme);
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  doc.setFillColor(220,38,38);doc.rect(0,0,210,10,'F');
+  doc.setFontSize(26);doc.setTextColor(28,25,23);doc.text(d.icone+" "+d.titre,14,30);
+  doc.setFontSize(11);doc.setTextColor(120,113,108);
+  doc.text(t.lib+" • du "+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
+    +" au "+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+" • CIS Cruzy-Quarante",14,38);
+  doc.setFontSize(40);doc.setTextColor(28,25,23);
+  doc.text(dfsNum(S.total)+" / "+dfsNum(d.objectif)+" "+d.unite,14,58);
+  doc.setFillColor(237,233,226);doc.roundedRect(14,64,182,12,6,6,'F');
+  if(S.pct>0){doc.setFillColor(34,211,238);doc.roundedRect(14,64,Math.max(12,182*S.pct/100),12,6,6,'F')}
+  doc.setFontSize(13);doc.setTextColor(180,83,9);doc.text(S.pct+" % de l'objectif",14,84);
+  if(d.recompense){doc.setFontSize(12);doc.setTextColor(28,25,23);doc.text("A la cle : "+d.recompense,14,93)}
+  doc.autoTable({startY:100,head:[["#","Qui",d.unite]],
+    body:S.classement.map(function(c,i){return [i+1,dfsNom(c.pid),dfsNum(c.v)]}),
+    headStyles:{fillColor:[28,25,23]},styles:{fontSize:10}});
+  doc.setFontSize(9);doc.setTextColor(120,113,108);
+  doc.text("Chaque contribution compte. On reste sollicitable : au bip, on lache tout.",14,285);
+  doc.save("Defi_"+d.titre.replace(/[^a-zA-Z0-9]+/g,"_")+".pdf");
+}
+// effets, repris de l'onglet Mon sport
+function dfsEnterFx(){
+  if(typeof sptReduit==="function"&&sptReduit())return;
+  var app=document.getElementById("tab-defis");if(!app)return;
+  app.classList.remove("enter");void app.offsetWidth;app.classList.add("enter");
+  [].slice.call(app.querySelectorAll(".pcard,.dfs-l")).slice(0,14)
+    .forEach(function(x,i){x.style.setProperty("--d",(i*45)+"ms");x.classList.add("stagger")});
+  setTimeout(function(){app.classList.remove("enter")},1200);
+}
+
 // ===== MÉNAGE (planning de nettoyage de la salle) =====
 // Table Supabase : menage_taches — une ligne = une personne a fait une mission un jour donné.
 // Lecture : comptes connectés. Écriture libre : l'administrateur. Chacun peut cocher/décocher
@@ -5128,8 +5511,8 @@ function basculerTheme(){
     try{localStorage.setItem("icp_theme",clair?"dark":"light")}catch(e){}
     majBoutonTheme();
 }
-var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","export","comptes"];
-var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon sport":"Sport"};
+var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","defis","export","comptes"];
+var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon sport":"Sport","Défis":"Défis"};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
     var txt=el?el.textContent.trim():t;
