@@ -378,6 +378,58 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 :root[data-theme="light"] .seance-band .seance-band-title{color:var(--text)}
 :root[data-theme="light"] .seance-band .seance-band-sub{color:#c2410c}
 :root[data-theme="light"] .login-box{box-shadow:var(--ombre)}
+/* ===== MÉNAGE ===== */
+.men-jour{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.men-date{font-family:var(--titre);font-size:20px;text-transform:uppercase;letter-spacing:.5px}
+.men-date small{display:block;font-family:'Inter',sans-serif;font-size:12px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400}
+.men-moi{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.men-tuiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.men-tuile{position:relative;overflow:hidden;border:2px dashed var(--border);background:var(--surface2);border-radius:16px;padding:16px 12px 14px;text-align:center;cursor:pointer;transition:transform .15s,border-color .2s,box-shadow .2s;font:inherit;color:var(--text)}
+.men-tuile:hover{transform:translateY(-3px);border-color:var(--primary);box-shadow:0 8px 22px rgba(234,88,12,.22)}
+.men-tuile:active{transform:translateY(0) scale(.98)}
+.men-tuile[disabled]{cursor:default;opacity:.75}
+.men-tuile[disabled]:hover{transform:none;border-color:var(--border);box-shadow:none}
+.men-tuile .men-ic{font-size:34px;line-height:1;display:block;margin-bottom:8px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.men-tuile .men-nom{display:block;font-family:var(--titre);font-size:15px;text-transform:uppercase;letter-spacing:.4px}
+.men-tuile .men-sous{display:block;font-size:11.5px;color:var(--muted);margin-top:4px;min-height:15px}
+.men-tuile.fait{border-style:solid;border-color:var(--success);background:linear-gradient(160deg,color-mix(in srgb,var(--success) 22%,var(--surface2)),var(--surface2))}
+.men-tuile.autres-ok{border-style:solid;border-color:var(--accent);background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 16%,var(--surface2)),var(--surface2))}
+.men-coche{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--success);color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.men-pastilles{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:8px;min-height:22px}
+.men-pastille{width:22px;height:22px;border-radius:50%;font-size:9.5px;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;letter-spacing:.2px;border:1.5px solid rgba(255,255,255,.25)}
+.men-pastille.moi{outline:2px solid var(--success);outline-offset:1px}
+.men-podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin:4px 0 6px;min-height:150px}
+.men-marche{flex:1;max-width:120px;text-align:center}
+.men-marche .men-tete{font-size:26px;line-height:1}
+.men-marche .men-ini{font-family:var(--titre);font-size:17px;margin:2px 0 1px}
+.men-marche .men-nb{font-size:11.5px;color:var(--muted);margin-bottom:5px}
+.men-barre{border-radius:10px 10px 0 0;background:linear-gradient(180deg,var(--primary),var(--rouge));box-shadow:inset 0 2px 0 rgba(255,255,255,.18);transition:height .6s cubic-bezier(.2,.8,.2,1)}
+.men-marche.or .men-barre{background:linear-gradient(180deg,#fcd34d,#d97706)}
+.men-marche.argent .men-barre{background:linear-gradient(180deg,#e5e7eb,#9ca3af)}
+.men-marche.bronze .men-barre{background:linear-gradient(180deg,#d8a06a,#92400e)}
+.men-zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+.men-zone{border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface2);position:relative;overflow:hidden}
+.men-zone .men-blob{position:absolute;right:-12px;bottom:-12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#b4a596,#6b6058);opacity:.4;transition:width .5s,height .5s,opacity .5s}
+.men-zone.oublie .men-blob{opacity:.6}
+.men-zone .men-zt{font-family:var(--titre);font-size:14.5px;text-transform:uppercase;letter-spacing:.3px;position:relative}
+.men-zone .men-zd{font-size:12px;color:var(--muted);margin-top:3px;position:relative}
+.men-zone .men-zb{display:inline-block;margin-top:7px;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;position:relative}
+.men-zone.ok{border-color:var(--success)}      .men-zone.ok .men-zb{background:var(--success);color:#fff}
+.men-zone.tiede{border-color:var(--warning)}   .men-zone.tiede .men-zb{background:var(--warning);color:#1c1917}
+.men-zone.oublie{border-color:var(--danger)}   .men-zone.oublie .men-zb{background:var(--danger);color:#fff}
+.men-jauge{height:14px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);overflow:hidden;margin:6px 0 4px}
+.men-jauge i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--rouge),var(--primary),var(--accent));transition:width .7s cubic-bezier(.2,.8,.2,1)}
+.men-grille{width:100%;border-collapse:collapse;font-size:13px;min-width:620px}
+.men-grille th,.men-grille td{border:1px solid var(--border);padding:4px 6px;text-align:center}
+.men-grille thead th{background:var(--surface2);font-family:var(--titre);text-transform:uppercase;letter-spacing:.3px;font-size:12px;position:sticky;top:0}
+.men-grille td.j{font-weight:700;text-align:left;white-space:nowrap}
+.men-grille tr.we{background:color-mix(in srgb,var(--accent) 9%,transparent)}
+.men-grille tr.auj{outline:2px solid var(--primary);outline-offset:-2px}
+.men-grille input{width:100%;min-width:62px;background:transparent;border:1px solid transparent;border-radius:6px;color:var(--text);font:inherit;font-size:12.5px;text-align:center;padding:3px}
+.men-grille input:hover{border-color:var(--border)}
+.men-grille input:focus{outline:none;border-color:var(--primary);background:var(--surface2)}
+.men-pliable>summary{cursor:pointer;font-family:var(--titre);text-transform:uppercase;letter-spacing:.4px;color:var(--accent);font-size:15px;padding:6px 0}
+@media(max-width:720px){.men-tuiles{grid-template-columns:repeat(2,1fr)}.men-tuile .men-ic{font-size:28px}.men-podium{min-height:130px}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -700,20 +752,42 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 <div id="tab-menage" class="hidden">
 <div class="card">
-<div class="card-title">🧹 Ménage de la salle — planning du mois</div>
-<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Reprend la feuille papier : une case = une mission faite, avec 2 ou 3 initiales (ex. CG). Plusieurs personnes dans la même case : sépare par un espace. Un mot plus long (ex. « vitres ») dans « Autres » n'est pas compté comme une personne.</p>
-<div class="filters" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-<select id="menMois" onchange="renderMenage()" style="max-width:170px"></select>
+<div class="men-jour">
+<div class="men-date" id="menDateJour">—</div>
+<div class="men-moi" id="menMoiBloc"></div>
+</div>
+<div class="men-tuiles" id="menTuiles"></div>
+<p id="menAide" style="color:var(--muted);font-size:12.5px;margin-top:12px"></p>
+</div>
+
+<div class="card">
+<div class="card-title">🏆 Balai d'or</div>
+<div class="filters" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
+<select id="menMois" onchange="renderMenage()" style="max-width:160px"></select>
 <select id="menAnnee" onchange="renderMenage()" style="max-width:110px"></select>
-<select id="menPortee" onchange="renderMenage()" style="max-width:190px"><option value="mois">Bilan du mois</option><option value="annee">Bilan de l'année</option></select>
-<span id="menAdmin" style="display:none;gap:8px"><button class="btn btn-primary btn-sm" onclick="enregistrerMenage()">💾 Enregistrer le mois</button></span>
-<button class="btn btn-sm" onclick="exporterMenagePDF()">📄 Bilan (PDF)</button>
+<select id="menPortee" onchange="renderMenage()" style="max-width:180px"><option value="mois">Le mois</option><option value="annee">Toute l'année</option></select>
+<button class="btn btn-sm" onclick="exporterMenagePDF()">📄 PDF</button>
 </div>
-<div id="menStatut" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
-<div id="menBilan" style="margin-bottom:18px"></div>
-<div style="overflow-x:auto"><div id="menGrille"></div></div>
+<div id="menPodium"></div>
+<div id="menClassement"></div>
+</div>
+
+<div class="card">
+<div class="card-title">🌫️ Fraîcheur des zones</div>
+<p style="color:var(--muted);font-size:12.5px;margin-bottom:12px">Plus une mission attend, plus le mouton de poussière grossit.</p>
+<div class="men-zones" id="menZones"></div>
+</div>
+
+<div class="card">
+<details class="men-pliable" id="menPliable">
+<summary>📋 Grille du mois (feuille papier)</summary>
+<div id="menStatut" style="font-size:12.5px;color:var(--muted);margin:10px 0"></div>
+<div id="menActions" style="margin-bottom:10px;display:none"><button class="btn btn-primary btn-sm" onclick="enregistrerMenage()">💾 Enregistrer le mois</button></div>
+<div style="overflow:auto;max-height:70vh"><div id="menGrille"></div></div>
+</details>
 </div>
 </div>
+
 <div id="tab-ppa" class="hidden">
 <div class="card">
 <div class="card-title">🧗 PPA — Parcours Professionnel Adapté</div>
@@ -3513,31 +3587,69 @@ function getExerciceZone(z,i){
 // ===== Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier =====
 
 // ===== MÉNAGE (planning de nettoyage de la salle) =====
-// Table Supabase : menage_taches (lecture : comptes connectés ; écriture : administrateurs).
-var MENAGE_MISSIONS=[["aspirateur","Aspirateur"],["sols","Sols"],["poussiere","Poussière"],["materiel","Matériel essuyé"],["autres","Autres"]];
+// Table Supabase : menage_taches — une ligne = une personne a fait une mission un jour donné.
+// Lecture : comptes connectés. Écriture libre : l'administrateur. Chacun peut cocher/décocher
+// SA mission le jour même ou la veille (policies « Je coche/décoche ma mission »).
+var MENAGE_MISSIONS=[
+  {id:"aspirateur",lib:"Aspirateur",ic:"🧹"},
+  {id:"sols",lib:"Sols",ic:"🧽"},
+  {id:"poussiere",lib:"Poussière",ic:"✨"},
+  {id:"materiel",lib:"Matériel",ic:"🏋️"},
+  {id:"autres",lib:"Autres",ic:"➕"}
+];
 var MENAGE_MOIS=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-var MENAGE_JOURS=["dim","lun","mar","mer","jeu","ven","sam"];
-var menageRows=[],menageCharge=false,menageEdits={},menageErreur="";
-function menEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+var MENAGE_JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+var menageRows=[],menageCharge=false,menageEdits={},menageErreur="",menageOccupe=false;
+
+function menEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function menMission(id){for(var i=0;i<MENAGE_MISSIONS.length;i++)if(MENAGE_MISSIONS[i].id===id)return MENAGE_MISSIONS[i];return {id:id,lib:id,ic:"•"}}
+function menIniDe(p){return (((p.prenom||"").trim()[0]||"")+((p.nom||"").trim()[0]||"")).toUpperCase()}
+function menIniValide(t){return /^[A-ZÀ-Ý]{2,3}$/.test(t)}
+function menTokens(txt){return String(txt||"").toUpperCase().split(/[\s,;+/]+/).filter(function(t){return t})}
+function menCouleur(ini){var h=0;for(var i=0;i<ini.length;i++)h=(h*31+ini.charCodeAt(i))%360;return "hsl("+h+" 58% 42%)"}
+function menPastille(ini,moi){return '<span class="men-pastille'+(moi?" moi":"")+'" style="background:'+menCouleur(ini)+'" title="'+menEsc(ini)+'">'+menEsc(ini)+'</span>'}
+function menDateCle(d){return d.getFullYear()+"|"+(d.getMonth()+1)+"|"+d.getDate()}
+
+// Qui suis-je ? Compte relié à une fiche pompier, sinon (admin) choix mémorisé sur l'appareil.
+function menageMoi(){
+  var p=null;
+  if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
+  if(!p&&isAdmin){
+    var id=null;try{id=localStorage.getItem("menage_moi")}catch(e){}
+    if(id) p=(data||[]).filter(function(x){return String(x.id)===String(id)})[0];
+  }
+  if(!p)return null;
+  var ini=menIniDe(p);
+  return menIniValide(ini)?{id:p.id,ini:ini,nom:((p.prenom||"")+" "+(p.nom||"")).trim()}:null;
+}
+function menageChoisirMoi(id){try{localStorage.setItem("menage_moi",id)}catch(e){}renderMenage()}
+function nomPourInitiales(ini){
+  var out=(data||[]).filter(function(p){return menIniDe(p)===ini});
+  return out.length===1?((out[0].prenom||"")+" "+(out[0].nom||"")).trim():"";
+}
+
 async function chargerMenage(force){
   if(menageCharge&&!force)return;
   menageCharge=true;menageErreur="";
   try{
     var res=await supabaseClient.from("menage_taches").select("*").order("annee").order("mois").order("jour");
-    if(res.error){menageErreur=/menage_taches/i.test(res.error.message||"")?"La table « menage_taches » n'existe pas encore dans Supabase : colle le script supabase/migrations/20261101_01_menage.sql dans le SQL Editor.":"Chargement impossible : "+res.error.message;menageRows=[];}
-    else menageRows=res.data||[];
-  }catch(e){menageErreur="Chargement impossible : "+e.message;menageRows=[];}
+    if(res.error){
+      menageErreur=/menage_taches/i.test(res.error.message||"")
+        ? "La table « menage_taches » n'existe pas encore dans Supabase (script supabase/migrations/20261101_01_menage.sql)."
+        : "Chargement impossible : "+res.error.message;
+      menageRows=[];
+    } else menageRows=res.data||[];
+  }catch(e){menageErreur="Chargement impossible : "+(e.message||e);menageRows=[];}
   renderMenage();
 }
 function menagePeriode(){
-  var m=document.getElementById("menMois"),a=document.getElementById("menAnnee");
-  return {mois:parseInt(m.value,10),annee:parseInt(a.value,10),portee:document.getElementById("menPortee").value};
+  var m=document.getElementById("menMois"),a=document.getElementById("menAnnee"),p=document.getElementById("menPortee");
+  return {mois:parseInt(m.value,10),annee:parseInt(a.value,10),portee:p.value};
 }
-function menageInitiales(txt){
-  return String(txt||"").toUpperCase().split(/[\s,;+]+/).filter(function(t){return /^[A-ZÀ-Ý]{2,3}$/.test(t)});
-}
+
 function renderMenage(){
   var selM=document.getElementById("menMois"),selA=document.getElementById("menAnnee");
+  if(!selM)return;
   if(!selM.options.length){
     var now=new Date();
     selM.innerHTML=MENAGE_MOIS.map(function(n,i){return '<option value="'+(i+1)+'">'+n+'</option>'}).join("");
@@ -3545,90 +3657,257 @@ function renderMenage(){
     var y=now.getFullYear(),h="";for(var k=y-2;k<=y+1;k++)h+='<option value="'+k+'">'+k+'</option>';
     selA.innerHTML=h;selA.value=String(y);
   }
-  document.getElementById("menAdmin").style.display=isAdmin?"inline-flex":"none";
   if(!menageCharge){chargerMenage();return;}
+  renderMenageAujourdhui();
+  renderMenagePodium();
+  renderMenageZones();
+  renderMenageGrille();
+}
+
+// ---- Bloc « aujourd'hui » : je coche ma mission ----
+function renderMenageAujourdhui(){
+  var now=new Date(),moi=menageMoi();
+  document.getElementById("menDateJour").innerHTML="🧹 "+MENAGE_JOURS[now.getDay()]+" "+now.getDate()+" "+MENAGE_MOIS[now.getMonth()].toLowerCase()
+    +"<small>Ce que tu fais aujourd'hui dans la salle</small>";
+  var bloc=document.getElementById("menMoiBloc");
+  if(moi) bloc.innerHTML='Je suis '+menPastille(moi.ini,true)+' <b style="color:var(--text)">'+menEsc(moi.nom)+'</b>'
+    +(isAdmin&&!monPompierId?' <button class="btn btn-sm" onclick="menageChangerMoi()">changer</button>':'');
+  else if(isAdmin) bloc.innerHTML='<button class="btn btn-primary btn-sm" onclick="menageChangerMoi()">👤 Dis-moi qui tu es</button>';
+  else bloc.innerHTML='<span style="color:var(--warning)">Ton compte n\'est relié à aucune fiche pompier : demande à l\'administrateur.</span>';
+
+  var cle=menDateCle(now);
+  var duJour=menageRows.filter(function(r){return r.annee+"|"+r.mois+"|"+r.jour===cle});
+  var html=MENAGE_MISSIONS.map(function(m){
+    var faits=duJour.filter(function(r){return r.mission===m.id});
+    var parMoi=moi&&faits.some(function(r){return r.initiales===moi.ini});
+    var cls="men-tuile"+(parMoi?" fait":(faits.length?" autres-ok":""));
+    var sous=faits.length?(faits.length+" passage"+(faits.length>1?"s":"")):"Pas encore fait";
+    return '<button type="button" class="'+cls+'"'+(moi?'':' disabled')+' onclick="basculerMaMission(\''+m.id+'\')">'
+      +(parMoi?'<span class="men-coche">✓</span>':'')
+      +'<span class="men-ic">'+m.ic+'</span>'
+      +'<span class="men-nom">'+m.lib+'</span>'
+      +'<span class="men-sous">'+sous+'</span>'
+      +'<span class="men-pastilles">'+faits.map(function(r){return menPastille(r.initiales,moi&&r.initiales===moi.ini)}).join("")+'</span>'
+      +'</button>';
+  }).join("");
+  document.getElementById("menTuiles").innerHTML=html;
+  document.getElementById("menAide").textContent=moi
+    ? "Touche une mission dès que tu l'as faite. Re-touche pour l'enlever. Tu peux rattraper la veille, pas au-delà : sinon, note-le sur la feuille papier."
+    : "Tu peux consulter, mais pas cocher : il faut que ton compte soit relié à ta fiche pompier.";
+}
+async function menageChangerMoi(){
+  var liste=(data||[]).slice().sort(function(a,b){return (a.nom||"").localeCompare(b.nom||"")});
+  var txt=prompt("Qui es-tu ? Tape ton nom :\n"+liste.slice(0,40).map(function(p){return (p.prenom||"")+" "+(p.nom||"")}).join("\n"));
+  if(!txt)return;
+  var t=txt.toLowerCase().trim();
+  var p=liste.filter(function(x){return (((x.prenom||"")+" "+(x.nom||"")).toLowerCase().indexOf(t)!==-1)})[0];
+  if(!p){showToast("Personne trouvée pour « "+txt+" »","error");return;}
+  menageChoisirMoi(p.id);
+}
+async function basculerMaMission(mission){
+  var moi=menageMoi();if(!moi||menageOccupe)return;
+  var now=new Date(),cle=menDateCle(now);
+  var deja=menageRows.filter(function(r){return r.annee+"|"+r.mois+"|"+r.jour===cle&&r.mission===mission&&r.initiales===moi.ini})[0];
+  var detail=null;
+  if(!deja&&mission==="autres"){
+    detail=prompt("Qu'as-tu fait ? (vitres, poubelles…)");
+    if(detail===null)return;
+    detail=detail.trim().slice(0,60)||null;
+  }
+  menageOccupe=true;
+  try{
+    if(deja){
+      var rd=await supabaseClient.from("menage_taches").delete().eq("id",deja.id);
+      if(rd.error)throw rd.error;
+      showToast("Mission retirée","success");
+    }else{
+      var ri=await supabaseClient.from("menage_taches").insert({annee:now.getFullYear(),mois:now.getMonth()+1,jour:now.getDate(),mission:mission,initiales:moi.ini,detail:detail});
+      if(ri.error)throw ri.error;
+      showToast("👍 Merci "+moi.ini+" !","success");
+    }
+    await chargerMenage(true);
+  }catch(e){
+    showToast("Impossible : "+(e.message||e),"error");
+  }finally{menageOccupe=false;}
+}
+
+// ---- Statistiques ----
+function menageStats(){
+  var P=menagePeriode();
+  var rows=menageRows.filter(function(r){return r.annee===P.annee&&(P.portee==="annee"||r.mois===P.mois)});
+  var parPers={},parMission={};
+  MENAGE_MISSIONS.forEach(function(m){parMission[m.id]={n:0,dernier:null}});
+  rows.forEach(function(r){
+    if(!parPers[r.initiales]){parPers[r.initiales]={total:0};MENAGE_MISSIONS.forEach(function(m){parPers[r.initiales][m.id]=0})}
+    parPers[r.initiales][r.mission]++;parPers[r.initiales].total++;
+    var pm=parMission[r.mission];
+    if(pm){pm.n++;var d=new Date(r.annee,r.mois-1,r.jour);if(!pm.dernier||d>pm.dernier)pm.dernier=d;}
+  });
+  var classement=Object.keys(parPers).map(function(i){return {ini:i,d:parPers[i]}})
+    .sort(function(a,b){return b.d.total-a.d.total||a.ini.localeCompare(b.ini)});
+  // La fraîcheur d'une zone se juge sur TOUTES les dates connues, pas sur la période
+  // choisie : sinon, le 1er du mois, tout repasserait à « jamais nettoyé ».
+  var dernierGlobal={};
+  menageRows.forEach(function(r){
+    var d=new Date(r.annee,r.mois-1,r.jour);
+    if(!dernierGlobal[r.mission]||d>dernierGlobal[r.mission])dernierGlobal[r.mission]=d;
+  });
+  return {rows:rows,classement:classement,parMission:parMission,dernierGlobal:dernierGlobal,P:P,total:rows.length};
+}
+function renderMenagePodium(){
+  var S=menageStats(),P=S.P;
+  var titre=P.portee==="annee"?String(P.annee):MENAGE_MOIS[P.mois-1]+" "+P.annee;
+  var pod=document.getElementById("menPodium"),cla=document.getElementById("menClassement");
+  if(!S.classement.length){
+    pod.innerHTML='<div style="text-align:center;padding:18px;color:var(--muted)">Aucune mission enregistrée pour '+menEsc(titre)+'.</div>';
+    cla.innerHTML="";return;
+  }
+  var top=S.classement.slice(0,3),max=top[0].d.total;
+  var ordre=[top[1],top[0],top[2]],cls=["argent","or","bronze"],tete=["🥈","🥇","🥉"];
+  pod.innerHTML='<div class="men-podium">'+ordre.map(function(c,i){
+    if(!c)return "";
+    var h=Math.round(40+80*(c.d.total/max));
+    return '<div class="men-marche '+cls[i]+'"><div class="men-tete">'+tete[i]+'</div>'
+      +'<div class="men-ini">'+menEsc(c.ini)+'</div>'
+      +'<div class="men-nb">'+c.d.total+' mission'+(c.d.total>1?'s':'')+'</div>'
+      +'<div class="men-barre" style="height:'+h+'px"></div></div>';
+  }).join("")+'</div>'
+  +'<div style="text-align:center;font-size:13.5px;color:var(--muted);margin-bottom:6px">Balai d\'or '+menEsc(titre)+' : <b style="color:var(--accent)">'+menEsc(top[0].ini)
+  +(nomPourInitiales(top[0].ini)?" — "+menEsc(nomPourInitiales(top[0].ini)):"")+'</b> • '+S.total+' mission'+(S.total>1?'s':'')+' au total</div>';
+
+  var h='<div style="overflow-x:auto"><table class="men-grille" style="min-width:0"><thead><tr><th>#</th><th style="text-align:left">Qui</th>'
+    +MENAGE_MISSIONS.map(function(m){return '<th title="'+m.lib+'">'+m.ic+'</th>'}).join("")+'<th>Total</th><th>Part</th></tr></thead><tbody>';
+  S.classement.forEach(function(c,i){
+    var pct=Math.round(100*c.d.total/S.total);
+    h+='<tr><td>'+(i<3?["🥇","🥈","🥉"][i]:i+1)+'</td>'
+      +'<td class="j">'+menPastille(c.ini,false)+' '+menEsc(nomPourInitiales(c.ini)||c.ini)+'</td>'
+      +MENAGE_MISSIONS.map(function(m){return '<td>'+(c.d[m.id]||"·")+'</td>'}).join("")
+      +'<td><b>'+c.d.total+'</b></td>'
+      +'<td style="min-width:90px"><div class="men-jauge" style="margin:0"><i style="width:'+pct+'%"></i></div><span style="font-size:11px;color:var(--muted)">'+pct+' %</span></td></tr>';
+  });
+  cla.innerHTML=h+'</tbody></table></div>';
+}
+function renderMenageZones(){
+  var S=menageStats(),auj=new Date();auj.setHours(0,0,0,0);
+  document.getElementById("menZones").innerHTML=MENAGE_MISSIONS.map(function(m){
+    var pm=S.parMission[m.id],der=S.dernierGlobal[m.id]||null;
+    var j=der?Math.max(0,Math.round((auj-der)/86400000)):null;
+    var etat=j===null?"oublie":(j<=3?"ok":(j<=7?"tiede":"oublie"));
+    var lib=j===null?"Jamais fait":(j===0?"Fait aujourd'hui":(j===1?"Hier":"Il y a "+j+" jours"));
+    var badge=etat==="ok"?"Propre":(etat==="tiede"?"Bientôt":"À adopter !");
+    var taille=Math.min(90,22+(j===null?70:j*9));
+    return '<div class="men-zone '+etat+'"><div class="men-blob" style="width:'+taille+'px;height:'+taille+'px"></div>'
+      +'<div class="men-zt">'+m.ic+' '+m.lib+'</div>'
+      +'<div class="men-zd">'+menEsc(lib)+' • '+pm.n+' fois '+(S.P.portee==="annee"?"cette année":"ce mois")+'</div>'
+      +'<span class="men-zb">'+badge+'</span></div>';
+  }).join("");
+}
+
+// ---- Grille du mois (saisie de la feuille papier, administrateur) ----
+function renderMenageGrille(){
   var P=menagePeriode(),st=document.getElementById("menStatut");
-  st.innerHTML=menageErreur?'<span style="color:#dc2626">⚠️ '+menEsc(menageErreur)+'</span>':(isAdmin?"Saisis les initiales puis clique sur « Enregistrer le mois ».":"Lecture seule.");
+  document.getElementById("menActions").style.display=isAdmin?"":"none";
+  st.innerHTML=menageErreur?'<span style="color:var(--danger)">⚠️ '+menEsc(menageErreur)+'</span>'
+    :(isAdmin?'Recopie ici la feuille papier : les initiales de chacun, séparées par un espace (ex. <b>CG LM</b>). Puis « Enregistrer le mois ».'
+             :'Lecture seule : seul l\'administrateur recopie la feuille papier.');
   var rows=menageRows.filter(function(r){return r.annee===P.annee&&r.mois===P.mois});
-  var cell={};rows.forEach(function(r){cell[r.jour+"|"+r.mission]=r.initiales});
-  var nb=new Date(P.annee,P.mois,0).getDate(),h='<table class="tbl" style="min-width:560px"><thead><tr><th style="width:80px">Jour</th>'+MENAGE_MISSIONS.map(function(m){return '<th>'+m[1]+'</th>'}).join("")+'</tr></thead><tbody>';
+  var cell={};
+  rows.forEach(function(r){
+    var k=r.jour+"|"+r.mission;
+    cell[k]=(cell[k]?cell[k]+" ":"")+r.initiales;
+    if(r.detail&&!/\(/.test(cell[k])) cell[k]+=" ("+r.detail+")";
+  });
+  var nb=new Date(P.annee,P.mois,0).getDate(),now=new Date();
+  var h='<table class="men-grille"><thead><tr><th style="text-align:left">Jour</th>'
+    +MENAGE_MISSIONS.map(function(m){return '<th>'+m.ic+' '+m.lib+'</th>'}).join("")+'</tr></thead><tbody>';
   for(var j=1;j<=nb;j++){
-    var wd=new Date(P.annee,P.mois-1,j).getDay(),we=(wd===0||wd===6);
-    h+='<tr style="'+(we?"background:rgba(255,194,20,.10)":"")+'"><td style="font-weight:700">'+j+' <span style="color:var(--muted);font-weight:400;font-size:12px">'+MENAGE_JOURS[wd]+'</span></td>';
+    var d=new Date(P.annee,P.mois-1,j),wd=d.getDay();
+    var k2=[];
+    if(wd===0||wd===6)k2.push("we");
+    if(d.toDateString()===now.toDateString())k2.push("auj");
+    h+='<tr class="'+k2.join(" ")+'"><td class="j">'+j+' <span style="color:var(--muted);font-weight:400;font-size:11.5px">'+MENAGE_JOURS[wd].slice(0,3)+'</span></td>';
     MENAGE_MISSIONS.forEach(function(m){
-      var key=j+"|"+m[0],v=(menageEdits[P.annee+"|"+P.mois+"|"+key]!==undefined)?menageEdits[P.annee+"|"+P.mois+"|"+key]:(cell[key]||"");
-      h+='<td>'+(isAdmin?'<input type="text" maxlength="14" value="'+menEsc(v)+'" style="width:100%;min-width:70px;text-transform:uppercase" oninput="menageSaisie(\''+P.annee+"|"+P.mois+"|"+key+'\',this.value)">':'<span>'+menEsc(v)+'</span>')+'</td>';
+      var key=j+"|"+m.id,ek=P.annee+"|"+P.mois+"|"+key;
+      var v=(menageEdits[ek]!==undefined)?menageEdits[ek]:(cell[key]||"");
+      h+='<td>'+(isAdmin
+        ? '<input type="text" maxlength="40" value="'+menEsc(v)+'" oninput="menageSaisie(\''+ek+'\',this.value)">'
+        : menEsc(v))+'</td>';
     });
     h+='</tr>';
   }
   document.getElementById("menGrille").innerHTML=h+'</tbody></table>';
-  renderMenageBilan();
 }
 function menageSaisie(key,val){menageEdits[key]=val}
-function menageStats(){
-  var P=menagePeriode();
-  var rows=menageRows.filter(function(r){return r.annee===P.annee&&(P.portee==="annee"||r.mois===P.mois)});
-  var parPers={},parMission={};MENAGE_MISSIONS.forEach(function(m){parMission[m[0]]={n:0,dernier:null}});
-  rows.forEach(function(r){
-    var pers=menageInitiales(r.initiales);
-    pers.forEach(function(i){
-      if(!parPers[i]){parPers[i]={total:0};MENAGE_MISSIONS.forEach(function(m){parPers[i][m[0]]=0})}
-      parPers[i][r.mission]++;parPers[i].total++;
-    });
-    var pm=parMission[r.mission];if(pm){pm.n++;var d=new Date(r.annee,r.mois-1,r.jour);if(!pm.dernier||d>pm.dernier)pm.dernier=d;}
+
+// Découpe « CG LM (vitres) » → {inis:["CG","LM"], detail:"vitres"}
+function menageParseCase(txt){
+  var detail=null;
+  var s=String(txt||"").replace(/\(([^)]*)\)/,function(_,d){detail=d.trim()||null;return " "});
+  var inis=[],vus={};
+  menTokens(s).forEach(function(t){
+    if(menIniValide(t)){if(!vus[t]){vus[t]=1;inis.push(t)}}
+    else if(!detail&&t.length>3)detail=t.toLowerCase();
   });
-  var classement=Object.keys(parPers).map(function(i){return {ini:i,d:parPers[i]}}).sort(function(a,b){return b.d.total-a.d.total||a.ini.localeCompare(b.ini)});
-  return {rows:rows,classement:classement,parMission:parMission,P:P};
-}
-function nomPourInitiales(ini){
-  var out=(data||[]).filter(function(p){var a=((p.prenom||"").trim()[0]||"")+((p.nom||"").trim()[0]||"");return a.toUpperCase()===ini});
-  return out.length===1?(out[0].prenom+" "+out[0].nom):"";
-}
-function renderMenageBilan(){
-  var S=menageStats(),h="",medals=["🥇","🥈","🥉"];
-  if(!S.classement.length){document.getElementById("menBilan").innerHTML='<div style="color:var(--muted);font-size:14px">Aucune mission enregistrée sur cette période.</div>';return;}
-  var top=S.classement[0];
-  h+='<div style="background:linear-gradient(135deg,#FFC214,#f59e0b);color:#1F2933;border-radius:12px;padding:12px 16px;margin-bottom:12px;font-weight:700">🧹 Balai d\'or '+(S.P.portee==="annee"?S.P.annee:MENAGE_MOIS[S.P.mois-1]+" "+S.P.annee)+' : '+menEsc(top.ini)+(nomPourInitiales(top.ini)?' ('+menEsc(nomPourInitiales(top.ini))+')':'')+' — '+top.d.total+' mission'+(top.d.total>1?'s':'')+'</div>';
-  h+='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>Initiales</th>'+MENAGE_MISSIONS.map(function(m){return '<th>'+m[1]+'</th>'}).join("")+'<th>Total</th></tr></thead><tbody>';
-  S.classement.forEach(function(c,i){
-    h+='<tr><td>'+(medals[i]||(i+1))+'</td><td><b>'+menEsc(c.ini)+'</b> <span style="color:var(--muted);font-size:12px">'+menEsc(nomPourInitiales(c.ini))+'</span></td>'+MENAGE_MISSIONS.map(function(m){return '<td>'+c.d[m[0]]+'</td>'}).join("")+'<td><b>'+c.d.total+'</b></td></tr>';
-  });
-  h+='</tbody></table></div>';
-  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+MENAGE_MISSIONS.map(function(m){
-    var pm=S.parMission[m[0]],der=pm.dernier?pm.dernier.toLocaleDateString("fr-FR"):"jamais";
-    var oublie=!pm.dernier||(S.P.portee==="mois"&&(new Date()-pm.dernier)/86400000>7&&S.P.mois===new Date().getMonth()+1&&S.P.annee===new Date().getFullYear());
-    return '<div style="border:2px solid '+(oublie?"#dc2626":"#3DAA4A")+';border-radius:10px;padding:8px 12px;font-size:13px"><b>'+m[1]+'</b><br>'+pm.n+' fois • dernier : '+der+(oublie?'<br><span style="color:#dc2626;font-weight:700">À adopter !</span>':'')+'</div>';
-  }).join("")+'</div>';
-  document.getElementById("menBilan").innerHTML=h;
+  return {inis:inis,detail:detail&&detail.slice(0,60)};
 }
 async function enregistrerMenage(){
-  if(!isAdmin)return;
-  var P=menagePeriode(),ups=[],dels=[];
+  if(!isAdmin||menageOccupe)return;
+  var P=menagePeriode(),cases=[];
   Object.keys(menageEdits).forEach(function(k){
     var p=k.split("|"),a=+p[0],m=+p[1],j=+p[2],mis=p[3];
     if(a!==P.annee||m!==P.mois)return;
-    var v=String(menageEdits[k]||"").trim().toUpperCase();
-    if(v)ups.push({annee:a,mois:m,jour:j,mission:mis,initiales:v});else dels.push({annee:a,mois:m,jour:j,mission:mis});
+    cases.push({annee:a,mois:m,jour:j,mission:mis,parsed:menageParseCase(menageEdits[k])});
   });
-  if(!ups.length&&!dels.length){showToast("Rien à enregistrer","error");return;}
+  if(!cases.length){showToast("Rien à enregistrer","error");return;}
+  menageOccupe=true;
   try{
-    if(ups.length){var r=await supabaseClient.from("menage_taches").upsert(ups,{onConflict:"annee,mois,jour,mission"});if(r.error)throw r.error;}
-    for(var i=0;i<dels.length;i++){var d=dels[i];var r2=await supabaseClient.from("menage_taches").delete().match(d);if(r2.error)throw r2.error;}
-    menageEdits={};showToast("✅ Ménage enregistré","success");await chargerMenage(true);
-  }catch(e){showToast("Enregistrement impossible : "+(e.message||e),"error");}
+    var ajouts=[],ignores=0;
+    for(var i=0;i<cases.length;i++){
+      var c=cases[i];
+      var rd=await supabaseClient.from("menage_taches").delete()
+        .match({annee:c.annee,mois:c.mois,jour:c.jour,mission:c.mission});
+      if(rd.error)throw rd.error;
+      if(!c.parsed.inis.length&&menTokens(menageEdits[P.annee+"|"+P.mois+"|"+c.jour+"|"+c.mission]).length)ignores++;
+      c.parsed.inis.forEach(function(ini){
+        ajouts.push({annee:c.annee,mois:c.mois,jour:c.jour,mission:c.mission,initiales:ini,detail:c.parsed.detail});
+      });
+    }
+    if(ajouts.length){
+      var ri=await supabaseClient.from("menage_taches").insert(ajouts);
+      if(ri.error)throw ri.error;
+    }
+    menageEdits={};
+    showToast("✅ "+ajouts.length+" mission"+(ajouts.length>1?"s":"")+" enregistrée"+(ajouts.length>1?"s":"")
+      +(ignores?" • "+ignores+" case(s) sans initiales valables ignorée(s)":""),"success");
+    await chargerMenage(true);
+  }catch(e){
+    showToast("Enregistrement impossible : "+(e.message||e),"error");
+  }finally{menageOccupe=false;}
 }
+
 function exporterMenagePDF(){
-  var S=menageStats();if(!S.classement.length){showToast("Rien à exporter sur cette période","error");return;}
+  var S=menageStats();
+  if(!S.classement.length){showToast("Rien à exporter sur cette période","error");return;}
+  var titre=S.P.portee==="annee"?String(S.P.annee):MENAGE_MOIS[S.P.mois-1]+" "+S.P.annee;
   var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  var titre="Ménage de la salle — "+(S.P.portee==="annee"?S.P.annee:MENAGE_MOIS[S.P.mois-1]+" "+S.P.annee);
-  doc.setFontSize(18);doc.setTextColor(31,41,51);doc.text(titre,14,18);
-  doc.setFontSize(10);doc.setTextColor(74,90,106);doc.text("CIS Cruzy-Quarante • SDIS 34",14,24);
-  doc.setFontSize(12);doc.setTextColor(154,91,0);doc.text("Balai d'or : "+S.classement[0].ini+" ("+S.classement[0].d.total+" missions)",14,32);
-  doc.autoTable({startY:38,head:[["#","Initiales"].concat(MENAGE_MISSIONS.map(function(m){return m[1]})).concat(["Total"])],
-    body:S.classement.map(function(c,i){return [i+1,c.ini+(nomPourInitiales(c.ini)?" — "+nomPourInitiales(c.ini):"")].concat(MENAGE_MISSIONS.map(function(m){return c.d[m[0]]})).concat([c.d.total])}),
-    headStyles:{fillColor:[31,41,51]},styles:{fontSize:9}});
-  var y=doc.lastAutoTable.finalY+8;
-  doc.autoTable({startY:y,head:[["Mission","Fois","Dernier passage"]],body:MENAGE_MISSIONS.map(function(m){var pm=S.parMission[m[0]];return [m[1],pm.n,pm.dernier?pm.dernier.toLocaleDateString("fr-FR"):"jamais"]}),headStyles:{fillColor:[220,29,42]},styles:{fontSize:9}});
+  doc.setFontSize(19);doc.setTextColor(28,25,23);doc.text("Ménage de la salle — "+titre,14,18);
+  doc.setFontSize(10);doc.setTextColor(120,113,108);doc.text("CIS Cruzy-Quarante • SDIS 34",14,24);
+  doc.setFontSize(13);doc.setTextColor(180,83,9);
+  doc.text("Balai d'or : "+S.classement[0].ini+(nomPourInitiales(S.classement[0].ini)?" ("+nomPourInitiales(S.classement[0].ini)+")":"")
+    +" — "+S.classement[0].d.total+" missions",14,33);
+  doc.autoTable({startY:39,
+    head:[["#","Qui"].concat(MENAGE_MISSIONS.map(function(m){return m.lib})).concat(["Total"])],
+    body:S.classement.map(function(c,i){
+      return [i+1,c.ini+(nomPourInitiales(c.ini)?" — "+nomPourInitiales(c.ini):"")]
+        .concat(MENAGE_MISSIONS.map(function(m){return c.d[m.id]})).concat([c.d.total])}),
+    headStyles:{fillColor:[28,25,23]},styles:{fontSize:9}});
+  var auj=new Date();auj.setHours(0,0,0,0);
+  doc.autoTable({startY:doc.lastAutoTable.finalY+8,
+    head:[["Mission","Nombre de fois","Dernier passage"]],
+    body:MENAGE_MISSIONS.map(function(m){var pm=S.parMission[m.id];
+      var der=S.dernierGlobal[m.id]||null;
+      return [m.lib,pm.n,der?der.toLocaleDateString("fr-FR")+" ("+Math.max(0,Math.round((auj-der)/86400000))+" j)":"jamais"]}),
+    headStyles:{fillColor:[220,38,38]},styles:{fontSize:9}});
   doc.save("Menage_"+(S.P.portee==="annee"?S.P.annee:S.P.annee+"-"+String(S.P.mois).padStart(2,"0"))+".pdf");
 }
 
