@@ -434,6 +434,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="tab" data-groupe="suivi" id="navtab-terrain" onclick="switchTab('terrain',this)">📱 Terrain</div>
 <div class="tab" data-groupe="suivi" id="navtab-bilan" onclick="switchTab('bilan',this)">📈 Bilan</div>
 <div class="tab" data-groupe="suivi" id="navtab-progression" onclick="switchTab('progression',this)">📉 Progression</div>
+<div class="tab" data-groupe="suivi" id="navtab-menage" onclick="switchTab('menage',this)">🧹 Ménage</div>
 </div>
 <div class="nav-bloc" data-groupe="entrainement"><button type="button" class="nav-groupe" data-groupe="entrainement" onclick="ouvrirGroupe('entrainement')" title="Ouvrir la rubrique Entraînement">Entraînement</button>
 <div class="tab" data-groupe="entrainement" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
@@ -697,6 +698,22 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="ergoContent"></div>
 </div>
 </div>
+<div id="tab-menage" class="hidden">
+<div class="card">
+<div class="card-title">🧹 Ménage de la salle — planning du mois</div>
+<p style="color:var(--muted);font-size:13px;margin-bottom:12px">Reprend la feuille papier : une case = une mission faite, avec 2 ou 3 initiales (ex. CG). Plusieurs personnes dans la même case : sépare par un espace. Un mot plus long (ex. « vitres ») dans « Autres » n'est pas compté comme une personne.</p>
+<div class="filters" style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+<select id="menMois" onchange="renderMenage()" style="max-width:170px"></select>
+<select id="menAnnee" onchange="renderMenage()" style="max-width:110px"></select>
+<select id="menPortee" onchange="renderMenage()" style="max-width:190px"><option value="mois">Bilan du mois</option><option value="annee">Bilan de l'année</option></select>
+<span id="menAdmin" style="display:none;gap:8px"><button class="btn btn-primary btn-sm" onclick="enregistrerMenage()">💾 Enregistrer le mois</button></span>
+<button class="btn btn-sm" onclick="exporterMenagePDF()">📄 Bilan (PDF)</button>
+</div>
+<div id="menStatut" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+<div id="menBilan" style="margin-bottom:18px"></div>
+<div style="overflow-x:auto"><div id="menGrille"></div></div>
+</div>
+</div>
 <div id="tab-ppa" class="hidden">
 <div class="card">
 <div class="card-title">🧗 PPA — Parcours Professionnel Adapté</div>
@@ -895,6 +912,7 @@ const TABS_INFO = [
     {id:"terrain",label:"📱 Terrain"},
     {id:"bilan",label:"📈 Bilan"},
     {id:"progression",label:"📊 Progression"},
+    {id:"menage",label:"🧹 Ménage"},
     {id:"cardio",label:"❤️ Zones cardio"},
     {id:"muscu",label:"💪 Musculation"},
     {id:"seances",label:"🗓️ Séances"},
@@ -1350,7 +1368,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","menage","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -3493,6 +3511,127 @@ function getExerciceZone(z,i){
   return alea(z.options,i);
 }
 // ===== Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier =====
+
+// ===== MÉNAGE (planning de nettoyage de la salle) =====
+// Table Supabase : menage_taches (lecture : comptes connectés ; écriture : administrateurs).
+var MENAGE_MISSIONS=[["aspirateur","Aspirateur"],["sols","Sols"],["poussiere","Poussière"],["materiel","Matériel essuyé"],["autres","Autres"]];
+var MENAGE_MOIS=["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
+var MENAGE_JOURS=["dim","lun","mar","mer","jeu","ven","sam"];
+var menageRows=[],menageCharge=false,menageEdits={},menageErreur="";
+function menEsc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+async function chargerMenage(force){
+  if(menageCharge&&!force)return;
+  menageCharge=true;menageErreur="";
+  try{
+    var res=await supabaseClient.from("menage_taches").select("*").order("annee").order("mois").order("jour");
+    if(res.error){menageErreur=/menage_taches/i.test(res.error.message||"")?"La table « menage_taches » n'existe pas encore dans Supabase : colle le script supabase/migrations/20261101_01_menage.sql dans le SQL Editor.":"Chargement impossible : "+res.error.message;menageRows=[];}
+    else menageRows=res.data||[];
+  }catch(e){menageErreur="Chargement impossible : "+e.message;menageRows=[];}
+  renderMenage();
+}
+function menagePeriode(){
+  var m=document.getElementById("menMois"),a=document.getElementById("menAnnee");
+  return {mois:parseInt(m.value,10),annee:parseInt(a.value,10),portee:document.getElementById("menPortee").value};
+}
+function menageInitiales(txt){
+  return String(txt||"").toUpperCase().split(/[\s,;+]+/).filter(function(t){return /^[A-ZÀ-Ý]{2,3}$/.test(t)});
+}
+function renderMenage(){
+  var selM=document.getElementById("menMois"),selA=document.getElementById("menAnnee");
+  if(!selM.options.length){
+    var now=new Date();
+    selM.innerHTML=MENAGE_MOIS.map(function(n,i){return '<option value="'+(i+1)+'">'+n+'</option>'}).join("");
+    selM.value=String(now.getMonth()+1);
+    var y=now.getFullYear(),h="";for(var k=y-2;k<=y+1;k++)h+='<option value="'+k+'">'+k+'</option>';
+    selA.innerHTML=h;selA.value=String(y);
+  }
+  document.getElementById("menAdmin").style.display=isAdmin?"inline-flex":"none";
+  if(!menageCharge){chargerMenage();return;}
+  var P=menagePeriode(),st=document.getElementById("menStatut");
+  st.innerHTML=menageErreur?'<span style="color:#dc2626">⚠️ '+menEsc(menageErreur)+'</span>':(isAdmin?"Saisis les initiales puis clique sur « Enregistrer le mois ».":"Lecture seule.");
+  var rows=menageRows.filter(function(r){return r.annee===P.annee&&r.mois===P.mois});
+  var cell={};rows.forEach(function(r){cell[r.jour+"|"+r.mission]=r.initiales});
+  var nb=new Date(P.annee,P.mois,0).getDate(),h='<table class="tbl" style="min-width:560px"><thead><tr><th style="width:80px">Jour</th>'+MENAGE_MISSIONS.map(function(m){return '<th>'+m[1]+'</th>'}).join("")+'</tr></thead><tbody>';
+  for(var j=1;j<=nb;j++){
+    var wd=new Date(P.annee,P.mois-1,j).getDay(),we=(wd===0||wd===6);
+    h+='<tr style="'+(we?"background:rgba(255,194,20,.10)":"")+'"><td style="font-weight:700">'+j+' <span style="color:var(--muted);font-weight:400;font-size:12px">'+MENAGE_JOURS[wd]+'</span></td>';
+    MENAGE_MISSIONS.forEach(function(m){
+      var key=j+"|"+m[0],v=(menageEdits[P.annee+"|"+P.mois+"|"+key]!==undefined)?menageEdits[P.annee+"|"+P.mois+"|"+key]:(cell[key]||"");
+      h+='<td>'+(isAdmin?'<input type="text" maxlength="14" value="'+menEsc(v)+'" style="width:100%;min-width:70px;text-transform:uppercase" oninput="menageSaisie(\''+P.annee+"|"+P.mois+"|"+key+'\',this.value)">':'<span>'+menEsc(v)+'</span>')+'</td>';
+    });
+    h+='</tr>';
+  }
+  document.getElementById("menGrille").innerHTML=h+'</tbody></table>';
+  renderMenageBilan();
+}
+function menageSaisie(key,val){menageEdits[key]=val}
+function menageStats(){
+  var P=menagePeriode();
+  var rows=menageRows.filter(function(r){return r.annee===P.annee&&(P.portee==="annee"||r.mois===P.mois)});
+  var parPers={},parMission={};MENAGE_MISSIONS.forEach(function(m){parMission[m[0]]={n:0,dernier:null}});
+  rows.forEach(function(r){
+    var pers=menageInitiales(r.initiales);
+    pers.forEach(function(i){
+      if(!parPers[i]){parPers[i]={total:0};MENAGE_MISSIONS.forEach(function(m){parPers[i][m[0]]=0})}
+      parPers[i][r.mission]++;parPers[i].total++;
+    });
+    var pm=parMission[r.mission];if(pm){pm.n++;var d=new Date(r.annee,r.mois-1,r.jour);if(!pm.dernier||d>pm.dernier)pm.dernier=d;}
+  });
+  var classement=Object.keys(parPers).map(function(i){return {ini:i,d:parPers[i]}}).sort(function(a,b){return b.d.total-a.d.total||a.ini.localeCompare(b.ini)});
+  return {rows:rows,classement:classement,parMission:parMission,P:P};
+}
+function nomPourInitiales(ini){
+  var out=(data||[]).filter(function(p){var a=((p.prenom||"").trim()[0]||"")+((p.nom||"").trim()[0]||"");return a.toUpperCase()===ini});
+  return out.length===1?(out[0].prenom+" "+out[0].nom):"";
+}
+function renderMenageBilan(){
+  var S=menageStats(),h="",medals=["🥇","🥈","🥉"];
+  if(!S.classement.length){document.getElementById("menBilan").innerHTML='<div style="color:var(--muted);font-size:14px">Aucune mission enregistrée sur cette période.</div>';return;}
+  var top=S.classement[0];
+  h+='<div style="background:linear-gradient(135deg,#FFC214,#f59e0b);color:#1F2933;border-radius:12px;padding:12px 16px;margin-bottom:12px;font-weight:700">🧹 Balai d\'or '+(S.P.portee==="annee"?S.P.annee:MENAGE_MOIS[S.P.mois-1]+" "+S.P.annee)+' : '+menEsc(top.ini)+(nomPourInitiales(top.ini)?' ('+menEsc(nomPourInitiales(top.ini))+')':'')+' — '+top.d.total+' mission'+(top.d.total>1?'s':'')+'</div>';
+  h+='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>#</th><th>Initiales</th>'+MENAGE_MISSIONS.map(function(m){return '<th>'+m[1]+'</th>'}).join("")+'<th>Total</th></tr></thead><tbody>';
+  S.classement.forEach(function(c,i){
+    h+='<tr><td>'+(medals[i]||(i+1))+'</td><td><b>'+menEsc(c.ini)+'</b> <span style="color:var(--muted);font-size:12px">'+menEsc(nomPourInitiales(c.ini))+'</span></td>'+MENAGE_MISSIONS.map(function(m){return '<td>'+c.d[m[0]]+'</td>'}).join("")+'<td><b>'+c.d.total+'</b></td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">'+MENAGE_MISSIONS.map(function(m){
+    var pm=S.parMission[m[0]],der=pm.dernier?pm.dernier.toLocaleDateString("fr-FR"):"jamais";
+    var oublie=!pm.dernier||(S.P.portee==="mois"&&(new Date()-pm.dernier)/86400000>7&&S.P.mois===new Date().getMonth()+1&&S.P.annee===new Date().getFullYear());
+    return '<div style="border:2px solid '+(oublie?"#dc2626":"#3DAA4A")+';border-radius:10px;padding:8px 12px;font-size:13px"><b>'+m[1]+'</b><br>'+pm.n+' fois • dernier : '+der+(oublie?'<br><span style="color:#dc2626;font-weight:700">À adopter !</span>':'')+'</div>';
+  }).join("")+'</div>';
+  document.getElementById("menBilan").innerHTML=h;
+}
+async function enregistrerMenage(){
+  if(!isAdmin)return;
+  var P=menagePeriode(),ups=[],dels=[];
+  Object.keys(menageEdits).forEach(function(k){
+    var p=k.split("|"),a=+p[0],m=+p[1],j=+p[2],mis=p[3];
+    if(a!==P.annee||m!==P.mois)return;
+    var v=String(menageEdits[k]||"").trim().toUpperCase();
+    if(v)ups.push({annee:a,mois:m,jour:j,mission:mis,initiales:v});else dels.push({annee:a,mois:m,jour:j,mission:mis});
+  });
+  if(!ups.length&&!dels.length){showToast("Rien à enregistrer","error");return;}
+  try{
+    if(ups.length){var r=await supabaseClient.from("menage_taches").upsert(ups,{onConflict:"annee,mois,jour,mission"});if(r.error)throw r.error;}
+    for(var i=0;i<dels.length;i++){var d=dels[i];var r2=await supabaseClient.from("menage_taches").delete().match(d);if(r2.error)throw r2.error;}
+    menageEdits={};showToast("✅ Ménage enregistré","success");await chargerMenage(true);
+  }catch(e){showToast("Enregistrement impossible : "+(e.message||e),"error");}
+}
+function exporterMenagePDF(){
+  var S=menageStats();if(!S.classement.length){showToast("Rien à exporter sur cette période","error");return;}
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  var titre="Ménage de la salle — "+(S.P.portee==="annee"?S.P.annee:MENAGE_MOIS[S.P.mois-1]+" "+S.P.annee);
+  doc.setFontSize(18);doc.setTextColor(31,41,51);doc.text(titre,14,18);
+  doc.setFontSize(10);doc.setTextColor(74,90,106);doc.text("CIS Cruzy-Quarante • SDIS 34",14,24);
+  doc.setFontSize(12);doc.setTextColor(154,91,0);doc.text("Balai d'or : "+S.classement[0].ini+" ("+S.classement[0].d.total+" missions)",14,32);
+  doc.autoTable({startY:38,head:[["#","Initiales"].concat(MENAGE_MISSIONS.map(function(m){return m[1]})).concat(["Total"])],
+    body:S.classement.map(function(c,i){return [i+1,c.ini+(nomPourInitiales(c.ini)?" — "+nomPourInitiales(c.ini):"")].concat(MENAGE_MISSIONS.map(function(m){return c.d[m[0]]})).concat([c.d.total])}),
+    headStyles:{fillColor:[31,41,51]},styles:{fontSize:9}});
+  var y=doc.lastAutoTable.finalY+8;
+  doc.autoTable({startY:y,head:[["Mission","Fois","Dernier passage"]],body:MENAGE_MISSIONS.map(function(m){var pm=S.parMission[m[0]];return [m[1],pm.n,pm.dernier?pm.dernier.toLocaleDateString("fr-FR"):"jamais"]}),headStyles:{fillColor:[220,29,42]},styles:{fontSize:9}});
+  doc.save("Menage_"+(S.P.portee==="annee"?S.P.annee:S.P.annee+"-"+String(S.P.mois).padStart(2,"0"))+".pdf");
+}
+
 // Table Supabase : carnet_seances (lecture : comptes connectes ; ecriture : administrateurs).
 // Chargement tolerant : si la table n'existe pas encore, l'app continue de fonctionner normalement
 // (meme logique de tolerance que fc_repos/fc_max/historique sur la table pompiers).
@@ -4464,8 +4603,8 @@ function basculerTheme(){
     try{localStorage.setItem("icp_theme",clair?"dark":"light")}catch(e){}
     majBoutonTheme();
 }
-var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","terrain","bilan","progression","cardio","muscu","echelles","ppa","export","comptes"];
-var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès"};
+var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","export","comptes"];
+var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage"};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
     var txt=el?el.textContent.trim():t;
