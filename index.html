@@ -430,6 +430,67 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .men-grille input:focus{outline:none;border-color:var(--primary);background:var(--surface2)}
 .men-pliable>summary{cursor:pointer;font-family:var(--titre);text-transform:uppercase;letter-spacing:.4px;color:var(--accent);font-size:15px;padding:6px 0}
 @media(max-width:720px){.men-tuiles{grid-template-columns:repeat(2,1fr)}.men-tuile .men-ic{font-size:28px}.men-podium{min-height:130px}}
+/* ===== MON PROGRAMME ===== */
+.prg-fil{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.prg-pas{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:4px 11px 4px 4px}
+.prg-pas span{width:20px;height:20px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.prg-pas.active{color:var(--text);border-color:var(--primary)}.prg-pas.active span{background:var(--primary);color:#fff}
+.prg-pas.faite{color:var(--success);border-color:var(--success)}.prg-pas.faite span{background:var(--success);color:#fff}
+.prg-q{font-family:var(--titre);font-size:19px;margin:4px 0 14px;letter-spacing:.3px}
+.prg-ss{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin:16px 0 7px;font-weight:700}
+.prg-note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+.prg-choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px}
+.prg-carte{text-align:left;border:2px solid var(--border);background:var(--surface2);border-radius:14px;padding:14px;cursor:pointer;font:inherit;color:var(--text);transition:transform .15s,border-color .2s}
+.prg-carte:hover{transform:translateY(-2px);border-color:var(--primary)}
+.prg-carte.sel{border-color:var(--primary);background:linear-gradient(160deg,color-mix(in srgb,var(--primary) 18%,var(--surface2)),var(--surface2))}
+.prg-ic{font-size:26px;display:block;margin-bottom:6px}
+.prg-lib{display:block;font-family:var(--titre);font-size:15px;text-transform:uppercase;letter-spacing:.3px}
+.prg-sous{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.prg-jours{display:flex;flex-wrap:wrap;gap:7px}
+.prg-jour{border:2px solid var(--border);background:var(--surface2);color:var(--text);border-radius:10px;padding:8px 14px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:600}
+.prg-jour:hover{border-color:var(--primary)}
+.prg-jour.sel{border-color:var(--primary);background:var(--primary);color:#fff}
+.prg-ligne{display:flex;align-items:center;gap:9px;font-size:14px;padding:7px 0;cursor:pointer}
+.prg-ligne input{width:auto}
+.prg-nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:20px}
+.prg-recap,.prg-reg{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.prg-rl{display:flex;justify-content:space-between;gap:12px;padding:9px 13px;font-size:13.5px;border-bottom:1px solid var(--border)}
+.prg-rl:last-child{border-bottom:0}.prg-rl span{color:var(--muted)}
+.prg-tete-h{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.prg-titre{font-family:var(--titre);font-size:23px;text-transform:uppercase;letter-spacing:.4px;color:var(--accent)}
+.prg-sstitre{font-size:12.5px;color:var(--muted);margin-top:3px}
+.prg-cycle{text-align:right;font-size:12.5px;color:var(--muted)}.prg-cycle b{display:block;font-family:var(--titre);font-size:17px;color:var(--text)}
+.prg-barre{display:flex;gap:6px;margin-top:14px}
+.prg-seg{flex:1;border:1px solid var(--border);border-radius:9px;padding:7px 9px;font-size:11.5px;color:var(--muted);background:var(--surface2)}
+.prg-seg span{display:block;font-family:var(--titre);font-size:14px;color:var(--text)}
+.prg-seg.faite{border-color:var(--success)}.prg-seg.faite span{color:var(--success)}
+.prg-seg.active{border-color:var(--primary);background:linear-gradient(160deg,color-mix(in srgb,var(--primary) 16%,var(--surface2)),var(--surface2))}
+.prg-seg.active span{color:var(--primary)}
+.prg-ua{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.prg-uab{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+.prg-uav{font-family:var(--titre);font-size:26px;color:var(--accent)}
+.prg-uak{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+.prg-uas{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4}
+.prg-jauges{display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:14px;justify-content:space-around}
+.prg-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.prg-bat{width:26px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary))}
+.prg-col span{font-size:11px;color:var(--muted);font-weight:700}
+.prg-seance.auj{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary),var(--ombre)}
+.prg-seance.faite{opacity:.78}
+.prg-sh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.prg-st{font-family:var(--titre);font-size:18px;text-transform:uppercase;letter-spacing:.4px}
+.prg-sd{font-size:12.5px;color:var(--muted);margin-top:2px}
+.prg-badge{background:var(--primary);color:#fff;border-radius:999px;font-size:10px;padding:2px 9px;vertical-align:middle;letter-spacing:.3px}
+.prg-ok{color:var(--success);font-weight:700;font-size:13px}
+.prg-bloc{border-left:3px solid var(--primary);padding:2px 0 2px 12px;margin:12px 0}
+.prg-bt{font-family:var(--titre);font-size:14.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--accent)}
+.prg-txt{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}
+.prg-ateliers{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:10px}
+.prg-exo{border:1px solid var(--border);border-radius:11px;overflow:hidden;background:var(--surface2)}
+.prg-exo img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--surface)}
+.prg-en{font-size:12.5px;font-weight:700;padding:7px 8px 0;line-height:1.25}
+.prg-ec{font-size:11px;color:var(--muted);padding:2px 8px 8px}
+@media(max-width:720px){.prg-ateliers{grid-template-columns:repeat(2,1fr)}.prg-titre{font-size:19px}.prg-barre{flex-direction:column}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -492,6 +553,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="tab" data-groupe="entrainement" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
 <div class="tab" data-groupe="entrainement" id="navtab-muscu" onclick="switchTab('muscu',this)">💪 Musculation</div>
 <div class="tab" data-groupe="entrainement" id="navtab-seances" onclick="switchTab('seances',this)">🗓️ Séances</div>
+<div class="tab" data-groupe="entrainement" id="navtab-programme" onclick="switchTab('programme',this)">🎯 Mon programme</div>
 </div>
 <div class="nav-bloc" data-groupe="referentiels"><button type="button" class="nav-groupe" data-groupe="referentiels" onclick="ouvrirGroupe('referentiels')" title="Ouvrir la rubrique Référentiels">Référentiels</button>
 <div class="tab" data-groupe="referentiels" id="navtab-echelles" onclick="switchTab('echelles',this)">📏 Barèmes</div>
@@ -750,6 +812,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="ergoContent"></div>
 </div>
 </div>
+<div id="tab-programme" class="hidden"><div id="prgContent"></div></div>
 <div id="tab-menage" class="hidden">
 <div class="card">
 <div class="men-jour">
@@ -990,6 +1053,7 @@ const TABS_INFO = [
     {id:"cardio",label:"❤️ Zones cardio"},
     {id:"muscu",label:"💪 Musculation"},
     {id:"seances",label:"🗓️ Séances"},
+    {id:"programme",label:"🎯 Mon programme"},
     {id:"echelles",label:"📏 Barèmes"},
     {id:"ppa",label:"🧗 PPA"},
     {id:"export",label:"📄 Export PDF"}
@@ -1442,7 +1506,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","echelles","ppa","menage","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -3586,6 +3650,503 @@ function getExerciceZone(z,i){
 }
 // ===== Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier =====
 
+// ===== MON PROGRAMME (parcours d'initiation + programme individualisé) =====
+// Table Supabase : programme_profils (un profil par pompier, lisible par lui et l'administrateur).
+// Les séances faites sont enregistrées dans carnet_seances (RPE × durée = UA), déjà utilisé par
+// l'onglet Séances : pas de second jeu de données à maintenir.
+// Matériel : celui de la salle de la caserne (règlement « Mode d'emploi du matériel »).
+// Règles de construction : méthodes autorisées en astreinte uniquement (pas d'efforts maximaux,
+// pas de lourd-léger, pas d'excentrique chargé), ~50 % de la séance sur abdos/dorsaux/lombaires,
+// poids de corps privilégié, cycles de 3 semaines, exercices polyarticulaires, agonistes/antagonistes.
+
+var PRG_ZONES=[["epaule","Épaule"],["coude","Coude"],["poignet","Poignet"],["dos","Dos / lombaires"],
+               ["hanche","Hanche"],["genou","Genou"],["cheville","Cheville"]];
+var PRG_OBJECTIFS=[
+  {id:"reprise",  ic:"🌱",lib:"Reprise en douceur",      sous:"Après un arrêt ou une blessure",        cardio:1,tronc:0.5,charge:0.5},
+  {id:"icp",      ic:"🎯",lib:"Passer mes ICP",          sous:"Rameur, Luc Léger, pompes, tractions",  cardio:2,tronc:0.5,charge:0.7},
+  {id:"endurance",ic:"🫁",lib:"Endurance",               sous:"Tenir plus longtemps sur intervention", cardio:3,tronc:0.4,charge:0.6},
+  {id:"gainage",  ic:"🛡️",lib:"Renforcement et gainage", sous:"Dos solide, port de charge",            cardio:1,tronc:0.6,charge:0.7},
+  {id:"poids",    ic:"⚖️",lib:"Perdre du poids",         sous:"Dépense et régularité",                 cardio:3,tronc:0.5,charge:0.5},
+  {id:"ppa",      ic:"🧗",lib:"Préparer le PPA",         sous:"Parcours professionnel adapté",         cardio:2,tronc:0.5,charge:0.8}
+];
+// Catalogue : cat = tronc / bas / haut / cardio ; art = articulations sollicitées (pour écarter
+// un exercice si la zone est déclarée douloureuse) ; pdc = au poids de corps.
+var PRG_EXOS=[
+ {id:"planche",       nom:"Planche",              img:"planche.jpg",            cat:"tronc",art:["epaule"],            pdc:1,unite:"temps"},
+ {id:"bird_dog",      nom:"Bird dog",             img:"bird_dog.jpg",           cat:"tronc",art:[],                    pdc:1,unite:"reps"},
+ {id:"superman",      nom:"Superman",             img:"superman.jpg",           cat:"tronc",art:["dos"],               pdc:1,unite:"reps"},
+ {id:"extension_lomb",nom:"Extension lombaire",   img:"extension_lombaire.jpg", cat:"tronc",art:["dos"],               pdc:1,unite:"reps",mat:"Banc à lombaires"},
+ {id:"releve_jambes", nom:"Relevé de jambes",     img:"releve_jambes.jpg",      cat:"tronc",art:["dos"],               pdc:1,unite:"reps"},
+ {id:"mountain",      nom:"Mountain climbers",    img:"mountain_climbers.jpg",  cat:"tronc",art:["epaule","poignet"],  pdc:1,unite:"temps"},
+ {id:"good_morning",  nom:"Good morning",         img:"good_morning.jpg",       cat:"tronc",art:["dos","hanche"],      pdc:1,unite:"reps"},
+ {id:"kb_swings",     nom:"Kettlebell swings",    img:"kettlebell_swings.jpg",  cat:"tronc",art:["dos","hanche","epaule"],pdc:0,unite:"reps",mat:"Kettlebell"},
+ {id:"pompes",        nom:"Pompes",               img:"pompes.jpg",             cat:"haut", art:["epaule","poignet","coude"],pdc:1,unite:"reps"},
+ {id:"dips",          nom:"Dips",                 img:"dips.jpg",               cat:"haut", art:["epaule","coude","poignet"],pdc:1,unite:"reps"},
+ {id:"aus_pullups",   nom:"Australian pull-ups",  img:"australian_pullups.jpg", cat:"haut", art:["epaule","coude"],    pdc:1,unite:"reps",mat:"Barre basse"},
+ {id:"tirage_vert",   nom:"Tirage vertical",      img:"tirage_vertical.jpg",    cat:"haut", art:["epaule","coude"],    pdc:0,unite:"reps",mat:"Station à poulies"},
+ {id:"tirage_hor",    nom:"Tirage horizontal",    img:"tirage_horizontal.jpg",  cat:"haut", art:["epaule","coude"],    pdc:0,unite:"reps",mat:"Station à poulies"},
+ {id:"dev_couche",    nom:"Développé couché",     img:"developpe_couche.jpg",   cat:"haut", art:["epaule","coude"],    pdc:0,unite:"reps",mat:"Barre, banc, pareur"},
+ {id:"front_squat",   nom:"Front squat",          img:"front_squat.jpg",        cat:"bas",  art:["genou","hanche","dos","epaule"],pdc:0,unite:"reps",mat:"Barre et rack"},
+ {id:"fente_arr",     nom:"Fente arrière",        img:"fente_arriere.jpg",      cat:"bas",  art:["genou","hanche"],    pdc:1,unite:"reps"},
+ {id:"hip_thrust",    nom:"Hip thrust",           img:"hip_thrust.jpg",         cat:"bas",  art:["hanche"],            pdc:1,unite:"reps",mat:"Banc"},
+ {id:"chaise",        nom:"Chaise isométrique",   img:"chaise_isometrique.jpg", cat:"bas",  art:["genou"],             pdc:1,unite:"temps"},
+ {id:"squat_jumps",   nom:"Squat jumps",          img:"squat_jumps.jpg",        cat:"bas",  art:["genou","cheville"],  pdc:1,unite:"reps"},
+ {id:"mollets",       nom:"Mollets debout",       img:"mollets_debout.jpg",     cat:"bas",  art:["cheville"],          pdc:1,unite:"reps"},
+ {id:"burpees",       nom:"Burpees",              img:"burpees.jpg",            cat:"cardio",art:["genou","epaule","poignet","dos"],pdc:1,unite:"temps"}
+];
+var PRG_CARDIO=[
+ {id:"rameur",nom:"Rameur Concept 2",art:["dos"],     consigne:"Jambes, puis dos, puis bras. Volet 3 à 5."},
+ {id:"assault",nom:"Assault Bike",   art:["epaule"],  consigne:"Selle réglée avant de partir."},
+ {id:"velo",  nom:"Vélo de spinning",art:[],          consigne:"Résistance baissée avant de descendre."}
+];
+var PRG_ETIR=[
+ {id:"etir_dos",nom:"Dos",img:"etir_dos.jpg"},{id:"etir_lomb",nom:"Lombaires",img:"etir_lombaires.jpg"},
+ {id:"etir_fess",nom:"Fessiers",img:"etir_fessiers.jpg"},{id:"etir_quad",nom:"Quadriceps",img:"etir_quadriceps.jpg"},
+ {id:"etir_mol",nom:"Mollets",img:"etir_mollets.jpg"},{id:"etir_pec",nom:"Pectoraux",img:"etir_pectoraux.jpg"}
+];
+var PRG_SEMAINES=[
+ {n:1,nom:"Mise en route",  sous:"On installe la technique",   tours:2,duree:30,rpe:"3 à 4"},
+ {n:2,nom:"Montée",         sous:"On ajoute du volume",        tours:3,duree:35,rpe:"4 à 5"},
+ {n:3,nom:"Consolidation",  sous:"On tient la qualité",        tours:3,duree:40,rpe:"5 à 6"}
+];
+var PRG_JOURS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+
+var prgProfil=null,prgCharge=false,prgErreur="",prgOccupe=false,prgEtape=0,prgBrouillon=null;
+
+function prgEsc(s){return menEsc(s)}
+function prgMoi(){
+  var p=null;
+  if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
+  if(!p&&isAdmin){
+    var m=menageMoi();
+    if(m) p=(data||[]).filter(function(x){return x.id===m.id})[0];
+  }
+  return p||null;
+}
+// Tirage reproductible : le programme ne doit pas changer à chaque affichage.
+function prgRnd(graine){var s=graine%2147483647;if(s<=0)s+=2147483646;
+  return function(){s=s*16807%2147483647;return (s-1)/2147483646}}
+function prgPiocher(liste,n,rnd){
+  var l=liste.slice(),out=[];
+  while(l.length&&out.length<n) out.push(l.splice(Math.floor(rnd()*l.length),1)[0]);
+  return out;
+}
+function prgExosDispos(){
+  var bl=(prgProfil&&prgProfil.blessures)||[];
+  return PRG_EXOS.filter(function(e){
+    return !e.art.some(function(a){return bl.indexOf(a)!==-1});
+  });
+}
+function prgCardioDispo(){
+  var bl=(prgProfil&&prgProfil.blessures)||[];
+  var l=PRG_CARDIO.filter(function(c){return !c.art.some(function(a){return bl.indexOf(a)!==-1})});
+  return l.length?l:[PRG_CARDIO[2]];
+}
+
+// ---- Construction du programme : cycle de 3 semaines ----
+// Une séance = échauffement (5 min) + corps + étirements. Dans le corps, la moitié des ateliers
+// au moins travaille abdos / dorsaux / lombaires, comme le demande le livret pour l'astreinte.
+function prgDateDebut(){
+  var d=prgProfil&&prgProfil.cree_le?new Date(prgProfil.cree_le):new Date();
+  d.setHours(0,0,0,0);
+  while(d.getDay()!==1) d.setDate(d.getDate()-1); // lundi de la semaine de création
+  return d;
+}
+function prgJoursChoisis(){
+  var j=((prgProfil&&prgProfil.jours)||"").split(",").filter(function(x){return x!==""}).map(Number);
+  return j.length?j:[0,2,4].slice(0,(prgProfil&&prgProfil.seances_sem)||2);
+}
+function prgSemaineCourante(){
+  var dif=Math.floor((new Date()-prgDateDebut())/604800000);
+  return {index:dif,cycle:Math.floor(dif/3)+1,semaine:(dif%3+3)%3};
+}
+function prgConstruireSeance(sem,idxJour,dateSeance){
+  var obj=PRG_OBJECTIFS.filter(function(o){return o.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
+  var S=PRG_SEMAINES[sem];
+  var rnd=prgRnd((prgProfil.pompier_id||1)*7919+sem*101+idxJour*13+1);
+  var dispo=prgExosDispos();
+  var tronc=dispo.filter(function(e){return e.cat==="tronc"});
+  var autres=dispo.filter(function(e){return e.cat==="bas"||e.cat==="haut"});
+  var bas=autres.filter(function(e){return e.cat==="bas"}),haut=autres.filter(function(e){return e.cat==="haut"});
+  var nbAteliers=prgProfil.duree_min>=50?6:(prgProfil.duree_min>=35?5:4);
+  var nbTronc=Math.ceil(nbAteliers*Math.max(0.5,obj.tronc));
+  var reste=nbAteliers-nbTronc;
+  // agonistes / antagonistes : on alterne haut et bas du corps sur le reste
+  var pickBas=prgPiocher(bas,Math.ceil(reste/2),rnd),pickHaut=prgPiocher(haut,Math.floor(reste/2),rnd);
+  var pickTronc=prgPiocher(tronc,nbTronc,rnd);
+  var ateliers=[];
+  for(var i=0;i<Math.max(pickTronc.length,pickBas.length+pickHaut.length);i++){
+    if(pickTronc[i])ateliers.push(pickTronc[i]);
+    if(i<pickBas.length)ateliers.push(pickBas[i]);
+    if(i<pickHaut.length)ateliers.push(pickHaut[i]);
+  }
+  ateliers=ateliers.slice(0,nbAteliers);
+  var cardio=prgCardioDispo()[Math.floor(rnd()*prgCardioDispo().length)];
+  var minCardio=[0,6,10,14][Math.min(3,obj.cardio)];
+  var tempsAtelier=20+S.n*5; // 25 s, 30 s, 35 s
+  return {
+    date:dateSeance,semaine:S,objectif:obj,
+    methode:"Endurance de force en circuit",
+    cardio:minCardio?{exo:cardio,min:minCardio}:null,
+    tours:S.tours,temps:tempsAtelier,
+    ateliers:ateliers,
+    etirements:prgPiocher(PRG_ETIR,4,prgRnd((prgProfil.pompier_id||1)*31+sem*7+idxJour)),
+    dureeTotale:prgProfil.duree_min,
+    rpeCible:S.rpe
+  };
+}
+function prgSeancesSemaine(sem,refLundi){
+  var jours=prgJoursChoisis().slice(0,prgProfil.seances_sem);
+  return jours.map(function(j,i){
+    var d=new Date(refLundi);d.setDate(d.getDate()+j);
+    return prgConstruireSeance(sem,i,d);
+  });
+}
+// ---- Suivi de la charge : UA = RPE × durée, monotonie et contrainte (méthode Foster) ----
+function prgChargeSemaine(pid,lundi){
+  var fin=new Date(lundi);fin.setDate(fin.getDate()+7);
+  var jours=[0,0,0,0,0,0,0];
+  (carnetEntries||[]).forEach(function(e){
+    if(String(e.pompier_id)!==String(pid))return;
+    var d=new Date(e.date+"T00:00:00");
+    if(d>=lundi&&d<fin) jours[(d.getDay()+6)%7]+=(e.charge_ua||0);
+  });
+  var total=jours.reduce(function(a,b){return a+b},0);
+  var moy=total/7;
+  var ec=Math.sqrt(jours.reduce(function(a,b){return a+(b-moy)*(b-moy)},0)/7);
+  var mono=ec>0?moy/ec:(total>0?2:0);
+  return {jours:jours,total:Math.round(total),monotonie:Math.round(mono*100)/100,contrainte:Math.round(total*mono)};
+}
+
+// ---- Chargement / enregistrement du profil ----
+async function chargerProgramme(force){
+  if(prgCharge&&!force)return;
+  prgCharge=true;prgErreur="";
+  var moi=prgMoi();
+  if(!moi){prgProfil=null;renderProgramme();return}
+  try{
+    var res=await supabaseClient.from("programme_profils").select("*").eq("pompier_id",moi.id).maybeSingle();
+    if(res.error&&res.error.code!=="PGRST116"){
+      prgErreur=/programme_profils/i.test(res.error.message||"")
+        ?"La table « programme_profils » n'existe pas encore dans Supabase."
+        :"Chargement impossible : "+res.error.message;
+      prgProfil=null;
+    } else prgProfil=res.data||null;
+  }catch(e){prgErreur="Chargement impossible : "+(e.message||e);prgProfil=null;}
+  await chargerCarnetSiBesoin();
+  renderProgramme();
+}
+async function prgEnregistrerProfil(){
+  var moi=prgMoi();if(!moi||prgOccupe)return;
+  var b=prgBrouillon;
+  if(!b.objectif){showToast("Choisis d'abord un objectif","error");prgEtape=1;renderProgramme();return}
+  if(!b.jours.length){showToast("Choisis au moins un jour","error");prgEtape=2;renderProgramme();return}
+  prgOccupe=true;
+  var ligne={pompier_id:moi.id,objectif:b.objectif,seances_sem:Math.min(b.jours.length,b.seances_sem),
+    jours:b.jours.join(","),duree_min:b.duree,blessures:b.blessures,
+    contre_indications:b.contre||null,rappel_heure:b.heure||"18:00",
+    rappels:b.rappels||{seance:true,bilan:true},maj_le:new Date().toISOString()};
+  try{
+    var res=await supabaseClient.from("programme_profils").upsert(ligne,{onConflict:"pompier_id"});
+    if(res.error)throw res.error;
+    showToast("✅ Ton programme est prêt","success");
+    prgEtape=0;prgBrouillon=null;
+    await chargerProgramme(true);
+  }catch(e){showToast("Enregistrement impossible : "+(e.message||e),"error")}
+  finally{prgOccupe=false}
+}
+function prgNouveauBrouillon(){
+  var p=prgProfil;
+  return {objectif:p?p.objectif:null,seances_sem:p?p.seances_sem:2,
+    jours:p&&p.jours?p.jours.split(",").filter(function(x){return x!==""}).map(Number):[0,3],
+    duree:p?p.duree_min:45,blessures:p?(p.blessures||[]).slice():[],contre:p?(p.contre_indications||""):"",
+    heure:p?p.rappel_heure:"18:00",rappels:p?Object.assign({},p.rappels):{seance:true,bilan:true}};
+}
+function prgRefaire(){prgBrouillon=prgNouveauBrouillon();prgEtape=1;renderProgramme()}
+
+// ---- Rendu ----
+function renderProgramme(){
+  var box=document.getElementById("prgContent");if(!box)return;
+  var moi=prgMoi();
+  if(!moi){
+    box.innerHTML='<div class="card"><div class="card-title">🎯 Mon programme</div>'
+      +'<p style="color:var(--warning)">Ton compte n\'est relié à aucune fiche pompier : demande à l\'administrateur pour pouvoir créer ton programme.</p></div>';
+    return;
+  }
+  if(!prgCharge){chargerProgramme();box.innerHTML='<div class="card">Chargement…</div>';return}
+  if(prgErreur){box.innerHTML='<div class="card"><p style="color:var(--danger)">⚠️ '+prgEsc(prgErreur)+'</p></div>';return}
+  if(!prgProfil||prgEtape>0){ if(!prgBrouillon)prgBrouillon=prgNouveauBrouillon(); if(prgEtape===0)prgEtape=1; box.innerHTML=prgInitiation(moi); return }
+  box.innerHTML=prgVueProgramme(moi);
+}
+
+// ---- Parcours d'initiation ----
+var PRG_ETAPES=["Objectif","Disponibilités","Santé","Rappels","C'est parti"];
+function prgFil(){
+  return '<div class="prg-fil">'+PRG_ETAPES.map(function(t,i){
+    var n=i+1,cl=n<prgEtape?"faite":(n===prgEtape?"active":"");
+    return '<div class="prg-pas '+cl+'"><span>'+(n<prgEtape?"✓":n)+'</span>'+t+'</div>';
+  }).join("")+'</div>';
+}
+function prgBoutons(suivantLib){
+  return '<div class="prg-nav">'
+    +(prgEtape>1?'<button class="btn" onclick="prgAller('+(prgEtape-1)+')">← Retour</button>':'<span></span>')
+    +'<button class="btn btn-primary" onclick="'+(prgEtape>=5?'prgEnregistrerProfil()':'prgAller('+(prgEtape+1)+')')+'">'
+    +prgEsc(suivantLib||"Continuer →")+'</button></div>';
+}
+function prgAller(n){var t=document.getElementById('prgContre');if(t&&prgBrouillon)prgBrouillon.contre=t.value;
+  var hh=document.getElementById('prgHeure');if(hh&&prgBrouillon)prgBrouillon.heure=hh.value;
+  prgEtape=n;renderProgramme()}
+function prgInitiation(moi){
+  var b=prgBrouillon,h='<div class="card"><div class="card-title">🎯 Mon programme</div>'+prgFil();
+  if(prgEtape===1){
+    h+='<p class="prg-q">Salut <b>'+prgEsc(moi.prenom)+'</b> ! Qu\'est-ce que tu veux travailler en priorité ?</p>'
+      +'<div class="prg-choix">'+PRG_OBJECTIFS.map(function(o){
+        return '<button type="button" class="prg-carte'+(b.objectif===o.id?" sel":"")+'" onclick="prgSetObjectif(\''+o.id+'\')">'
+          +'<span class="prg-ic">'+o.ic+'</span><span class="prg-lib">'+o.lib+'</span>'
+          +'<span class="prg-sous">'+o.sous+'</span></button>'}).join("")+'</div>';
+  } else if(prgEtape===2){
+    h+='<p class="prg-q">Quand peux-tu venir à la salle ?</p>'
+      +'<div class="prg-ss">Les jours</div><div class="prg-jours">'
+      +PRG_JOURS.map(function(j,i){return '<button type="button" class="prg-jour'+(b.jours.indexOf(i)!==-1?" sel":"")
+        +'" onclick="prgToggleJour('+i+')">'+j.slice(0,3)+'</button>'}).join("")+'</div>'
+      +'<div class="prg-ss">Combien de séances par semaine</div><div class="prg-jours">'
+      +[1,2,3,4,5].map(function(n){return '<button type="button" class="prg-jour'+(b.seances_sem===n?" sel":"")
+        +'" onclick="prgSetNb('+n+')">'+n+'</button>'}).join("")+'</div>'
+      +'<div class="prg-ss">Combien de temps par séance</div><div class="prg-jours">'
+      +[30,45,60].map(function(n){return '<button type="button" class="prg-jour'+(b.duree===n?" sel":"")
+        +'" onclick="prgSetDuree('+n+')">'+n+' min</button>'}).join("")+'</div>'
+      +'<p class="prg-note">Tu es en astreinte : le programme reste à un effort de 4 à 7 sur 10, sans charge maximale, pour que tu partes en intervention sans être cuit.</p>';
+  } else if(prgEtape===3){
+    h+='<p class="prg-q">Quelque chose qui te fait mal, ou qu\'il faut éviter ?</p>'
+      +'<div class="prg-jours">'+PRG_ZONES.map(function(z){
+        return '<button type="button" class="prg-jour'+(b.blessures.indexOf(z[0])!==-1?" sel":"")
+          +'" onclick="prgToggleZone(\''+z[0]+'\')">'+z[1]+'</button>'}).join("")+'</div>'
+      +'<p class="prg-note">Les exercices qui sollicitent une zone cochée seront retirés de ton programme.</p>'
+      +'<div class="prg-ss">Autre chose à signaler (facultatif)</div>'
+      +'<textarea id="prgContre" rows="2" style="width:100%" placeholder="Avis médical, reprise après arrêt, matériel à éviter…">'+prgEsc(b.contre)+'</textarea>'
+      +'<p class="prg-note">Visible par toi et par l\'administrateur de l\'appli, pas par les autres pompiers. En cas de doute, demande d\'abord un avis médical.</p>';
+  } else if(prgEtape===4){
+    var r=b.rappels;
+    h+='<p class="prg-q">Tu veux que l\'appli te rappelle tes séances ?</p>'
+      +'<label class="prg-ligne"><input type="checkbox" '+(r.seance?"checked":"")+' onchange="prgSetRappel(\'seance\',this.checked)"> Me rappeler ma séance le jour prévu</label>'
+      +'<label class="prg-ligne"><input type="checkbox" '+(r.bilan?"checked":"")+' onchange="prgSetRappel(\'bilan\',this.checked)"> Le bilan de ma semaine le dimanche soir</label>'
+      +'<div class="prg-ss">À quelle heure</div><input type="time" id="prgHeure" value="'+prgEsc(b.heure)+'" onchange="prgSetHeure(this.value)" style="max-width:140px">'
+      +'<p class="prg-note">Le rappel s\'affiche quand l\'appli est ouverte ou en arrière-plan. Pour être prévenu même appli fermée, ajoute les rappels à l\'agenda de ton téléphone depuis ton programme : c\'est l\'agenda qui sonnera.</p>'
+      +'<div id="prgPermBloc">'+prgBoutonPermission()+'</div>';
+  } else {
+    var o=PRG_OBJECTIFS.filter(function(x){return x.id===b.objectif})[0];
+    h+='<p class="prg-q">On récapitule</p><div class="prg-recap">'
+      +prgLigneRecap("Objectif",o?o.ic+" "+o.lib:"—")
+      +prgLigneRecap("Séances",Math.min(b.jours.length,b.seances_sem)+" par semaine, "+b.duree+" min")
+      +prgLigneRecap("Jours",b.jours.map(function(i){return PRG_JOURS[i]}).join(", ")||"—")
+      +prgLigneRecap("À éviter",b.blessures.length?b.blessures.map(function(z){
+          return (PRG_ZONES.filter(function(y){return y[0]===z})[0]||["",z])[1]}).join(", "):"rien de signalé")
+      +prgLigneRecap("Rappels",(b.rappels.seance?"séance ":"")+(b.rappels.bilan?"bilan ":"")+("à "+b.heure)||"aucun")
+      +'</div><p class="prg-note">Je te construis un cycle de 3 semaines, avec la moitié de chaque séance sur les abdos, le dos et les lombaires, au poids de corps en priorité, avec le matériel de la salle. Tu pourras tout refaire quand tu veux.</p>';
+  }
+  h+=prgBoutons(prgEtape>=5?"🚀 Créer mon programme":null)+'</div>';
+  return h;
+}
+function prgLigneRecap(k,v){return '<div class="prg-rl"><span>'+prgEsc(k)+'</span><b>'+prgEsc(v)+'</b></div>'}
+function prgSetObjectif(id){prgBrouillon.objectif=id;prgEtape=2;renderProgramme()}
+function prgToggleJour(i){var j=prgBrouillon.jours,k=j.indexOf(i);
+  if(k===-1)j.push(i);else j.splice(k,1);j.sort(function(a,b){return a-b});
+  if(j.length&&prgBrouillon.seances_sem>j.length)prgBrouillon.seances_sem=j.length;renderProgramme()}
+function prgSetNb(n){prgBrouillon.seances_sem=n;
+  if(prgBrouillon.jours.length<n){var d=[0,3,5,1,4];d.forEach(function(x){
+    if(prgBrouillon.jours.length<n&&prgBrouillon.jours.indexOf(x)===-1)prgBrouillon.jours.push(x)});
+    prgBrouillon.jours.sort(function(a,b){return a-b})}
+  renderProgramme()}
+function prgSetDuree(n){prgBrouillon.duree=n;renderProgramme()}
+function prgToggleZone(z){var b=prgBrouillon.blessures,k=b.indexOf(z);
+  if(k===-1)b.push(z);else b.splice(k,1);
+  var t=document.getElementById("prgContre");if(t)prgBrouillon.contre=t.value;renderProgramme()}
+function prgSetRappel(k,v){prgBrouillon.rappels[k]=v}
+function prgSetHeure(v){prgBrouillon.heure=v}
+
+// ---- Vue du programme ----
+function prgVueProgramme(moi){
+  var pos=prgSemaineCourante(),sem=pos.semaine,S=PRG_SEMAINES[sem];
+  var o=PRG_OBJECTIFS.filter(function(x){return x.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
+  var lundi=new Date(prgDateDebut());lundi.setDate(lundi.getDate()+pos.index*7);
+  var seances=prgSeancesSemaine(sem,lundi);
+  var ch=prgChargeSemaine(moi.id,lundi);
+  var h='<div class="card prg-tete"><div class="prg-tete-h">'
+    +'<div><div class="prg-titre">'+o.ic+' '+prgEsc(o.lib)+'</div>'
+    +'<div class="prg-sstitre">Programme de '+prgEsc(moi.prenom+" "+moi.nom)+' • '+prgProfil.seances_sem+' séance'
+    +(prgProfil.seances_sem>1?'s':'')+' par semaine de '+prgProfil.duree_min+' min</div></div>'
+    +'<div class="prg-cycle"><b>Cycle '+pos.cycle+'</b><span>Semaine '+S.n+' sur 3 — '+prgEsc(S.nom)+'</span></div></div>'
+    +'<div class="prg-barre">'+PRG_SEMAINES.map(function(x,i){
+      return '<div class="prg-seg'+(i<sem?" faite":(i===sem?" active":""))+'"><span>S'+x.n+'</span>'+x.nom+'</div>'}).join("")+'</div>'
+    +'<p class="prg-note" style="margin-top:10px">'+prgEsc(S.sous)+' — effort visé '+prgEsc(S.rpe)+' sur 10. '
+    +'Au bip, tu lâches tout : la séance peut être coupée sans remords.</p></div>';
+
+  // suivi de la charge (RPE x duree), exigé sur le document lui-même
+  h+='<div class="card"><div class="card-title">📈 Ma charge de la semaine</div>'
+    +'<div class="prg-ua">'+prgLigneUA("Charge totale",ch.total+" UA","UA = RPE × durée en minutes")
+    +prgLigneUA("Monotonie",ch.monotonie||"—",ch.monotonie>=2?"Trop régulier : varie les intensités":"Bonne variation")
+    +prgLigneUA("Contrainte",ch.contrainte||"—",ch.contrainte>ch.total*2?"Semaine lourde : prévois du repos":"Dans le vert")+'</div>'
+    +'<div class="prg-jauges">'+ch.jours.map(function(v,i){
+      var hmax=Math.max.apply(null,ch.jours.concat([1]));
+      return '<div class="prg-col"><div class="prg-bat" style="height:'+Math.round(6+54*v/hmax)+'px" title="'+v+' UA"></div><span>'+PRG_JOURS[i].slice(0,1)+'</span></div>'}).join("")+'</div>'
+    +'<p class="prg-note">Monotonie = charge moyenne ÷ écart-type sur 7 jours. Au-dessus de 2, c\'est le signe d\'un entraînement trop uniforme. Contrainte = charge × monotonie.</p></div>';
+
+  // les séances
+  seances.forEach(function(s,i){
+    var dstr=s.date.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+    var faite=prgSeanceFaite(moi.id,s.date);
+    var auj=s.date.toDateString()===new Date().toDateString();
+    h+='<div class="card prg-seance'+(faite?" faite":"")+(auj?" auj":"")+'">'
+      +'<div class="prg-sh"><div><div class="prg-st">Séance '+(i+1)+(auj?' <span class="prg-badge">aujourd\'hui</span>':'')+'</div>'
+      +'<div class="prg-sd">'+prgEsc(dstr)+' • '+s.dureeTotale+' min • '+prgEsc(s.methode)+'</div></div>'
+      +(faite?'<span class="prg-ok">✓ Faite • '+faite.charge_ua+' UA</span>'
+             :'<button class="btn btn-primary btn-sm" onclick="prgFait('+i+')">J\'ai fait cette séance</button>')+'</div>';
+    h+='<div class="prg-bloc"><div class="prg-bt">1 · Échauffement — 5 min</div>'
+      +'<div class="prg-txt">Mobilisation générale, puis les 6 ateliers de l\'affiche « Échauffement en 5 minutes » à l\'entrée de la salle. Tu dois pouvoir parler.</div></div>';
+    if(s.cardio) h+='<div class="prg-bloc"><div class="prg-bt">2 · Cardio — '+s.cardio.min+' min</div>'
+      +'<div class="prg-txt"><b>'+prgEsc(s.cardio.exo.nom)+'</b> — allure régulière, tu dois pouvoir dire une phrase. '+prgEsc(s.cardio.exo.consigne)+'</div></div>';
+    h+='<div class="prg-bloc"><div class="prg-bt">'+(s.cardio?3:2)+' · Circuit — '+s.tours+' tours de '+s.ateliers.length+' ateliers</div>'
+      +'<div class="prg-txt">'+s.temps+' s par atelier, 30 s de passage à l\'atelier suivant, 2 min entre les tours.</div>'
+      +'<div class="prg-ateliers">'+s.ateliers.map(function(e,k){
+        return '<div class="prg-exo"><img loading="lazy" src="img/seance/'+e.img+'" alt="'+prgEsc(e.nom)+'">'
+          +'<div class="prg-en">'+(k+1)+'. '+prgEsc(e.nom)+'</div>'
+          +'<div class="prg-ec">'+prgEsc(PRG_CATS[e.cat])+(e.mat?' • '+prgEsc(e.mat):' • poids de corps')+'</div></div>'}).join("")+'</div></div>';
+    h+='<div class="prg-bloc"><div class="prg-bt">'+(s.cardio?4:3)+' · Étirements — 4 min</div>'
+      +'<div class="prg-ateliers">'+s.etirements.map(function(e){
+        return '<div class="prg-exo"><img loading="lazy" src="img/seance/'+e.img+'" alt="'+prgEsc(e.nom)+'">'
+          +'<div class="prg-en">'+prgEsc(e.nom)+'</div><div class="prg-ec">30 s par côté</div></div>'}).join("")+'</div></div>';
+    h+='</div>';
+  });
+
+  h+='<div class="card"><div class="card-title">⚙️ Mes réglages</div>'
+    +'<div class="prg-reg">'+prgLigneRecap("Jours",prgJoursChoisis().map(function(i){return PRG_JOURS[i]}).join(", "))
+    +prgLigneRecap("À éviter",(prgProfil.blessures||[]).length?(prgProfil.blessures||[]).map(function(z){
+        return (PRG_ZONES.filter(function(y){return y[0]===z})[0]||["",z])[1]}).join(", "):"rien de signalé")
+    +prgLigneRecap("Rappel",(prgProfil.rappels&&prgProfil.rappels.seance?"séance à "+prgProfil.rappel_heure:"aucun"))+'</div>'
+    +'<div class="prg-nav" style="justify-content:flex-start;gap:8px;flex-wrap:wrap">'
+    +'<button class="btn" onclick="prgRefaire()">✏️ Refaire mon paramétrage</button>'
+    +'<button class="btn" onclick="prgIcs()">📅 Mettre mes séances dans l\'agenda</button>'
+    +'<button class="btn" onclick="prgPdf()">📄 Ma semaine en PDF</button></div>'
+    +'<div style="margin-top:10px">'+prgBoutonPermission()+'</div></div>';
+  return h;
+}
+var PRG_CATS={tronc:"Abdos / dos / lombaires",bas:"Bas du corps",haut:"Haut du corps",cardio:"Cardio"};
+function prgLigneUA(k,v,s){return '<div class="prg-uab"><div class="prg-uav">'+prgEsc(v)+'</div><div class="prg-uak">'+prgEsc(k)+'</div><div class="prg-uas">'+prgEsc(s)+'</div></div>'}
+function prgSeanceFaite(pid,date){
+  var d=date.getFullYear()+"-"+String(date.getMonth()+1).padStart(2,"0")+"-"+String(date.getDate()).padStart(2,"0");
+  return (carnetEntries||[]).filter(function(e){return String(e.pompier_id)===String(pid)&&e.date===d})[0]||null;
+}
+async function prgFait(i){
+  var moi=prgMoi();if(!moi||prgOccupe)return;
+  var pos=prgSemaineCourante(),lundi=new Date(prgDateDebut());lundi.setDate(lundi.getDate()+pos.index*7);
+  var s=prgSeancesSemaine(pos.semaine,lundi)[i];if(!s)return;
+  var rep=prompt("Sur 10, à combien tu as trouvé cette séance difficile ?\n(1 très facile — 10 maximal, vise 4 à 7)","5");
+  if(rep===null)return;
+  var rpe=parseFloat(String(rep).replace(",","."));
+  if(!(rpe>=1&&rpe<=10)){showToast("Note entre 1 et 10","error");return}
+  var d=s.date,ds=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  prgOccupe=true;
+  try{
+    var r=await supabaseClient.from("carnet_seances").insert({pompier_id:moi.id,date:ds,type:"musculaire",
+      objectif_id:prgProfil.objectif,objectif_label:s.objectif.lib+" — "+s.methode,
+      rpe:rpe,duree_min:s.dureeTotale,charge_ua:Math.round(rpe*s.dureeTotale)});
+    if(r.error)throw r.error;
+    carnetCharge=false;await chargerCarnetSiBesoin();
+    showToast("💪 Séance notée : "+Math.round(rpe*s.dureeTotale)+" UA","success");
+    renderProgramme();
+  }catch(e){showToast("Impossible d'enregistrer : "+(e.message||e),"error")}
+  finally{prgOccupe=false}
+}
+
+// ---- Rappels (l'appli ouverte ou en arrière-plan) + agenda ----
+function prgBoutonPermission(){
+  if(!("Notification" in window))
+    return '<p class="prg-note">Ce navigateur ne gère pas les notifications. Sur iPhone, installe d\'abord l\'appli sur l\'écran d\'accueil.</p>';
+  if(Notification.permission==="granted")return '<p class="prg-note" style="color:var(--success)">✓ Notifications autorisées sur cet appareil.</p>';
+  if(Notification.permission==="denied")return '<p class="prg-note">Notifications refusées sur cet appareil : à réautoriser dans les réglages du navigateur.</p>';
+  return '<button class="btn btn-sm" onclick="prgDemanderPermission()">🔔 Autoriser les notifications</button>';
+}
+async function prgDemanderPermission(){
+  try{await Notification.requestPermission()}catch(e){}
+  renderProgramme();
+}
+async function prgNotifier(titre,corps,tag){
+  try{
+    var reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
+    if(reg&&reg.showNotification){await reg.showNotification(titre,{body:corps,tag:tag,icon:"icons/logo.webp"});return}
+  }catch(e){}
+  try{new Notification(titre,{body:corps,tag:tag})}catch(e){}
+}
+function prgVerifRappels(){
+  if(!prgProfil||!("Notification" in window)||Notification.permission!=="granted")return;
+  var moi=prgMoi();if(!moi)return;
+  var r=prgProfil.rappels||{},n=new Date(),h=n.getHours()+n.getMinutes()/60;
+  var jour=(n.getDay()+6)%7,cle=n.toISOString().slice(0,10);
+  var envoyes={};try{envoyes=JSON.parse(localStorage.getItem("prg_notif")||"{}")}catch(e){}
+  Object.keys(envoyes).forEach(function(k){if(k.slice(0,10)<cle)delete envoyes[k]});
+  var une=function(k,fn){if(envoyes[k])return;envoyes[k]=1;fn()};
+  var hh=(prgProfil.rappel_heure||"18:00").split(":"),hc=(+hh[0])+(+hh[1])/60;
+  if(r.seance&&prgJoursChoisis().indexOf(jour)!==-1&&h>=hc&&h<hc+1&&!prgSeanceFaite(moi.id,n))
+    une(cle+"-seance",function(){prgNotifier("🏋️ Ta séance t'attend","Salle de la caserne • "+prgProfil.duree_min+" min • effort 4 à 7","prg-seance")});
+  if(r.bilan&&jour===6&&h>=19&&h<23)
+    une(cle+"-bilan",function(){prgNotifier("📊 Ton bilan de la semaine","Ouvre l'onglet Mon programme pour voir ta charge.","prg-bilan")});
+  try{localStorage.setItem("prg_notif",JSON.stringify(envoyes))}catch(e){}
+}
+setInterval(prgVerifRappels,60000);
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")prgVerifRappels()});
+
+function prgIcs(){
+  var moi=prgMoi();if(!moi||!prgProfil)return;
+  var p=function(x){return String(x).padStart(2,"0")};
+  var stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  var hh=(prgProfil.rappel_heure||"18:00").split(":");
+  var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ICP Cruzy-Quarante//Mon programme//FR","CALSCALE:GREGORIAN"];
+  prgJoursChoisis().slice(0,prgProfil.seances_sem).forEach(function(j,i){
+    var d=new Date();d.setHours(0,0,0,0);
+    var delta=(j-((d.getDay()+6)%7)+7)%7;d.setDate(d.getDate()+delta);
+    var ds=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate());
+    var fin=(+hh[0])+1;
+    L.push("BEGIN:VEVENT","UID:prg-"+moi.id+"-"+j+"@icp-cruzy","DTSTAMP:"+stamp,
+      "DTSTART:"+ds+"T"+p(hh[0])+p(hh[1])+"00","DTEND:"+ds+"T"+p(fin)+p(hh[1])+"00",
+      "RRULE:FREQ=WEEKLY;BYDAY="+["MO","TU","WE","TH","FR","SA","SU"][j],
+      "SUMMARY:🏋️ Séance - salle de la caserne",
+      "DESCRIPTION:"+prgProfil.duree_min+" min, effort 4 a 7 sur 10. Ouvre l'appli ICP, onglet Mon programme.",
+      "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:Seance dans 30 min","END:VALARM","END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  var b=new Blob([L.join("\r\n")],{type:"text/calendar"}),u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download="mes-seances.ics";a.click();setTimeout(function(){URL.revokeObjectURL(u)},2000);
+}
+async function prgPdf(){
+  var moi=prgMoi();if(!moi||!prgProfil)return;
+  var pos=prgSemaineCourante(),S=PRG_SEMAINES[pos.semaine];
+  var lundi=new Date(prgDateDebut());lundi.setDate(lundi.getDate()+pos.index*7);
+  var seances=prgSeancesSemaine(pos.semaine,lundi),ch=prgChargeSemaine(moi.id,lundi);
+  var o=PRG_OBJECTIFS.filter(function(x){return x.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  doc.setFontSize(18);doc.setTextColor(28,25,23);doc.text("Mon programme — "+moi.prenom+" "+moi.nom,14,18);
+  doc.setFontSize(10);doc.setTextColor(120,113,108);
+  doc.text(o.lib+" • Cycle "+pos.cycle+", semaine "+S.n+" sur 3 ("+S.nom+") • CIS Cruzy-Quarante",14,24);
+  doc.setFontSize(10);doc.setTextColor(180,83,9);
+  doc.text("Effort visé : "+S.rpe+" sur 10 — charge de la semaine : "+ch.total+" UA, monotonie "+ch.monotonie+", contrainte "+ch.contrainte,14,31);
+  var y=37;
+  seances.forEach(function(s,i){
+    doc.autoTable({startY:y,
+      head:[["Séance "+(i+1)+" — "+s.date.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}),"Consigne"]],
+      body:[["Échauffement (5 min)","Les 6 ateliers de l'affiche, tu dois pouvoir parler"]]
+        .concat(s.cardio?[[s.cardio.exo.nom+" ("+s.cardio.min+" min)",s.cardio.exo.consigne]]:[])
+        .concat([["Circuit",s.tours+" tours • "+s.temps+" s par atelier • 2 min entre les tours"]])
+        .concat(s.ateliers.map(function(e,k){return ["   "+(k+1)+". "+e.nom,PRG_CATS[e.cat]+(e.mat?" • "+e.mat:" • poids de corps")]}))
+        .concat([["Étirements (4 min)",s.etirements.map(function(e){return e.nom}).join(", ")]]),
+      headStyles:{fillColor:[28,25,23]},styles:{fontSize:8.5},columnStyles:{0:{cellWidth:70}}});
+    y=doc.lastAutoTable.finalY+6;
+    if(y>250&&i<seances.length-1){doc.addPage();y=18}
+  });
+  doc.setFontSize(8);doc.setTextColor(120,113,108);
+  doc.text("Astreinte : pas de charge maximale, pas d'échec musculaire. Au bip, on lâche tout.",14,Math.min(y+4,288));
+  doc.save("Mon_programme_"+moi.nom+"_S"+S.n+".pdf");
+}
+
 // ===== MÉNAGE (planning de nettoyage de la salle) =====
 // Table Supabase : menage_taches — une ligne = une personne a fait une mission un jour donné.
 // Lecture : comptes connectés. Écriture libre : l'administrateur. Chacun peut cocher/décocher
@@ -4912,8 +5473,8 @@ function basculerTheme(){
     try{localStorage.setItem("icp_theme",clair?"dark":"light")}catch(e){}
     majBoutonTheme();
 }
-var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","export","comptes"];
-var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage"};
+var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","export","comptes"];
+var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon programme":"Progr."};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
     var txt=el?el.textContent.trim():t;
