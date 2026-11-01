@@ -430,175 +430,69 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .men-grille input:focus{outline:none;border-color:var(--primary);background:var(--surface2)}
 .men-pliable>summary{cursor:pointer;font-family:var(--titre);text-transform:uppercase;letter-spacing:.4px;color:var(--accent);font-size:15px;padding:6px 0}
 @media(max-width:720px){.men-tuiles{grid-template-columns:repeat(2,1fr)}.men-tuile .men-ic{font-size:28px}.men-podium{min-height:130px}}
-/* ===== MON PROGRAMME — reprend l'habillage de l'appli sport (bleu nuit, dégradé cyan/violet) ===== */
+/* ===== MON SPORT — l'application de Christian, mise à disposition de la caserne ===== */
 #tab-programme{--a1:#22d3ee;--a2:#a78bfa;--grad:linear-gradient(135deg,var(--a1),var(--a2));
-  --pbg:#0b0f19;--pbg2:#0f1524;--pcard:#141b2d;--pcard2:#1a2338;--pline:#24304a;
-  --ptext:#eef2f8;--pmuted:#8b9ab4;--psoft:#c9d4e6;--pok:#34d399;--pwarn:#fbbf24;
-  --pr:18px;--psh:0 10px 30px rgba(0,0,0,.35);
+  --pbg:#0b0f19;--pcard:#141b2d;--pcard2:#1a2338;--pline:#24304a;--ptext:#eef2f8;--pmuted:#8b9ab4;--pok:#34d399;
   background:radial-gradient(1200px 600px at 80% -10%,color-mix(in srgb,var(--a2) 12%,transparent),transparent 60%),
              radial-gradient(900px 500px at -10% 10%,color-mix(in srgb,var(--a1) 10%,transparent),transparent 60%),var(--pbg);
-  color:var(--ptext);border-radius:20px;padding:18px;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
-#tab-programme .pcard{background:var(--pcard);border:1px solid var(--pline);border-radius:var(--pr);padding:16px;margin-bottom:14px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),var(--psh)}
-#tab-programme h2,#tab-programme h3{font-weight:800;letter-spacing:-.3px}
-#tab-programme .sec{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);margin:0 2px 10px;font-weight:800}
-#tab-programme .pmuted{color:var(--pmuted)}
-/* Animations reprises telles quelles de mon-app-sport (mêmes durées, mêmes courbes,
-   mêmes étapes) — seul le nom porte le préfixe mp- pour ne pas écraser celles de l'appli ICP. */
-@keyframes mp-ring{to{stroke-dashoffset:var(--off)}}
-@property --mp-ang{syntax:'<angle>';initial-value:0deg;inherits:false}
-@keyframes mp-pulse{50%{transform:scale(1.4);opacity:.6}}
-@keyframes mp-pop{0%{transform:scale(.7)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
-@keyframes mp-wline{to{width:calc((100% - 44px) * var(--lw))}}
-@keyframes mp-wpop{to{transform:scale(1);opacity:1}}
-@keyframes mp-wfill{to{width:var(--w)}}
-@keyframes mp-blink{50%{opacity:.25}}
-@keyframes mp-stbar{to{width:100%}}
-@keyframes mp-stpop{from{transform:scale(.3) rotate(-20deg);opacity:0}to{transform:none;opacity:1}}
-@keyframes mp-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  color:var(--ptext);border-radius:20px;padding:16px;
+  font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
 @keyframes mp-rise{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:none}}
-@keyframes mp-navpop{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
-@keyframes mp-shine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes mp-pop{0%{transform:scale(.7)}55%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes mp-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes mp-float{50%{transform:translateY(-3px)}}
+@keyframes mp-shine{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+@keyframes mp-ripple{to{transform:scale(1);opacity:0}}
 @keyframes mp-slideL{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 @keyframes mp-slideR{from{opacity:0;transform:translateX(-26px)}to{opacity:1;transform:none}}
-@keyframes mp-ripple{to{transform:scale(1);opacity:0}}
-@keyframes mp-donepulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}100%{box-shadow:0 0 0 18px rgba(52,211,153,0)}}
-@keyframes mp-burst{0%{transform:scale(.6);opacity:1}100%{transform:scale(1.9) rotate(45deg);opacity:0}}
-@keyframes mp-spinb{to{--mp-ang:360deg}}
-/* entrée d'un onglet : les cartes arrivent l'une après l'autre */
 #tab-programme.enter .stagger{animation:mp-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
-/* changement de séance : glisse dans le sens de la navigation */
 #tab-programme.slideL{animation:mp-slideL .38s cubic-bezier(.2,.8,.2,1)}
 #tab-programme.slideR{animation:mp-slideR .38s cubic-bezier(.2,.8,.2,1)}
-#tab-programme .fade{animation:mp-fade .3s ease}
 #tab-programme .rip{position:relative;overflow:hidden}
 #tab-programme .ripple{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.22;transform:scale(0);animation:mp-ripple .55s ease-out forwards}
-#tab-programme .set.pop{animation:mp-pop .4s cubic-bezier(.3,1.5,.5,1)}
-#tab-programme .day.on b{animation:mp-navpop .35s cubic-bezier(.3,1.5,.5,1);display:block}
-#tab-programme .st-big{animation:mp-stpop .6s cubic-bezier(.3,1.6,.5,1)}
-#tab-programme .dot.saving{animation:mp-pulse .8s infinite}
-/* badge : reflet qui passe et icône qui flotte */
-#tab-programme .badge.ok{position:relative;overflow:hidden}
-#tab-programme .badge.ok::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.18) 50%,transparent 65%);transform:translateX(-100%);animation:mp-shine 4.5s ease-in-out infinite}
-#tab-programme .badge.ok:nth-child(3n)::after{animation-delay:2.4s}
-#tab-programme .badge.ok span{animation:mp-float 3s ease-in-out infinite}
-/* semaine en flammes */
-#tab-programme .wk{display:flex;flex-direction:column;gap:10px}
-#tab-programme .wkr{position:relative;display:flex;justify-content:space-between;padding:0 2px}
-#tab-programme .wline{position:absolute;left:22px;top:19px;height:4px;border-radius:2px;background:linear-gradient(90deg,#fb923c,#facc15);width:0;animation:mp-wline 1.4s .2s ease-out forwards}
-#tab-programme .wf{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:40px;z-index:1}
-#tab-programme .wf span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:17px;background:var(--pcard);border:2px solid var(--pline);transform:scale(.4);opacity:0;animation:mp-wpop .45s cubic-bezier(.2,1.6,.4,1) forwards;animation-delay:var(--d,0ms)}
-#tab-programme .wf.on span{border-color:#fb923c;box-shadow:0 0 14px rgba(251,146,60,.45)}
-#tab-programme .wf em{font-style:normal;font-size:10.5px;color:var(--pmuted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-#tab-programme .wb{height:4px;border-radius:2px;background:var(--pline);margin:5px 8px 0;overflow:hidden}
-#tab-programme .wb i{display:block;height:100%;width:0;border-radius:2px;animation:mp-wfill 1.4s .4s ease-out forwards}
-#tab-programme .wct{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
-#tab-programme .wct>div{background:var(--pcard2);border:1px solid var(--pline);border-radius:14px;padding:11px 10px;text-align:center}
-#tab-programme .wct b{display:block;font-size:21px;font-weight:800}
-#tab-programme .wct em{font-style:normal;display:block;font-size:11px;color:var(--pmuted);font-weight:700;margin-top:1px}
-/* bordure vivante de la carte d'en-tête */
-#tab-programme .hero{position:relative}
-#tab-programme .hero.live::after{content:'';position:absolute;inset:-1px;border-radius:inherit;padding:1.5px;background:conic-gradient(from var(--mp-ang),transparent 0 60%,var(--a1),var(--a2),transparent 85%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:mp-spinb 4s linear infinite;pointer-events:none}
-@media (prefers-reduced-motion: reduce){#tab-programme *{animation:none!important}}
-/* en-tête */
-#tab-programme .ptop{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:space-between}
-#tab-programme .ptitre{font-size:22px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:9px}
-#tab-programme .ptitre i{font-style:normal;font-size:26px;animation:mp-float 3s ease-in-out infinite}
-#tab-programme .psous{font-size:12.5px;color:var(--pmuted);margin-top:3px}
-#tab-programme .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;background:var(--pcard2);
-  border:1px solid var(--pline);font-size:12px;font-weight:700;color:var(--psoft);white-space:nowrap}
-#tab-programme .pill.grad{background:var(--grad);border-color:transparent;color:#0b0f19}
-/* anneau de progression de la semaine */
-#tab-programme .pring{display:flex;align-items:center;gap:16px}
-#tab-programme .ring{position:relative;width:92px;height:92px;flex:0 0 auto}
-#tab-programme .ring svg{transform:rotate(-90deg)}
-#tab-programme .ring .rv{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;font-size:19px}
-#tab-programme .ring .rv small{display:block;font-size:10px;font-weight:700;color:var(--pmuted);letter-spacing:.4px}
-#tab-programme .ring circle.arc{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:mp-ring 1s cubic-bezier(.2,.8,.2,1) forwards .15s}
-/* barre des 3 semaines */
-#tab-programme .bar{height:7px;border-radius:9px;background:var(--pbg2);overflow:hidden;margin-top:9px}
-#tab-programme .bar i{display:block;height:100%;background:var(--grad);border-radius:9px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
-/* sélecteur de séance, comme les jours de l'appli sport */
-#tab-programme .days{display:flex;gap:9px;overflow-x:auto;padding:4px 0 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
-#tab-programme .days::-webkit-scrollbar{display:none}
-#tab-programme .day{flex:0 0 auto;min-width:82px;scroll-snap-align:start;padding:10px 10px 9px;border-radius:16px;background:var(--pcard);
-  border:1.5px solid var(--pline);text-align:center;transition:.2s;cursor:pointer;color:var(--ptext);font:inherit;position:relative}
-#tab-programme .day b{display:block;font-size:15px;font-weight:800}
-#tab-programme .day span{display:block;font-size:10.5px;color:var(--pmuted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
-#tab-programme .day.on{background:var(--grad);border-color:transparent;color:#0b0f19;box-shadow:0 8px 20px color-mix(in srgb,var(--a1) 25%,transparent)}
-#tab-programme .day.on span{color:rgba(11,15,25,.75)}
-#tab-programme .day.ok::after{content:'✓';position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;
-  background:var(--pok);color:#0b0f19;font-size:12px;font-weight:900;display:grid;place-items:center;animation:mp-pop .4s cubic-bezier(.3,1.5,.5,1)}
-/* séance */
-#tab-programme .ex{background:var(--pcard);border:1px solid var(--pline);border-radius:var(--pr);padding:14px;transition:.25s;position:relative;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.045)}
-#tab-programme .ex.done{border-color:rgba(52,211,153,.45);background:linear-gradient(180deg,rgba(52,211,153,.08),var(--pcard) 60%)}
-#tab-programme .ex.justdone{animation:mp-donepulse .9s ease-out}
-#tab-programme .exh{display:flex;align-items:center;gap:13px}
-#tab-programme .exh .t{flex:1;min-width:0}
-#tab-programme .exh .t b{display:block;font-size:16px;font-weight:800;letter-spacing:-.2px}
-#tab-programme .exh .t span{display:block;font-size:12px;color:var(--pmuted);margin-top:2px}
-#tab-programme .check{width:46px;height:46px;border-radius:50%;border:2px solid var(--pline);background:transparent;display:grid;place-items:center;
-  font-size:21px;font-weight:900;color:transparent;flex:0 0 auto;transition:.2s;cursor:pointer;position:relative}
-#tab-programme .check:hover{border-color:var(--a1);color:rgba(255,255,255,.18)}
-#tab-programme .ex.done .check{border-color:var(--pok);background:var(--pok);color:#0b0f19;animation:mp-pop .45s cubic-bezier(.3,1.5,.5,1)}
-#tab-programme .ex.justdone .check::after{content:'';position:absolute;inset:-6px;border-radius:50%;background:radial-gradient(circle,#34d399 0 2px,transparent 3px) 50% 0/6px 6px no-repeat,radial-gradient(circle,#fbbf24 0 2px,transparent 3px) 100% 50%/6px 6px no-repeat,radial-gradient(circle,#22d3ee 0 2px,transparent 3px) 50% 100%/6px 6px no-repeat,radial-gradient(circle,#f472b6 0 2px,transparent 3px) 0 50%/6px 6px no-repeat;animation:mp-burst .6s ease-out forwards}
-/* blocs d'une séance */
-#tab-programme .blk{margin-top:14px;padding-left:13px;border-left:3px solid transparent;border-image:var(--grad) 1;animation:mp-fade .35s both}
-#tab-programme .blk .bt{font-size:12.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-#tab-programme .blk .bx{font-size:13px;color:var(--psoft);margin-top:4px;line-height:1.5}
-#tab-programme .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:11px}
-#tab-programme .exo{border:1px solid var(--pline);border-radius:14px;overflow:hidden;background:var(--pcard2);animation:mp-rise .4s both;animation-delay:var(--d,0ms)}
-#tab-programme .exo img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;background:var(--pbg2)}
-#tab-programme .exo .n{font-size:12.5px;font-weight:700;padding:8px 9px 0;line-height:1.25}
-#tab-programme .exo .c{font-size:11px;color:var(--pmuted);padding:2px 9px 9px}
-/* boutons */
-#tab-programme .pbtn{padding:10px 16px;border-radius:12px;border:1px solid var(--pline);background:var(--pcard2);color:var(--ptext);
-  font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:.2s}
+#tab-programme .pcard{background:var(--pcard);border:1px solid var(--pline);border-radius:18px;padding:18px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 10px 30px rgba(0,0,0,.35)}
+#tab-programme .ptitre{font-size:23px;font-weight:800;letter-spacing:-.4px;display:flex;align-items:center;gap:10px}
+#tab-programme .ptitre i{font-style:normal;font-size:27px;animation:mp-float 3s ease-in-out infinite}
+#tab-programme .psous{font-size:13px;color:var(--pmuted);margin-top:5px;line-height:1.55}
+#tab-programme .fil{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+#tab-programme .pas{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--pmuted);
+  border:1px solid var(--pline);border-radius:99px;padding:4px 12px 4px 4px;background:var(--pcard2)}
+#tab-programme .pas s{text-decoration:none;width:21px;height:21px;border-radius:50%;background:var(--pbg);
+  display:grid;place-items:center;font-size:11px;font-weight:800}
+#tab-programme .pas.active{background:var(--grad);border-color:transparent;color:#0b0f19}
+#tab-programme .pas.active s{background:rgba(11,15,25,.3);color:#fff}
+#tab-programme .pas.faite{color:var(--pok);border-color:rgba(52,211,153,.45)}
+#tab-programme .pas.faite s{background:var(--pok);color:#0b0f19}
+#tab-programme .q{font-size:21px;font-weight:800;letter-spacing:-.3px;margin:4px 0 14px}
+#tab-programme .note{font-size:13px;color:var(--pmuted);margin-top:14px;line-height:1.6}
+#tab-programme .onglets{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:11px}
+#tab-programme .og{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--pline);background:var(--pcard2);
+  border-radius:16px;padding:14px;animation:mp-rise .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--d,0ms)}
+#tab-programme .og i{font-style:normal;font-size:25px;flex:0 0 auto}
+#tab-programme .og b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.2px}
+#tab-programme .og span{display:block;font-size:12.5px;color:var(--pmuted);margin-top:3px;line-height:1.45}
+#tab-programme .astuces{border:1px solid var(--pline);border-radius:16px;overflow:hidden;background:var(--pcard2)}
+#tab-programme .as{display:flex;gap:11px;padding:12px 14px;border-bottom:1px solid var(--pline);font-size:13.5px;line-height:1.5}
+#tab-programme .as:last-child{border-bottom:0}
+#tab-programme .as i{font-style:normal;font-size:18px;flex:0 0 auto}
+#tab-programme .pbtn{padding:11px 17px;border-radius:13px;border:1px solid var(--pline);background:var(--pcard2);
+  color:var(--ptext);font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:.18s}
 #tab-programme .pbtn:hover{border-color:var(--a1)}
 #tab-programme .pbtn.pri{background:var(--grad);border-color:transparent;color:#0b0f19}
 #tab-programme .pbtn.pri:hover{filter:brightness(1.07)}
-#tab-programme .prow{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-/* parcours d'initiation */
-#tab-programme .fil{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
-#tab-programme .pas{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--pmuted);border:1px solid var(--pline);
-  border-radius:99px;padding:4px 12px 4px 4px;background:var(--pcard)}
-#tab-programme .pas s{text-decoration:none;width:21px;height:21px;border-radius:50%;background:var(--pbg2);display:grid;place-items:center;font-size:11px;font-weight:800}
-#tab-programme .pas.active{color:var(--ptext);border-color:transparent;background:var(--grad)}
-#tab-programme .pas.active s{background:rgba(11,15,25,.3);color:#fff}
-#tab-programme .pas.active{color:#0b0f19}
-#tab-programme .pas.faite{color:var(--pok);border-color:rgba(52,211,153,.45)}
-#tab-programme .pas.faite s{background:var(--pok);color:#0b0f19}
-#tab-programme .q{font-size:20px;font-weight:800;letter-spacing:-.3px;margin:2px 0 15px}
-#tab-programme .ss{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);margin:17px 0 8px;font-weight:800}
-#tab-programme .note{font-size:12.5px;color:var(--pmuted);margin-top:13px;line-height:1.55}
-#tab-programme .choix{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:11px}
-#tab-programme .carte{text-align:left;border:1.5px solid var(--pline);background:var(--pcard);border-radius:16px;padding:14px;cursor:pointer;
-  font:inherit;color:var(--ptext);transition:.22s;animation:mp-rise .4s both;animation-delay:var(--d,0ms);position:relative;overflow:hidden}
-#tab-programme .carte:hover{transform:translateY(-3px);border-color:var(--a1);box-shadow:0 10px 24px color-mix(in srgb,var(--a1) 18%,transparent)}
-#tab-programme .carte.sel{border-color:transparent;background:var(--grad);color:#0b0f19}
-#tab-programme .carte.sel .s{color:rgba(11,15,25,.72)}
-#tab-programme .carte.sel::after{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent,rgba(255,255,255,.35),transparent);animation:mp-shine 1.6s ease-out}
-#tab-programme .carte i{font-style:normal;font-size:25px;display:block;margin-bottom:7px}
-#tab-programme .carte b{display:block;font-size:15px;font-weight:800;letter-spacing:-.2px}
-#tab-programme .carte .s{display:block;font-size:12px;color:var(--pmuted);margin-top:3px}
-#tab-programme .chips{display:flex;flex-wrap:wrap;gap:8px}
-#tab-programme .chip{border:1.5px solid var(--pline);background:var(--pcard);color:var(--ptext);border-radius:12px;padding:9px 15px;
-  cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;transition:.2s}
-#tab-programme .chip:hover{border-color:var(--a1)}
-#tab-programme .chip.sel{background:var(--grad);border-color:transparent;color:#0b0f19;animation:mp-pop .35s cubic-bezier(.3,1.5,.5,1)}
-#tab-programme .ligne{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 0;cursor:pointer}
-#tab-programme .ligne input{width:auto;accent-color:var(--a1)}
 #tab-programme .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px}
-#tab-programme .recap{border:1px solid var(--pline);border-radius:14px;overflow:hidden;background:var(--pcard)}
-#tab-programme .rl{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;font-size:13.5px;border-bottom:1px solid var(--pline)}
-#tab-programme .rl:last-child{border-bottom:0}
-#tab-programme .rl span{color:var(--pmuted)}
-#tab-programme textarea,#tab-programme input[type=time]{background:var(--pcard);border:1px solid var(--pline);color:var(--ptext);
-  border-radius:12px;padding:10px;font:inherit;font-size:13.5px}
-@media(max-width:720px){#tab-programme{padding:12px}#tab-programme .grid{grid-template-columns:repeat(2,1fr)}#tab-programme .ptitre{font-size:18px}}
+#tab-programme .barre{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+#tab-programme .pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:99px;
+  background:var(--pcard2);border:1px solid var(--pline);font-size:12px;font-weight:700;color:var(--pmuted);position:relative;overflow:hidden}
+#tab-programme .pill.grad{background:var(--grad);border-color:transparent;color:#0b0f19}
+#tab-programme .pill.grad::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.3) 50%,transparent 65%);transform:translateX(-100%);animation:mp-shine 4.5s ease-in-out infinite}
+#tab-programme .cadre{border:1px solid var(--pline);border-radius:18px;overflow:hidden;background:var(--pbg);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);animation:mp-fade .3s ease}
+#tab-programme iframe{display:block;width:100%;height:78vh;min-height:560px;border:0;background:var(--pbg)}
+@media(max-width:720px){#tab-programme{padding:8px;border-radius:14px}
+  #tab-programme iframe{height:82vh}#tab-programme .ptitre{font-size:19px}}
+@media (prefers-reduced-motion: reduce){#tab-programme *{animation:none!important}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -661,7 +555,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="tab" data-groupe="entrainement" id="navtab-cardio" onclick="switchTab('cardio',this)">❤️ Zones cardio</div>
 <div class="tab" data-groupe="entrainement" id="navtab-muscu" onclick="switchTab('muscu',this)">💪 Musculation</div>
 <div class="tab" data-groupe="entrainement" id="navtab-seances" onclick="switchTab('seances',this)">🗓️ Séances</div>
-<div class="tab" data-groupe="entrainement" id="navtab-programme" onclick="switchTab('programme',this)">🎯 Mon programme</div>
+<div class="tab" data-groupe="entrainement" id="navtab-programme" onclick="switchTab('programme',this)">💪 Mon sport</div>
 </div>
 <div class="nav-bloc" data-groupe="referentiels"><button type="button" class="nav-groupe" data-groupe="referentiels" onclick="ouvrirGroupe('referentiels')" title="Ouvrir la rubrique Référentiels">Référentiels</button>
 <div class="tab" data-groupe="referentiels" id="navtab-echelles" onclick="switchTab('echelles',this)">📏 Barèmes</div>
@@ -1161,7 +1055,7 @@ const TABS_INFO = [
     {id:"cardio",label:"❤️ Zones cardio"},
     {id:"muscu",label:"💪 Musculation"},
     {id:"seances",label:"🗓️ Séances"},
-    {id:"programme",label:"🎯 Mon programme"},
+    {id:"programme",label:"💪 Mon sport"},
     {id:"echelles",label:"📏 Barèmes"},
     {id:"ppa",label:"🧗 PPA"},
     {id:"export",label:"📄 Export PDF"}
@@ -3758,234 +3652,82 @@ function getExerciceZone(z,i){
 }
 // ===== Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier =====
 
-// ===== MON PROGRAMME (parcours d'initiation + programme individualisé) =====
-// Habillage repris de l'appli sport de Christian : fond bleu nuit, dégradé cyan/violet,
-// cartes arrondies, pastille à cocher et animations (rise, pop, halo vert, éclat).
-// Table Supabase : programme_profils (le paramétrage) et programme_faites (les séances cochées).
-// Pas de RPE ni d'unités de charge ici : on coche, c'est tout.
-// Matériel : celui de la salle de la caserne (règlement « Mode d'emploi du matériel »).
-// Règles d'astreinte : endurance de force en circuit, ~50 % de la séance sur abdos/dorsaux/
-// lombaires, poids de corps privilégié, cycles de 3 semaines, polyarticulaire, agonistes/antagonistes.
+// ===== MON SPORT (l'application de Christian, mise à disposition de la caserne) =====
+// L'application complète est servie telle quelle depuis le dossier sport/ et affichée ici.
+// Elle est identique à mon-app-sport : seule la couche de stockage a changé (Supabase à la
+// place de Firebase), avec un espace par pompier dans la table sport_docs.
+// Ce fichier ne contient donc que l'accueil (parcours de réglage et explication) et le cadre.
 
-var PRG_ZONES=[["epaule","Épaule"],["coude","Coude"],["poignet","Poignet"],["dos","Dos / lombaires"],
-               ["hanche","Hanche"],["genou","Genou"],["cheville","Cheville"]];
-var PRG_OBJECTIFS=[
-  {id:"reprise",  ic:"🌱",lib:"Reprise en douceur",      sous:"Après un arrêt ou une blessure",        cardio:1,tronc:0.5},
-  {id:"icp",      ic:"🎯",lib:"Passer mes ICP",          sous:"Rameur, Luc Léger, pompes, tractions",  cardio:2,tronc:0.5},
-  {id:"endurance",ic:"🫁",lib:"Endurance",               sous:"Tenir plus longtemps sur intervention", cardio:3,tronc:0.4},
-  {id:"gainage",  ic:"🛡️",lib:"Renforcement et gainage", sous:"Dos solide, port de charge",            cardio:1,tronc:0.6},
-  {id:"poids",    ic:"⚖️",lib:"Perdre du poids",         sous:"Dépense et régularité",                 cardio:3,tronc:0.5},
-  {id:"ppa",      ic:"🧗",lib:"Préparer le PPA",         sous:"Parcours professionnel adapté",         cardio:2,tronc:0.5}
+var SPT_ONGLETS=[
+ {ic:"🏋️",t:"Séance",s:"Ta séance du jour, exercice par exercice. Tu coches au fur et à mesure, les charges et les séries sont mémorisées."},
+ {ic:"📅",t:"Semaine",s:"Les sept jours d'un coup d'œil, avec ce qui est prévu et ce que tu as déjà fait."},
+ {ic:"🥗",t:"Nutrition",s:"Tes repas, tes calories et tes verres d'eau. Table officielle Ciqual de l'ANSES."},
+ {ic:"📈",t:"Progrès",s:"Ton poids, tes mensurations, tes records et tes badges au fil des semaines."},
+ {ic:"⏱️",t:"Chrono",s:"Minuteur de repos, intervalles et HIIT, avec le son et la vibration."}
 ];
-var PRG_EXOS=[
- {id:"planche",       nom:"Planche",              img:"planche.jpg",            cat:"tronc",art:["epaule"],            mat:""},
- {id:"bird_dog",      nom:"Bird dog",             img:"bird_dog.jpg",           cat:"tronc",art:[],                    mat:""},
- {id:"superman",      nom:"Superman",             img:"superman.jpg",           cat:"tronc",art:["dos"],               mat:""},
- {id:"extension_lomb",nom:"Extension lombaire",   img:"extension_lombaire.jpg", cat:"tronc",art:["dos"],               mat:"Banc à lombaires"},
- {id:"releve_jambes", nom:"Relevé de jambes",     img:"releve_jambes.jpg",      cat:"tronc",art:["dos"],               mat:""},
- {id:"mountain",      nom:"Mountain climbers",    img:"mountain_climbers.jpg",  cat:"tronc",art:["epaule","poignet"],  mat:""},
- {id:"good_morning",  nom:"Good morning",         img:"good_morning.jpg",       cat:"tronc",art:["dos","hanche"],      mat:""},
- {id:"kb_swings",     nom:"Kettlebell swings",    img:"kettlebell_swings.jpg",  cat:"tronc",art:["dos","hanche","epaule"],mat:"Kettlebell"},
- {id:"pompes",        nom:"Pompes",               img:"pompes.jpg",             cat:"haut", art:["epaule","poignet","coude"],mat:""},
- {id:"dips",          nom:"Dips",                 img:"dips.jpg",               cat:"haut", art:["epaule","coude","poignet"],mat:""},
- {id:"aus_pullups",   nom:"Australian pull-ups",  img:"australian_pullups.jpg", cat:"haut", art:["epaule","coude"],    mat:"Barre basse"},
- {id:"tirage_vert",   nom:"Tirage vertical",      img:"tirage_vertical.jpg",    cat:"haut", art:["epaule","coude"],    mat:"Station à poulies"},
- {id:"tirage_hor",    nom:"Tirage horizontal",    img:"tirage_horizontal.jpg",  cat:"haut", art:["epaule","coude"],    mat:"Station à poulies"},
- {id:"dev_couche",    nom:"Développé couché",     img:"developpe_couche.jpg",   cat:"haut", art:["epaule","coude"],    mat:"Barre, banc, pareur"},
- {id:"front_squat",   nom:"Front squat",          img:"front_squat.jpg",        cat:"bas",  art:["genou","hanche","dos","epaule"],mat:"Barre et rack"},
- {id:"fente_arr",     nom:"Fente arrière",        img:"fente_arriere.jpg",      cat:"bas",  art:["genou","hanche"],    mat:""},
- {id:"hip_thrust",    nom:"Hip thrust",           img:"hip_thrust.jpg",         cat:"bas",  art:["hanche"],            mat:"Banc"},
- {id:"chaise",        nom:"Chaise isométrique",   img:"chaise_isometrique.jpg", cat:"bas",  art:["genou"],             mat:""},
- {id:"squat_jumps",   nom:"Squat jumps",          img:"squat_jumps.jpg",        cat:"bas",  art:["genou","cheville"],  mat:""},
- {id:"mollets",       nom:"Mollets debout",       img:"mollets_debout.jpg",     cat:"bas",  art:["cheville"],          mat:""},
- {id:"burpees",       nom:"Burpees",              img:"burpees.jpg",            cat:"cardio",art:["genou","epaule","poignet","dos"],mat:""}
+var SPT_ASTUCES=[
+ {ic:"🔒",t:"<b>Tes données sont à toi.</b> Chacun a son espace : personne d'autre dans la caserne ne voit tes séances, ton poids ni tes repas."},
+ {ic:"📱",t:"<b>Installe l'appli sur ton téléphone</b> (menu du navigateur, « Ajouter à l'écran d'accueil ») : elle fonctionne alors sans réseau et se synchronise au retour."},
+ {ic:"⚙️",t:"<b>Les réglages sont dans l'appli</b> : touche ton nom en haut pour la couleur, le niveau, les sons, la vibration et l'heure des rappels."},
+ {ic:"🚨",t:"<b>Tu restes sollicitable.</b> Au bip, on lâche tout. Vise un effort où tu peux encore parler, et garde les charges lourdes pour les jours sans astreinte."},
+ {ic:"🤕",t:"<b>Douleur = on arrête.</b> En cas de blessure ou de reprise, demande un avis médical avant de suivre un programme."}
 ];
-var PRG_CARDIO=[
- {id:"rameur", nom:"Rameur Concept 2",  art:["dos"],    consigne:"Jambes, puis dos, puis bras. Volet 3 à 5."},
- {id:"assault",nom:"Assault Bike",      art:["epaule"], consigne:"Selle réglée avant de partir."},
- {id:"velo",   nom:"Vélo de spinning",  art:[],         consigne:"Résistance baissée avant de descendre."}
-];
-var PRG_ETIR=[
- {id:"etir_dos",nom:"Dos",img:"etir_dos.jpg"},{id:"etir_lomb",nom:"Lombaires",img:"etir_lombaires.jpg"},
- {id:"etir_fess",nom:"Fessiers",img:"etir_fessiers.jpg"},{id:"etir_quad",nom:"Quadriceps",img:"etir_quadriceps.jpg"},
- {id:"etir_mol",nom:"Mollets",img:"etir_mollets.jpg"},{id:"etir_pec",nom:"Pectoraux",img:"etir_pectoraux.jpg"}
-];
-var PRG_SEMAINES=[
- {n:1,nom:"Mise en route", sous:"On installe la technique", tours:2,allure:"Tranquille : tu dois pouvoir tenir une conversation."},
- {n:2,nom:"Montée",        sous:"On ajoute du volume",      tours:3,allure:"Ça chauffe, mais tu finis la séance entier."},
- {n:3,nom:"Consolidation", sous:"On tient la qualité",      tours:3,allure:"Soutenu. Dès que la technique se dégrade, on arrête la série."}
-];
-var PRG_JOURS=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-var PRG_CATS={tronc:"Abdos / dos / lombaires",bas:"Bas du corps",haut:"Haut du corps",cardio:"Cardio"};
+var sptEtape=0,sptVu=null,sptCharge=false,sptOccupe=false;
 
-var prgProfil=null,prgFaites=[],prgCharge=false,prgErreur="",prgOccupe=false,prgEtape=0,prgBrouillon=null,prgSel=null,prgAnim=null;
-
-function prgEsc(s){return menEsc(s)}
-function prgMoi(){
+function sptMoi(){
   var p=null;
   if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
   if(!p&&isAdmin){var m=menageMoi();if(m)p=(data||[]).filter(function(x){return x.id===m.id})[0]}
   return p||null;
 }
-function prgRnd(graine){var s=graine%2147483647;if(s<=0)s+=2147483646;
-  return function(){s=s*16807%2147483647;return (s-1)/2147483646}}
-function prgPiocher(liste,n,rnd){var l=liste.slice(),out=[];
-  while(l.length&&out.length<n) out.push(l.splice(Math.floor(rnd()*l.length),1)[0]);return out}
-function prgExosDispos(){
-  var bl=(prgProfil&&prgProfil.blessures)||[];
-  return PRG_EXOS.filter(function(e){return !e.art.some(function(a){return bl.indexOf(a)!==-1})});
-}
-function prgCardioDispo(){
-  var bl=(prgProfil&&prgProfil.blessures)||[];
-  var l=PRG_CARDIO.filter(function(c){return !c.art.some(function(a){return bl.indexOf(a)!==-1})});
-  return l.length?l:[PRG_CARDIO[2]];
-}
-function prgIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-
-// ---- Construction du programme : cycle de 3 semaines ----
-function prgDateDebut(){
-  var d=prgProfil&&prgProfil.cree_le?new Date(prgProfil.cree_le):new Date();
-  d.setHours(0,0,0,0);
-  while(d.getDay()!==1) d.setDate(d.getDate()-1);
-  return d;
-}
-function prgJoursChoisis(){
-  var j=((prgProfil&&prgProfil.jours)||"").split(",").filter(function(x){return x!==""}).map(Number);
-  return j.length?j:[0,2,4].slice(0,(prgProfil&&prgProfil.seances_sem)||2);
-}
-function prgSemaineCourante(){
-  var dif=Math.floor((new Date()-prgDateDebut())/604800000);
-  return {index:dif,cycle:Math.floor(dif/3)+1,semaine:(dif%3+3)%3};
-}
-function prgConstruireSeance(sem,idxJour,dateSeance){
-  var obj=PRG_OBJECTIFS.filter(function(o){return o.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
-  var S=PRG_SEMAINES[sem];
-  var rnd=prgRnd((prgProfil.pompier_id||1)*7919+sem*101+idxJour*13+1);
-  var dispo=prgExosDispos();
-  var tronc=dispo.filter(function(e){return e.cat==="tronc"});
-  var bas=dispo.filter(function(e){return e.cat==="bas"}),haut=dispo.filter(function(e){return e.cat==="haut"});
-  var nbAteliers=prgProfil.duree_min>=50?6:(prgProfil.duree_min>=35?5:4);
-  var nbTronc=Math.ceil(nbAteliers*Math.max(0.5,obj.tronc)),reste=nbAteliers-nbTronc;
-  var pickBas=prgPiocher(bas,Math.ceil(reste/2),rnd),pickHaut=prgPiocher(haut,Math.floor(reste/2),rnd);
-  var pickTronc=prgPiocher(tronc,nbTronc,rnd),ateliers=[];
-  for(var i=0;i<Math.max(pickTronc.length,pickBas.length+pickHaut.length);i++){
-    if(pickTronc[i])ateliers.push(pickTronc[i]);
-    if(i<pickBas.length)ateliers.push(pickBas[i]);
-    if(i<pickHaut.length)ateliers.push(pickHaut[i]);
-  }
-  // s'il manque des ateliers (p. ex. toute une famille écartée par une blessure),
-  // on complète avec ce qui reste de disponible plutôt que de raccourcir la séance
-  if(ateliers.length<nbAteliers){
-    var pris={};ateliers.forEach(function(e){pris[e.id]=1});
-    prgPiocher(dispo.filter(function(e){return !pris[e.id]}),nbAteliers-ateliers.length,rnd)
-      .forEach(function(e){ateliers.push(e)});
-  }
-  ateliers=ateliers.slice(0,nbAteliers);
-  var cd=prgCardioDispo(),cardio=cd[Math.floor(rnd()*cd.length)];
-  var minCardio=[0,6,10,14][Math.min(3,obj.cardio)];
-  return {date:dateSeance,semaine:S,objectif:obj,methode:"Endurance de force en circuit",
-    cardio:minCardio?{exo:cardio,min:minCardio}:null,tours:S.tours,temps:20+S.n*5,ateliers:ateliers,
-    etirements:prgPiocher(PRG_ETIR,4,prgRnd((prgProfil.pompier_id||1)*31+sem*7+idxJour)),
-    dureeTotale:prgProfil.duree_min};
-}
-function prgSeancesSemaine(sem,refLundi){
-  return prgJoursChoisis().slice(0,prgProfil.seances_sem).map(function(j,i){
-    var d=new Date(refLundi);d.setDate(d.getDate()+j);
-    return prgConstruireSeance(sem,i,d);
-  });
-}
-function prgLundiCourant(){
-  var pos=prgSemaineCourante(),l=new Date(prgDateDebut());l.setDate(l.getDate()+pos.index*7);return l;
-}
-function prgEstFaite(date){return prgFaites.indexOf(prgIso(date))!==-1}
-
-// ---- Chargement / enregistrement ----
-async function chargerProgramme(force){
-  if(prgCharge&&!force)return;
-  prgCharge=true;prgErreur="";
-  var moi=prgMoi();
-  if(!moi){prgProfil=null;renderProgramme();return}
+function sptEsc(s){return menEsc(s)}
+async function sptCharger(){
+  if(sptCharge)return;
+  sptCharge=true;
+  var moi=sptMoi();if(!moi){renderProgramme();return}
   try{
-    var res=await supabaseClient.from("programme_profils").select("*").eq("pompier_id",moi.id).maybeSingle();
-    if(res.error&&res.error.code!=="PGRST116"){
-      prgErreur=/programme_profils/i.test(res.error.message||"")
-        ?"La table « programme_profils » n'existe pas encore dans Supabase."
-        :"Chargement impossible : "+res.error.message;
-      prgProfil=null;
-    } else prgProfil=res.data||null;
-    var rf=await supabaseClient.from("programme_faites").select("date").eq("pompier_id",moi.id);
-    prgFaites=(rf&&rf.data?rf.data:[]).map(function(x){return x.date});
-  }catch(e){prgErreur="Chargement impossible : "+(e.message||e);prgProfil=null}
+    var r=await supabaseClient.from("sport_docs").select("data")
+      .eq("coll","app").eq("doc_id","p"+moi.id+":accueil").maybeSingle();
+    sptVu=r&&r.data?!!(r.data.data||{}).vu:false;
+  }catch(e){sptVu=false}
   renderProgramme();
 }
-async function prgEnregistrerProfil(){
-  var moi=prgMoi();if(!moi||prgOccupe)return;
-  var b=prgBrouillon;
-  if(!b.objectif){showToast("Choisis d'abord un objectif","error");prgEtape=1;renderProgramme();return}
-  if(!b.jours.length){showToast("Choisis au moins un jour","error");prgEtape=2;renderProgramme();return}
-  prgOccupe=true;
-  var ligne={pompier_id:moi.id,objectif:b.objectif,seances_sem:Math.min(b.jours.length,b.seances_sem),
-    jours:b.jours.join(","),duree_min:b.duree,blessures:b.blessures,contre_indications:b.contre||null,
-    rappel_heure:b.heure||"18:00",rappels:b.rappels||{seance:true,bilan:true},maj_le:new Date().toISOString()};
+async function sptMarquerVu(){
+  var moi=sptMoi();if(!moi||sptOccupe)return;
+  sptOccupe=true;
   try{
-    var res=await supabaseClient.from("programme_profils").upsert(ligne,{onConflict:"pompier_id"});
-    if(res.error)throw res.error;
-    showToast("✅ Ton programme est prêt","success");
-    prgEtape=0;prgBrouillon=null;prgSel=null;
-    await chargerProgramme(true);
-  }catch(e){showToast("Enregistrement impossible : "+(e.message||e),"error")}
-  finally{prgOccupe=false}
+    await supabaseClient.from("sport_docs").upsert(
+      {coll:"app",doc_id:"p"+moi.id+":accueil",pompier_id:moi.id,
+       data:{vu:true,le:new Date().toISOString()},maj:new Date().toISOString()},
+      {onConflict:"coll,doc_id"});
+  }catch(e){}
+  sptVu=true;sptOccupe=false;renderProgramme();
 }
-function prgNouveauBrouillon(){
-  var p=prgProfil;
-  return {objectif:p?p.objectif:null,seances_sem:p?p.seances_sem:2,
-    jours:p&&p.jours?p.jours.split(",").filter(function(x){return x!==""}).map(Number):[0,3],
-    duree:p?p.duree_min:45,blessures:p?(p.blessures||[]).slice():[],contre:p?(p.contre_indications||""):"",
-    heure:p?p.rappel_heure:"18:00",rappels:p?Object.assign({},p.rappels):{seance:true,bilan:true}};
-}
-function prgRefaire(){prgBrouillon=prgNouveauBrouillon();prgEtape=1;renderProgramme()}
+function sptRevoir(){sptVu=false;sptEtape=1;renderProgramme()}
 
-function renderProgramme(){
-  var box=document.getElementById("prgContent");if(!box)return;
-  var moi=prgMoi();
-  if(!moi){box.innerHTML='<div class="pcard"><div class="ptitre"><i>🎯</i> Mon programme</div>'
-    +'<p class="note">Ton compte n\'est relié à aucune fiche pompier : demande à l\'administrateur pour pouvoir créer ton programme.</p></div>';return}
-  if(!prgCharge){chargerProgramme();box.innerHTML='<div class="pcard">Chargement…</div>';return}
-  if(prgErreur){box.innerHTML='<div class="pcard"><p style="color:#f87171">⚠️ '+prgEsc(prgErreur)+'</p></div>';return}
-  if(!prgProfil||prgEtape>0){
-    if(!prgBrouillon)prgBrouillon=prgNouveauBrouillon();
-    if(prgEtape===0)prgEtape=1;
-    box.innerHTML=prgInitiation(moi);
-  } else box.innerHTML=prgVueProgramme(moi);
-  prgEnterFx();
-}
-
-// ---- Effets repris de mon-app-sport (même logique, mêmes durées) ----
-var prgEnterAt=0,prgEnterT=null;
-function prgReduit(){try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return false}}
-function prgTagStagger(){
+// ---- effets repris de mon-app-sport ----
+var sptEnterAt=0,sptEnterT=null;
+function sptReduit(){try{return matchMedia("(prefers-reduced-motion: reduce)").matches}catch(e){return false}}
+function sptEnterFx(){
+  if(sptReduit())return;
   var app=document.getElementById("tab-programme");if(!app)return;
-  var el=performance.now()-prgEnterAt;
-  [].slice.call(app.querySelectorAll(".hero,.pcard,.stat,.ex,.days,.wk")).slice(0,14)
+  clearTimeout(sptEnterT);sptEnterAt=performance.now();
+  app.classList.remove("enter");void app.offsetWidth;app.classList.add("enter");
+  var el=performance.now()-sptEnterAt;
+  [].slice.call(app.querySelectorAll(".pcard,.og,.astuces,.cadre")).slice(0,14)
     .forEach(function(x,i){x.style.setProperty("--d",(i*45-el)+"ms");x.classList.add("stagger")});
+  sptEnterT=setTimeout(function(){app.classList.remove("enter")},1200);
 }
-function prgEnterFx(){
-  if(prgReduit())return;
-  var app=document.getElementById("tab-programme");if(!app)return;
-  clearTimeout(prgEnterT);prgEnterAt=performance.now();
-  app.classList.remove("enter");void app.offsetWidth;app.classList.add("enter");prgTagStagger();
-  prgEnterT=setTimeout(function(){app.classList.remove("enter")},1200);
-}
-function prgSlide(dir){
-  if(!dir||prgReduit())return;
+function sptSlide(dir){
+  if(!dir||sptReduit())return;
   var a=document.getElementById("tab-programme");if(!a)return;
   a.classList.remove("slideL","slideR");void a.offsetWidth;
   a.classList.add(dir>0?"slideL":"slideR");
   setTimeout(function(){a.classList.remove("slideL","slideR")},450);
 }
 document.addEventListener("pointerdown",function(e){
-  var t=e.target.closest&&e.target.closest("#tab-programme .pbtn,#tab-programme .check,#tab-programme .day,#tab-programme .chip,#tab-programme .carte");
-  if(!t||prgReduit())return;
+  var t=e.target.closest&&e.target.closest("#tab-programme .pbtn");
+  if(!t||sptReduit())return;
   var r=t.getBoundingClientRect(),d=Math.max(r.width,r.height)*2.2,sp=document.createElement("span");
   sp.className="ripple";
   sp.style.cssText="width:"+d+"px;height:"+d+"px;left:"+(e.clientX-r.left-d/2)+"px;top:"+(e.clientY-r.top-d/2)+"px";
@@ -3993,278 +3735,71 @@ document.addEventListener("pointerdown",function(e){
   t.classList.add("rip");t.appendChild(sp);setTimeout(function(){sp.remove()},600);
 },{passive:true});
 
-// ---- Parcours d'initiation ----
-var PRG_ETAPES=["Objectif","Dispos","Santé","Rappels","C'est parti"];
-function prgFil(){
-  return '<div class="fil">'+PRG_ETAPES.map(function(t,i){
-    var n=i+1,cl=n<prgEtape?"faite":(n===prgEtape?"active":"");
-    return '<div class="pas '+cl+'"><s>'+(n<prgEtape?"✓":n)+'</s>'+t+'</div>';
+// ---- rendu ----
+function renderProgramme(){
+  var box=document.getElementById("prgContent");if(!box)return;
+  var moi=sptMoi();
+  if(!moi){
+    box.innerHTML='<div class="pcard"><div class="ptitre"><i>💪</i> Mon sport</div>'
+      +'<p class="psous">Ton compte n\'est relié à aucune fiche pompier : demande à l\'administrateur pour pouvoir ouvrir ton espace.</p></div>';
+    return;
+  }
+  if(sptVu===null){sptCharger();box.innerHTML='<div class="pcard">Chargement…</div>';return}
+  box.innerHTML=sptVu?sptCadre(moi):sptAccueil(moi);
+  sptEnterFx();
+}
+function sptAller(n){var d=n-sptEtape;sptEtape=n;renderProgramme();sptSlide(d)}
+function sptFil(){
+  var noms=["Bienvenue","L'appli","Bon à savoir","C'est parti"];
+  return '<div class="fil">'+noms.map(function(t,i){
+    var n=i+1,cl=n<sptEtape?"faite":(n===sptEtape?"active":"");
+    return '<div class="pas '+cl+'"><s>'+(n<sptEtape?"✓":n)+'</s>'+t+'</div>';
   }).join("")+'</div>';
 }
-function prgBoutons(lib){
-  return '<div class="nav">'
-    +(prgEtape>1?'<button class="pbtn" onclick="prgAller('+(prgEtape-1)+')">← Retour</button>':'<span></span>')
-    +'<button class="pbtn pri" onclick="'+(prgEtape>=5?'prgEnregistrerProfil()':'prgAller('+(prgEtape+1)+')')+'">'
-    +prgEsc(lib||"Continuer →")+'</button></div>';
-}
-function prgAller(n){
-  var t=document.getElementById("prgContre");if(t&&prgBrouillon)prgBrouillon.contre=t.value;
-  var h=document.getElementById("prgHeure");if(h&&prgBrouillon)prgBrouillon.heure=h.value;
-  prgEtape=n;renderProgramme();
-}
-function prgInitiation(moi){
-  var b=prgBrouillon,h='<div class="pcard stagger">'+prgFil();
-  if(prgEtape===1){
-    h+='<div class="q">Salut '+prgEsc(moi.prenom)+' ! Qu\'est-ce que tu veux travailler ?</div>'
-      +'<div class="choix">'+PRG_OBJECTIFS.map(function(o,i){
-        return '<button type="button" class="carte'+(b.objectif===o.id?" sel":"")+'" style="--d:'+(i*55)+'ms" onclick="prgSetObjectif(\''+o.id+'\')">'
-          +'<i>'+o.ic+'</i><b>'+o.lib+'</b><span class="s">'+o.sous+'</span></button>'}).join("")+'</div>';
-  } else if(prgEtape===2){
-    h+='<div class="q">Quand peux-tu venir à la salle ?</div>'
-      +'<div class="ss">Les jours</div><div class="chips">'
-      +PRG_JOURS.map(function(j,i){return '<button type="button" class="chip'+(b.jours.indexOf(i)!==-1?" sel":"")
-        +'" onclick="prgToggleJour('+i+')">'+j.slice(0,3)+'</button>'}).join("")+'</div>'
-      +'<div class="ss">Séances par semaine</div><div class="chips">'
-      +[1,2,3,4,5].map(function(n){return '<button type="button" class="chip'+(b.seances_sem===n?" sel":"")
-        +'" onclick="prgSetNb('+n+')">'+n+'</button>'}).join("")+'</div>'
-      +'<div class="ss">Durée d\'une séance</div><div class="chips">'
-      +[30,45,60].map(function(n){return '<button type="button" class="chip'+(b.duree===n?" sel":"")
-        +'" onclick="prgSetDuree('+n+')">'+n+' min</button>'}).join("")+'</div>'
-      +'<p class="note">Tu es en astreinte : le programme reste en endurance de force, sans charge maximale, pour que tu partes en intervention sans être cuit.</p>';
-  } else if(prgEtape===3){
-    h+='<div class="q">Quelque chose qui te fait mal ?</div><div class="chips">'
-      +PRG_ZONES.map(function(z){return '<button type="button" class="chip'+(b.blessures.indexOf(z[0])!==-1?" sel":"")
-        +'" onclick="prgToggleZone(\''+z[0]+'\')">'+z[1]+'</button>'}).join("")+'</div>'
-      +'<p class="note">Les exercices qui sollicitent une zone cochée seront retirés de ton programme.</p>'
-      +'<div class="ss">Autre chose à signaler (facultatif)</div>'
-      +'<textarea id="prgContre" rows="2" style="width:100%" placeholder="Avis médical, reprise après arrêt, matériel à éviter…">'+prgEsc(b.contre)+'</textarea>'
-      +'<p class="note">Visible par toi et par l\'administrateur de l\'appli, pas par les autres pompiers. En cas de doute, demande d\'abord un avis médical.</p>';
-  } else if(prgEtape===4){
-    var r=b.rappels;
-    h+='<div class="q">Tu veux qu\'on te rappelle tes séances ?</div>'
-      +'<label class="ligne"><input type="checkbox" '+(r.seance?"checked":"")+' onchange="prgSetRappel(\'seance\',this.checked)"> Me rappeler ma séance le jour prévu</label>'
-      +'<label class="ligne"><input type="checkbox" '+(r.bilan?"checked":"")+' onchange="prgSetRappel(\'bilan\',this.checked)"> Mon récapitulatif le dimanche soir</label>'
-      +'<div class="ss">À quelle heure</div><input type="time" id="prgHeure" value="'+prgEsc(b.heure)+'" onchange="prgSetHeure(this.value)">'
-      +'<p class="note">Le rappel s\'affiche quand l\'appli est ouverte ou en arrière-plan. Pour être prévenu même appli fermée, mets tes séances dans l\'agenda de ton téléphone depuis ton programme : c\'est l\'agenda qui sonnera.</p>'
-      +prgBoutonPermission();
+function sptAccueil(moi){
+  if(!sptEtape)sptEtape=1;
+  var h='<div class="pcard">'+sptFil();
+  if(sptEtape===1){
+    h+='<div class="ptitre"><i>💪</i> Bienvenue '+sptEsc(moi.prenom)+'</div>'
+      +'<p class="psous">Voici l\'application d\'entraînement que Christian a construite et testée pendant des mois. '
+      +'Elle est maintenant à disposition de toute la caserne, avec un espace personnel pour chacun.</p>'
+      +'<p class="psous">Tu n\'as rien à créer ni à installer : ton nom et ton espace existent déjà. '
+      +'Tout ce que tu y mets reste privé.</p>'
+      +'<div class="astuces" style="margin-top:16px"><div class="as"><i>⏱️</i><div>Deux minutes pour faire le tour, et tu commences.</div></div></div>';
+  } else if(sptEtape===2){
+    h+='<div class="q">Les cinq onglets de l\'appli</div><div class="onglets">'
+      +SPT_ONGLETS.map(function(o,i){
+        return '<div class="og" style="--d:'+(i*55)+'ms"><i>'+o.ic+'</i><div><b>'+o.t+'</b><span>'+o.s+'</span></div></div>';
+      }).join("")+'</div>'
+      +'<p class="note">Tu navigues entre eux par la barre du bas. Tout se remplit au fur et à mesure : rien n\'est obligatoire.</p>';
+  } else if(sptEtape===3){
+    h+='<div class="q">Bon à savoir avant de commencer</div><div class="astuces">'
+      +SPT_ASTUCES.map(function(a){return '<div class="as"><i>'+a.ic+'</i><div>'+a.t+'</div></div>'}).join("")+'</div>';
   } else {
-    var o=PRG_OBJECTIFS.filter(function(x){return x.id===b.objectif})[0];
-    h+='<div class="q">On récapitule</div><div class="recap">'
-      +prgRl("Objectif",o?o.ic+" "+o.lib:"—")
-      +prgRl("Séances",Math.min(b.jours.length,b.seances_sem)+" par semaine, "+b.duree+" min")
-      +prgRl("Jours",b.jours.map(function(i){return PRG_JOURS[i]}).join(", ")||"—")
-      +prgRl("À éviter",b.blessures.length?b.blessures.map(prgNomZone).join(", "):"rien de signalé")
-      +prgRl("Rappels",(b.rappels.seance||b.rappels.bilan)?("à "+b.heure):"aucun")
-      +'</div><p class="note">Je te construis un cycle de 3 semaines, avec la moitié de chaque séance sur les abdos, le dos et les lombaires, au poids de corps en priorité, avec le matériel de la salle. Tu pourras tout refaire quand tu veux.</p>';
+    h+='<div class="ptitre"><i>🚀</i> Tout est prêt, '+sptEsc(moi.prenom)+'</div>'
+      +'<p class="psous">Ton espace s\'ouvre sur l\'onglet Séance. Commence par régler ton niveau et tes jours '
+      +'en touchant ton nom en haut de l\'appli, puis lance ta première séance.</p>'
+      +'<p class="psous">Tu pourras revoir cette présentation à tout moment avec le bouton « Revoir la présentation » en haut de l\'onglet.</p>';
   }
-  return h+prgBoutons(prgEtape>=5?"🚀 Créer mon programme":null)+'</div>';
-}
-function prgRl(k,v){return '<div class="rl"><span>'+prgEsc(k)+'</span><b>'+prgEsc(v)+'</b></div>'}
-function prgNomZone(z){return (PRG_ZONES.filter(function(y){return y[0]===z})[0]||["",z])[1]}
-function prgSetObjectif(id){prgBrouillon.objectif=id;renderProgramme();setTimeout(function(){prgAller(2)},320)}
-function prgToggleJour(i){var j=prgBrouillon.jours,k=j.indexOf(i);
-  if(k===-1)j.push(i);else j.splice(k,1);j.sort(function(a,b){return a-b});
-  if(j.length&&prgBrouillon.seances_sem>j.length)prgBrouillon.seances_sem=j.length;renderProgramme()}
-function prgSetNb(n){prgBrouillon.seances_sem=n;
-  if(prgBrouillon.jours.length<n){[0,3,5,1,4].forEach(function(x){
-    if(prgBrouillon.jours.length<n&&prgBrouillon.jours.indexOf(x)===-1)prgBrouillon.jours.push(x)});
-    prgBrouillon.jours.sort(function(a,b){return a-b})}
-  renderProgramme()}
-function prgSetDuree(n){prgBrouillon.duree=n;renderProgramme()}
-function prgToggleZone(z){var b=prgBrouillon.blessures,k=b.indexOf(z);
-  if(k===-1)b.push(z);else b.splice(k,1);
-  var t=document.getElementById("prgContre");if(t)prgBrouillon.contre=t.value;renderProgramme()}
-function prgSetRappel(k,v){prgBrouillon.rappels[k]=v}
-function prgSetHeure(v){prgBrouillon.heure=v}
-
-// ---- Vue du programme ----
-function prgVueProgramme(moi){
-  var pos=prgSemaineCourante(),S=PRG_SEMAINES[pos.semaine];
-  var o=PRG_OBJECTIFS.filter(function(x){return x.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
-  var lundi=prgLundiCourant(),seances=prgSeancesSemaine(pos.semaine,lundi);
-  var faites=seances.filter(function(s){return prgEstFaite(s.date)}).length;
-  if(prgSel===null||prgSel>=seances.length){
-    var auj=seances.map(function(s){return s.date.toDateString()}).indexOf(new Date().toDateString());
-    if(auj===-1){auj=seances.map(function(s){return prgEstFaite(s.date)}).indexOf(false);if(auj===-1)auj=0}
-    prgSel=auj;
-  }
-  var R=42,C=2*Math.PI*R,off=C*(1-(seances.length?faites/seances.length:0));
-  var h='<div class="pcard hero live"><div class="ptop">'
-    +'<div><div class="ptitre"><i>'+o.ic+'</i>'+prgEsc(o.lib)+'</div>'
-    +'<div class="psous">'+prgEsc(moi.prenom+" "+moi.nom)+' • '+prgProfil.seances_sem+' séance'
-    +(prgProfil.seances_sem>1?'s':'')+' de '+prgProfil.duree_min+' min par semaine</div></div>'
-    +'<span class="pill grad badge ok"><span>🔥</span>Cycle '+pos.cycle+' · semaine '+S.n+'/3</span></div>'
-    +'<div class="pring" style="margin-top:16px"><div class="ring">'
-    +'<svg width="92" height="92"><circle cx="46" cy="46" r="'+R+'" fill="none" stroke="#0f1524" stroke-width="8"/>'
-    +'<defs><linearGradient id="prgG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs>'
-    +'<circle class="arc" cx="46" cy="46" r="'+R+'" fill="none" stroke="url(#prgG)" stroke-width="8" stroke-linecap="round" '
-    +'style="--len:'+C.toFixed(1)+';--off:'+off.toFixed(1)+'"/></svg>'
-    +'<div class="rv"><span class="st-big" style="font-size:19px">'+faites+'/'+seances.length+'</span><small>séances</small></div></div>'
-    +'<div style="flex:1;min-width:150px"><b style="font-size:15px">'+prgEsc(S.nom)+'</b>'
-    +'<div class="psous">'+prgEsc(S.sous)+'</div>'
-    +'<div class="bar"><i style="width:'+Math.round(((pos.semaine)+1)/3*100)+'%"></i></div>'
-    +'<div class="psous" style="margin-top:6px">'+prgEsc(S.allure)+'</div></div></div>'
-    +'<p class="note">Au bip, tu lâches tout : la séance peut être coupée sans remords.</p></div>';
-
-  // la semaine en flammes, comme l'appli sport
-  var prevus={};seances.forEach(function(s){prevus[(s.date.getDay()+6)%7]=s});
-  var auj0=new Date();auj0.setHours(0,0,0,0),dernier=-1;
-  for(var w=0;w<7;w++){var dw=new Date(lundi);dw.setDate(dw.getDate()+w);if(prevus[w]&&prgEstFaite(dw))dernier=w}
-  h+='<div class="pcard wk"><div class="wkr">'
-    +'<div class="wline" style="--lw:'+(dernier>0?(dernier/6).toFixed(2):0)+'"></div>'
-    +[0,1,2,3,4,5,6].map(function(w){
-      var dw=new Date(lundi);dw.setDate(dw.getDate()+w);
-      var prevu=!!prevus[w],fait=prevu&&prgEstFaite(dw),passe=dw<auj0;
-      var ic=fait?"🔥":(prevu?(passe?"✕":"💪"):"😴");
-      return '<div class="wf'+(fait?" on":"")+'" style="--d:'+(w*70)+'ms"><span>'+ic+'</span><em>'+PRG_JOURS[w].slice(0,3)+'</em></div>';
-    }).join("")+'</div>'
-    +'<div class="wct">'
-    +'<div><b>'+faites+'/'+seances.length+'</b><em>séances</em><div class="wb"><i style="--w:'+(seances.length?Math.round(100*faites/seances.length):0)+'%;background:#f472b6"></i></div></div>'
-    +'<div><b>'+(faites*prgProfil.duree_min)+'</b><em>minutes</em><div class="wb"><i style="--w:'+Math.min(100,Math.round(faites*prgProfil.duree_min/3))+'%;background:#fb923c"></i></div></div>'
-    +'<div><b>'+(dernier>=0?dernier+1:0)+'</b><em>jours d\'affilée</em><div class="wb"><i style="--w:'+Math.round(100*(dernier+1)/7)+'%;background:#22d3ee"></i></div></div>'
-    +'</div></div>';
-
-  h+='<div class="days">'+seances.map(function(s,i){
-      return '<button type="button" class="day'+(i===prgSel?" on":"")+(prgEstFaite(s.date)?" ok":"")+'" onclick="prgVoir('+i+')">'
-        +'<b>'+s.date.getDate()+'</b><span>'+PRG_JOURS[(s.date.getDay()+6)%7].slice(0,3)+'</span></button>'}).join("")+'</div>';
-
-  var s=seances[prgSel],faite=prgEstFaite(s.date);
-  var dstr=s.date.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
-  h+='<div class="ex'+(faite?" done":"")+(prgAnim===prgSel?" justdone":"")+'" id="prgSeance">'
-    +'<div class="exh"><div class="t"><b>Séance '+(prgSel+1)+'</b><span>'+prgEsc(dstr)+' • '+s.dureeTotale+' min • '+prgEsc(s.methode)+'</span></div>'
-    +'<button class="check" onclick="prgFait()" title="'+(faite?"Retirer":"Je l\'ai faite")+'">✓</button></div>';
-  h+=prgBloc("1 · Échauffement — 5 min","Mobilisation générale, puis les 6 ateliers de l\'affiche « Échauffement en 5 minutes » à l\'entrée de la salle. Tu dois pouvoir parler.","");
-  var n=2;
-  if(s.cardio){h+=prgBloc(n+" · Cardio — "+s.cardio.min+" min","<b>"+prgEsc(s.cardio.exo.nom)+"</b> — allure régulière. "+prgEsc(s.cardio.exo.consigne),"");n++}
-  h+=prgBloc(n+" · Circuit — "+s.tours+" tours de "+s.ateliers.length+" ateliers",
-      s.temps+" s par atelier, 30 s pour passer au suivant, 2 min entre les tours.",
-      '<div class="grid">'+s.ateliers.map(function(e,k){
-        return '<div class="exo" style="--d:'+(k*60)+'ms"><img loading="lazy" src="img/seance/'+e.img+'" alt="'+prgEsc(e.nom)+'">'
-          +'<div class="n">'+(k+1)+'. '+prgEsc(e.nom)+'</div>'
-          +'<div class="c">'+prgEsc(PRG_CATS[e.cat])+(e.mat?' • '+prgEsc(e.mat):' • poids de corps')+'</div></div>'}).join("")+'</div>');
-  n++;
-  h+=prgBloc(n+" · Étirements — 4 min","",'<div class="grid">'+s.etirements.map(function(e,k){
-        return '<div class="exo" style="--d:'+(k*60)+'ms"><img loading="lazy" src="img/seance/'+e.img+'" alt="'+prgEsc(e.nom)+'">'
-          +'<div class="n">'+prgEsc(e.nom)+'</div><div class="c">30 s par côté</div></div>'}).join("")+'</div>');
-  h+='</div>';
-
-  h+='<div class="pcard" style="margin-top:14px"><div class="sec">Mes réglages</div><div class="recap">'
-    +prgRl("Jours",prgJoursChoisis().map(function(i){return PRG_JOURS[i]}).join(", "))
-    +prgRl("À éviter",(prgProfil.blessures||[]).length?(prgProfil.blessures||[]).map(prgNomZone).join(", "):"rien de signalé")
-    +prgRl("Rappel",(prgProfil.rappels&&prgProfil.rappels.seance)?("séance à "+prgProfil.rappel_heure):"aucun")+'</div>'
-    +'<div class="prow"><button class="pbtn" onclick="prgRefaire()">✏️ Refaire mon paramétrage</button>'
-    +'<button class="pbtn" onclick="prgIcs()">📅 Mettre mes séances dans l\'agenda</button>'
-    +'<button class="pbtn" onclick="prgPdf()">📄 Ma semaine en PDF</button></div>'
-    +prgBoutonPermission()+'</div>';
-  prgAnim=null;
+  h+='<div class="nav">'
+    +(sptEtape>1?'<button class="pbtn" onclick="sptAller('+(sptEtape-1)+')">← Retour</button>':'<span></span>')
+    +'<button class="pbtn pri" onclick="'+(sptEtape>=4?'sptMarquerVu()':'sptAller('+(sptEtape+1)+')')+'">'
+    +(sptEtape>=4?'🚀 Ouvrir mon espace':'Continuer →')+'</button></div></div>';
   return h;
 }
-function prgBloc(titre,texte,extra){
-  return '<div class="blk"><div class="bt">'+titre+'</div>'+(texte?'<div class="bx">'+texte+'</div>':'')+(extra||'')+'</div>';
-}
-function prgVoir(i){var dir=i-prgSel;prgSel=i;renderProgramme();prgSlide(dir)}
-async function prgFait(){
-  var moi=prgMoi();if(!moi||prgOccupe)return;
-  var s=prgSeancesSemaine(prgSemaineCourante().semaine,prgLundiCourant())[prgSel];if(!s)return;
-  var iso=prgIso(s.date),faite=prgEstFaite(s.date);
-  prgOccupe=true;
-  try{
-    if(faite){
-      var rd=await supabaseClient.from("programme_faites").delete().match({pompier_id:moi.id,date:iso});
-      if(rd.error)throw rd.error;
-      prgFaites=prgFaites.filter(function(d){return d!==iso});
-    }else{
-      var ri=await supabaseClient.from("programme_faites").insert({pompier_id:moi.id,date:iso});
-      if(ri.error)throw ri.error;
-      prgFaites.push(iso);prgAnim=prgSel;
-      showToast("💪 Bien joué "+moi.prenom+" !","success");
-    }
-    renderProgramme();
-  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
-  finally{prgOccupe=false}
-}
-
-// ---- Rappels (appli ouverte ou en arrière-plan) + agenda + PDF ----
-function prgBoutonPermission(){
-  if(!("Notification" in window))
-    return '<p class="note">Ce navigateur ne gère pas les notifications. Sur iPhone, installe d\'abord l\'appli sur l\'écran d\'accueil.</p>';
-  if(Notification.permission==="granted")return '<p class="note" style="color:#34d399">✓ Notifications autorisées sur cet appareil.</p>';
-  if(Notification.permission==="denied")return '<p class="note">Notifications refusées sur cet appareil : à réautoriser dans les réglages du navigateur.</p>';
-  return '<div class="prow"><button class="pbtn" onclick="prgDemanderPermission()">🔔 Autoriser les notifications</button></div>';
-}
-async function prgDemanderPermission(){try{await Notification.requestPermission()}catch(e){}renderProgramme()}
-async function prgNotifier(titre,corps,tag){
-  try{
-    var reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
-    if(reg&&reg.showNotification){await reg.showNotification(titre,{body:corps,tag:tag,icon:"icons/logo.webp"});return}
-  }catch(e){}
-  try{new Notification(titre,{body:corps,tag:tag})}catch(e){}
-}
-function prgVerifRappels(){
-  if(!prgProfil||!("Notification" in window)||Notification.permission!=="granted")return;
-  var moi=prgMoi();if(!moi)return;
-  var r=prgProfil.rappels||{},n=new Date(),h=n.getHours()+n.getMinutes()/60;
-  var jour=(n.getDay()+6)%7,cle=prgIso(n),envoyes={};
-  try{envoyes=JSON.parse(localStorage.getItem("prg_notif")||"{}")}catch(e){}
-  Object.keys(envoyes).forEach(function(k){if(k.slice(0,10)<cle)delete envoyes[k]});
-  var une=function(k,fn){if(envoyes[k])return;envoyes[k]=1;fn()};
-  var hh=(prgProfil.rappel_heure||"18:00").split(":"),hc=(+hh[0])+(+hh[1])/60;
-  if(r.seance&&prgJoursChoisis().indexOf(jour)!==-1&&h>=hc&&h<hc+1&&prgFaites.indexOf(cle)===-1)
-    une(cle+"-seance",function(){prgNotifier("🏋️ Ta séance t'attend","Salle de la caserne • "+prgProfil.duree_min+" min","prg-seance")});
-  if(r.bilan&&jour===6&&h>=19&&h<23)
-    une(cle+"-bilan",function(){prgNotifier("📊 Ta semaine","Ouvre l'onglet Mon programme pour voir où tu en es.","prg-bilan")});
-  try{localStorage.setItem("prg_notif",JSON.stringify(envoyes))}catch(e){}
-}
-setInterval(prgVerifRappels,60000);
-document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible")prgVerifRappels()});
-
-function prgIcs(){
-  var moi=prgMoi();if(!moi||!prgProfil)return;
-  var p=function(x){return String(x).padStart(2,"0")};
-  var stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
-  var hh=(prgProfil.rappel_heure||"18:00").split(":");
-  var L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//ICP Cruzy-Quarante//Mon programme//FR","CALSCALE:GREGORIAN"];
-  prgJoursChoisis().slice(0,prgProfil.seances_sem).forEach(function(j){
-    var d=new Date();d.setHours(0,0,0,0);
-    d.setDate(d.getDate()+(j-((d.getDay()+6)%7)+7)%7);
-    var ds=d.getFullYear()+p(d.getMonth()+1)+p(d.getDate()),fin=(+hh[0])+1;
-    L.push("BEGIN:VEVENT","UID:prg-"+moi.id+"-"+j+"@icp-cruzy","DTSTAMP:"+stamp,
-      "DTSTART:"+ds+"T"+p(hh[0])+p(hh[1])+"00","DTEND:"+ds+"T"+p(fin)+p(hh[1])+"00",
-      "RRULE:FREQ=WEEKLY;BYDAY="+["MO","TU","WE","TH","FR","SA","SU"][j],
-      "SUMMARY:Seance - salle de la caserne",
-      "DESCRIPTION:"+prgProfil.duree_min+" min. Ouvre l'appli ICP, onglet Mon programme.",
-      "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:Seance dans 30 min","END:VALARM","END:VEVENT");
-  });
-  L.push("END:VCALENDAR");
-  var b=new Blob([L.join("\r\n")],{type:"text/calendar"}),u=URL.createObjectURL(b),a=document.createElement("a");
-  a.href=u;a.download="mes-seances.ics";a.click();setTimeout(function(){URL.revokeObjectURL(u)},2000);
-}
-function prgPdf(){
-  var moi=prgMoi();if(!moi||!prgProfil)return;
-  var pos=prgSemaineCourante(),S=PRG_SEMAINES[pos.semaine];
-  var seances=prgSeancesSemaine(pos.semaine,prgLundiCourant());
-  var o=PRG_OBJECTIFS.filter(function(x){return x.id===prgProfil.objectif})[0]||PRG_OBJECTIFS[1];
-  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
-  doc.setFontSize(18);doc.setTextColor(28,25,23);doc.text("Mon programme — "+moi.prenom+" "+moi.nom,14,18);
-  doc.setFontSize(10);doc.setTextColor(120,113,108);
-  doc.text(o.lib+" • Cycle "+pos.cycle+", semaine "+S.n+" sur 3 ("+S.nom+") • CIS Cruzy-Quarante",14,24);
-  doc.setFontSize(9.5);doc.setTextColor(34,150,180);doc.text(S.allure,14,30);
-  var y=36;
-  seances.forEach(function(s,i){
-    doc.autoTable({startY:y,
-      head:[["Séance "+(i+1)+" — "+s.date.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"}),"Consigne"]],
-      body:[["Échauffement (5 min)","Les 6 ateliers de l'affiche, tu dois pouvoir parler"]]
-        .concat(s.cardio?[[s.cardio.exo.nom+" ("+s.cardio.min+" min)",s.cardio.exo.consigne]]:[])
-        .concat([["Circuit",s.tours+" tours • "+s.temps+" s par atelier • 2 min entre les tours"]])
-        .concat(s.ateliers.map(function(e,k){return ["   "+(k+1)+". "+e.nom,PRG_CATS[e.cat]+(e.mat?" • "+e.mat:" • poids de corps")]}))
-        .concat([["Étirements (4 min)",s.etirements.map(function(e){return e.nom}).join(", ")]]),
-      headStyles:{fillColor:[28,25,23]},styles:{fontSize:8.5},columnStyles:{0:{cellWidth:70}}});
-    y=doc.lastAutoTable.finalY+6;
-    if(y>250&&i<seances.length-1){doc.addPage();y=18}
-  });
-  doc.setFontSize(8);doc.setTextColor(120,113,108);
-  doc.text("Astreinte : pas de charge maximale, pas d'échec musculaire. Au bip, on lâche tout.",14,Math.min(y+4,288));
-  doc.save("Mon_programme_"+moi.nom+"_S"+S.n+".pdf");
+function sptCadre(moi){
+  var src="sport/index.html?pid="+encodeURIComponent(moi.id)
+    +"&prenom="+encodeURIComponent(moi.prenom||"")
+    +"&nom="+encodeURIComponent(moi.nom||"");
+  return '<div class="barre"><span class="pill grad">💪 Mon sport</span>'
+    +'<span class="pill">Espace de '+sptEsc(((moi.prenom||"")+" "+(moi.nom||"")).trim())+'</span>'
+    +'<span style="flex:1"></span>'
+    +'<button class="pbtn" onclick="sptRevoir()">❔ Revoir la présentation</button>'
+    +'<button class="pbtn" onclick="window.open(\''+src+'\',\'_blank\')">↗ Ouvrir en plein écran</button></div>'
+    +'<div class="cadre"><iframe src="'+src+'" title="Mon sport" '
+    +'allow="fullscreen" referrerpolicy="same-origin"></iframe></div>'
+    +'<p class="note">L\'application fonctionne aussi hors réseau une fois ouverte. '
+    +'Pour l\'avoir sur ton écran d\'accueil, ouvre-la en plein écran puis « Ajouter à l\'écran d\'accueil ».</p>';
 }
 
 // ===== MÉNAGE (planning de nettoyage de la salle) =====
@@ -5594,7 +5129,7 @@ function basculerTheme(){
     majBoutonTheme();
 }
 var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","export","comptes"];
-var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon programme":"Progr."};
+var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon sport":"Sport"};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
     var txt=el?el.textContent.trim():t;
