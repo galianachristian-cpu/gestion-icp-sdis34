@@ -504,6 +504,14 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-programme .spt-niv{border-radius:99px;padding:4px 11px;font-size:11px;font-weight:800;text-transform:uppercase}
 #tab-programme .spt-niv.n1{background:#f87171;color:#0b0f19}
 #tab-programme .spt-niv.n2{background:#fbbf24;color:#0b0f19}
+#tab-programme .chips{display:flex;flex-wrap:wrap;gap:8px}
+#tab-programme .chip{border:1.5px solid var(--pline);background:var(--pcard2);color:var(--ptext);border-radius:12px;
+  padding:8px 14px;cursor:pointer;font:inherit;font-size:13.5px;font-weight:700;transition:.2s}
+#tab-programme .chip:hover{border-color:var(--a1)}
+#tab-programme .chip.sel{background:var(--grad);border-color:transparent;color:#0b0f19;animation:mp-pop .35s cubic-bezier(.3,1.5,.5,1)}
+#tab-programme .ss{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--pmuted);margin:16px 0 8px;font-weight:800}
+#tab-programme input[type=time]{background:var(--pcard2);border:1px solid var(--pline);color:var(--ptext);
+  border-radius:12px;padding:10px;font:inherit;font-size:14px}
 /* ===== DÉFIS COLLECTIFS ===== */
 #tab-defis{--a1:#22d3ee;--a2:#a78bfa;--grad:linear-gradient(135deg,var(--a1),var(--a2));
   --pbg:#0b0f19;--pcard:#141b2d;--pcard2:#1a2338;--pline:#24304a;--ptext:#eef2f8;--pmuted:#8b9ab4;--pok:#34d399;
@@ -3884,7 +3892,7 @@ function sptCadre(moi){
   var src="sport/index.html?pid="+encodeURIComponent(moi.id)
     +"&prenom="+encodeURIComponent(moi.prenom||"")
     +"&nom="+encodeURIComponent(moi.nom||"");
-  return sptCarteParticipation()+sptCartePointFaible(moi)
+  return sptCarteParticipation()+sptCartePointFaible(moi)+pushCarte()
     +'<div class="barre"><span class="pill grad">💪 Mon sport</span>'
     +'<span class="pill">Espace de '+sptEsc(((moi.prenom||"")+" "+(moi.nom||"")).trim())+'</span>'
     +'<span style="flex:1"></span>'
@@ -3956,6 +3964,111 @@ function sptCartePointFaible(moi){
     +'<span class="spt-niv n'+pf.niveau+'">niveau '+pf.niveau+'</span></div>'
     +(pf.objectif?'<p class="psous">'+sptEsc(pf.objectif)+'</p>':'')
     +'<p class="psous">Dans ton espace, travaille en priorité '+sptEsc(pf.conseil)+'.</p></div>';
+}
+
+// ---- Notifications poussées (elles arrivent même application fermée) ----
+// Clé publique VAPID : elle est publique par nature, la clé privée reste dans Supabase.
+var PUSH_PUB="BJkk40F_JXF2O7-S6B0J7-czhV1_BFkyIJfSqbGvWJz4XALE-tN2sSlnoLxQ3_8kbM85fNbwpMZYdfc1u3KsNqc";
+var pushAbo=null,pushCharge=false,pushOccupe=false;
+var PUSH_JOURS=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"];
+
+function pushDispo(){
+  return ("serviceWorker" in navigator)&&("PushManager" in window)&&("Notification" in window);
+}
+function pushB64(b64){
+  var p="=".repeat((4-b64.length%4)%4),s=(b64+p).replace(/-/g,"+").replace(/_/g,"/");
+  var raw=atob(s),out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function pushCharger(){
+  if(pushCharge)return;
+  pushCharge=true;
+  var moi=sptMoi();if(!moi)return;
+  try{
+    var r=await supabaseClient.from("push_abos").select("*").eq("pompier_id",moi.id);
+    var locaux=(r.data||[]);
+    if(pushDispo()){
+      var reg=await navigator.serviceWorker.getRegistration("sport/");
+      var sub=reg?await reg.pushManager.getSubscription():null;
+      pushAbo=sub?locaux.filter(function(x){return x.endpoint===sub.endpoint})[0]||null:null;
+    }
+    if(!pushAbo&&locaux.length)pushAbo=null; // abonné ailleurs, pas sur cet appareil
+  }catch(e){}
+  renderProgramme();
+}
+async function pushActiver(){
+  if(pushOccupe)return;
+  var moi=sptMoi();if(!moi)return;
+  if(!pushDispo()){showToast("Cet appareil ne gère pas les notifications","error");return}
+  pushOccupe=true;
+  try{
+    var perm=await Notification.requestPermission();
+    if(perm!=="granted"){showToast("Notifications refusées","error");return}
+    var reg=await navigator.serviceWorker.register("sport/sw.js",{scope:"sport/"});
+    await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pushB64(PUSH_PUB)});
+    var j=sub.toJSON();
+    var r=await supabaseClient.from("push_abos").upsert({
+      pompier_id:moi.id,endpoint:sub.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,
+      heure:"18:00",jours:"0,2,4",actif:true},{onConflict:"endpoint"});
+    if(r.error)throw r.error;
+    showToast("🔔 Rappels activés sur cet appareil","success");
+    pushCharge=false;await pushCharger();
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{pushOccupe=false}
+}
+async function pushCouper(){
+  if(pushOccupe||!pushAbo)return;
+  pushOccupe=true;
+  try{
+    var reg=await navigator.serviceWorker.getRegistration("sport/");
+    var sub=reg?await reg.pushManager.getSubscription():null;
+    if(sub)await sub.unsubscribe();
+    await supabaseClient.from("push_abos").delete().eq("endpoint",pushAbo.endpoint);
+    pushAbo=null;showToast("Rappels coupés sur cet appareil","success");
+    renderProgramme();
+  }catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{pushOccupe=false}
+}
+async function pushRegler(champ,valeur){
+  if(!pushAbo)return;
+  var maj={};maj[champ]=valeur;
+  pushAbo[champ]=valeur;
+  renderProgramme();
+  try{await supabaseClient.from("push_abos").update(maj).eq("endpoint",pushAbo.endpoint)}
+  catch(e){showToast("Réglage non enregistré","error")}
+}
+function pushToggleJour(i){
+  if(!pushAbo)return;
+  var j=String(pushAbo.jours||"").split(",").filter(function(x){return x!==""}).map(Number);
+  var k=j.indexOf(i);if(k===-1)j.push(i);else j.splice(k,1);
+  j.sort(function(a,b){return a-b});
+  pushRegler("jours",j.join(","));
+}
+function pushCarte(){
+  if(!pushDispo())
+    return '<div class="pcard" style="margin-bottom:12px"><div class="barre"><span class="pill">🔔 Rappels</span></div>'
+      +'<p class="psous">Cet appareil ne gère pas les notifications. Sur iPhone, ajoute d\'abord l\'appli à ton écran d\'accueil, puis reviens ici.</p></div>';
+  if(!pushCharge){pushCharger();return ''}
+  var h='<div class="pcard" style="margin-bottom:12px"><div class="barre">'
+    +'<span class="pill'+(pushAbo?' grad':'')+'">🔔 Rappels de séance</span>'
+    +'<span class="pill">'+(pushAbo?'activés sur cet appareil':'non activés ici')+'</span></div>';
+  if(!pushAbo){
+    h+='<p class="psous">Reçois un rappel même quand l\'appli est fermée, les jours où tu t\'entraînes.</p>'
+      +'<div class="prow"><button class="pbtn pri" onclick="pushActiver()">🔔 Activer sur cet appareil</button></div>';
+  }else{
+    h+='<div class="ss">Les jours</div><div class="chips">'
+      +PUSH_JOURS.map(function(j,i){
+        var on=String(pushAbo.jours||"").split(",").indexOf(String(i))!==-1;
+        return '<button type="button" class="chip'+(on?" sel":"")+'" onclick="pushToggleJour('+i+')">'+j+'</button>'}).join("")+'</div>'
+      +'<div class="ss">À quelle heure</div>'
+      +'<input type="time" value="'+sptEsc(pushAbo.heure||"18:00")+'" onchange="pushRegler(\'heure\',this.value)">'
+      +'<div class="prow"><button class="pbtn" onclick="pushCouper()">Couper sur cet appareil</button></div>'
+      +'<p class="note">Un rappel par jour au maximum. Chaque téléphone se règle séparément.</p>';
+  }
+  return h+'</div>';
 }
 
 // ===== DÉFIS COLLECTIFS =====

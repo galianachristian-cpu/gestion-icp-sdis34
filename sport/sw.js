@@ -40,3 +40,24 @@ self.addEventListener('notificationclick', e => {
     return c ? c.focus() : self.clients.openWindow((e.notification.data && e.notification.data.url) || './');
   }));
 });
+
+/* Notifications poussées : affichage et ouverture de l'appli au clic. */
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { titre: 'Rappel', corps: e.data ? e.data.text() : '' }; }
+  e.waitUntil(self.registration.showNotification(d.titre || 'Rappel', {
+    body: d.corps || '',
+    icon: './icon-192-v2.png',
+    badge: './icon-192-v2.png',
+    tag: 'rappel-seance',
+    data: { url: d.url || './index.html' }
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const cible = (e.notification.data && e.notification.data.url) || './index.html';
+  e.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(l => {
+    for (const c of l) { if ('focus' in c) return c.focus(); }
+    return clients.openWindow(cible);
+  }));
+});
