@@ -1485,7 +1485,16 @@ async function doLogin(){
         }catch(e){}
         try{history.replaceState(null,"",location.pathname+location.search);}catch(e){}
     }
-    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lire);else lire();
+    function lireJeton(){
+        var m=/[#&]acces_lien=([^&]+)/.exec(location.hash||"");if(!m||typeof supabaseClient==="undefined")return;
+        var th=decodeURIComponent(m[1]),er=document.getElementById("loginError");
+        try{history.replaceState(null,"",location.pathname+location.search);}catch(e){}
+        if(er){er.style.color="var(--success)";er.textContent="Connexion en cours…";}
+        supabaseClient.auth.verifyOtp({token_hash:th,type:"email"}).then(function(r){
+            if(r&&r.error&&er){er.style.color="var(--danger)";er.textContent="Lien expiré ou déjà utilisé : demande un nouveau scan.";}
+        });
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){lire();lireJeton();});else{lire();lireJeton();}
 })();
 // ===== APERÇU « VUE CHEF » (administrateur) =====
 // Bascule l'appli, sans rien enregistrer, dans l'état exact d'un compte chef : mêmes onglets, sa seule fiche,
@@ -2047,6 +2056,7 @@ function renderIdentifiants(){
       var e=escAttr(c.email).replace(/'/g,"\\'");
       return '<tr><td><b>'+escAttr(nomCompte(c))+'</b>'+(c.pompier_id?'':' <span class="badge badge-user" style="margin-left:4px">équipe</span>')+'</td><td style="word-break:break-all">'+escAttr(c.email)+'</td><td>'+cellule+'</td>'
         +'<td style="text-align:right;white-space:nowrap"><button class="btn btn-primary btn-sm" onclick="renvoyerIdentifiants(\''+e+'\',false)">📤 Renvoyer</button> '
+        +'<button class="btn btn-success btn-sm" title="Connexion directe : il scanne le QR, son mot de passe ne change pas" onclick="scanConnexionDirecte(\''+e+'\')">📱 Scan</button> '
         +'<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" title="Nouveau mot de passe" onclick="renvoyerIdentifiants(\''+e+'\',true)">🎲</button></td></tr>';
     }).join("")+'</tbody></table></div>';
 }
@@ -6128,19 +6138,20 @@ async function genererCarteAcces(c){
     champ("LIEN",lien,false,100);
     champ("IDENTIFIANT",c.email,false,100);
     if(c.pass)champ("MOT DE PASSE",c.pass,true,110);
+    else if(c.token)champ("CONNEXION","Directe : valable peu de temps, une seule fois",false,100);
     y+=44;g.textAlign="center";g.fillStyle=MU;g.font="500 25px Inter, sans-serif";
-    var l1=c.pass?"À la première connexion, choisis ton propre mot de passe":"Utilise le mot de passe que tu as choisi";
+    var l1=c.token?"Ton mot de passe ne change pas.":(c.pass?"À la première connexion, choisis ton propre mot de passe":"Utilise le mot de passe que tu as choisi");
     g.fillText(l1,cx,y);
     if(c.pass){g.fillText("(pastille à tes initiales, en haut à droite).",cx,y+36);y+=36;}
     y+=48;g.fillText("Astuce : ajoute l'appli à l'écran d'accueil du téléphone.",cx,y);
     y+=44;
     try{
-        var lienQR=lienAppli();if(c.pass){lienQR+="#acces="+btoa(unescape(encodeURIComponent(JSON.stringify({e:c.email,p:c.pass})))).replace(/\+/g,"-").replace(/\//g,"_");}
+        var lienQR=lienAppli();if(c.token){lienQR+="#acces_lien="+encodeURIComponent(c.token);}else if(c.pass){lienQR+="#acces="+btoa(unescape(encodeURIComponent(JSON.stringify({e:c.email,p:c.pass})))).replace(/\+/g,"-").replace(/\//g,"_");}
         var q=qrcode(0,"L");q.addData(lienQR);q.make();
         var n=q.getModuleCount(),T=300,pad=18,m=(T-2*pad)/n,qx=cx-T/2;
         g.fillStyle="#fff";rectArrondi(g,qx,y,T,T,22);g.fill();g.fillStyle="#000";
         for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(q.isDark(r,k))g.fillRect(Math.round(qx+pad+k*m),Math.round(y+pad+r*m),Math.ceil(m),Math.ceil(m));
-        y+=T+44;g.fillStyle=TX;g.font="600 30px Inter, sans-serif";g.fillText(c.pass?"Scanne pour te connecter":"Scanne pour ouvrir l'appli",cx,y);
+        y+=T+44;g.fillStyle=TX;g.font="600 30px Inter, sans-serif";g.fillText((c.pass||c.token)?"Scanne pour te connecter":"Scanne pour ouvrir l'appli",cx,y);
     }catch(e){}
     var py=Math.max(y+34,H-190);g.fillStyle=OR;rectArrondi(g,cx-190,py,380,64,32);g.fill();g.fillStyle="#fff";g.font="600 28px Oswald, sans-serif";g.letterSpacing="2px";g.fillText("CIS CRUZY-QUARANTE",cx,py+43);g.letterSpacing="0px";
     return await new Promise(function(ok){cv.toBlob(ok,"image/png");});
@@ -6163,6 +6174,16 @@ async function cartesAccesPDF(){
     showToast("✅ PDF des cartes enregistré","success");
 }
 
+
+// Connexion directe : l'admin affiche un QR, la personne le scanne et est connectée, sans changer son mot de passe
+async function scanConnexionDirecte(email){
+    var c=comptesCache.find(function(x){return x.email===email});if(!c)return;
+    try{
+        var r=await appelerGererComptes({action:'lien',email:email});
+        envoiCourant={email:email,sujet:"",carte:{nom:c.pompier_id?nomCompte(c):"",email:email,token:r.token_hash}};
+        await afficherCarteScan();
+    }catch(e){alert("⚠️ Échec : "+e.message);}
+}
 async function afficherCarteScan(){
     var c=envoiCourant&&envoiCourant.carte;if(!c)return;
     var blob=await genererCarteAcces(c);if(!blob)return;

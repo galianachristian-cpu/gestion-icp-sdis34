@@ -67,6 +67,16 @@ Deno.serve(async (req) => {
     return reponse(200, { ok: true });
   }
 
+  // Connexion directe (QR) : lien à usage unique, valable peu de temps, qui connecte la personne
+  // SANS toucher à son mot de passe. Le jeton (hashed_token) est échangé côté appli par verifyOtp().
+  if (body.action === "lien") {
+    if (!existant) return reponse(404, { error: "Compte introuvable" });
+    const { data, error } = await admin.auth.admin.generateLink({ type: "magiclink", email });
+    const th = data?.properties?.hashed_token;
+    if (error || !th) return reponse(500, { error: error?.message ?? "Lien impossible à créer" });
+    return reponse(200, { ok: true, token_hash: th });
+  }
+
   if (body.action === "enregistrer") {
     const password = body.password ? body.password.toString() : "";
     if (password && password.length < 8) return reponse(400, { error: "Mot de passe : 8 caractères minimum" });
