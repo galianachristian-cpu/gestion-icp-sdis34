@@ -1096,11 +1096,16 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-primary" onclick="envoyerAcces('sms')">💬 SMS</button>
 <button class="btn btn-success" id="btnPartager" onclick="envoyerAcces('partage')">📤 WhatsApp / autre</button>
 <button class="btn btn-primary" id="btnCarte" style="display:none;grid-column:1/-1" onclick="partagerCarte()">🖼️ Carte d'accès (image)</button>
+<button class="btn btn-success" id="btnScan" style="display:none;grid-column:1/-1" onclick="afficherCarteScan()">📱 Afficher à l'écran (à scanner)</button>
 <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="envoyerAcces('copie')">📋 Copier</button>
 </div>
 <div id="envoiMsg" style="font-size:13px;min-height:18px;margin-top:8px;color:var(--success)"></div>
 <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" onclick="fermerEnvoi()" style="background:var(--surface2);color:var(--text)">Fermer</button></div>
 </div>
+</div>
+<div id="modalScan" class="modal-overlay hidden" onclick="fermerScan()">
+<div style="text-align:center;max-width:94vw"><img id="scanImg" alt="Carte d'accès" style="max-height:82vh;max-width:92vw;border-radius:14px;display:block;margin:0 auto">
+<div style="color:#fff;font-size:14px;margin-top:10px">La personne scanne le QR code avec l'appareil photo de son téléphone. Touche l'écran pour fermer.</div></div>
 </div>
 <div id="modalBienvenue" class="modal-overlay hidden">
 <div class="modal" style="max-width:560px"><div id="bienvenueContenu"></div>
@@ -1460,7 +1465,7 @@ async function doLogin(){
     var pass=document.getElementById("loginPass").value;
     var errEl=document.getElementById("loginError");
     var btn=document.getElementById("loginBtn");
-    errEl.textContent="";
+    errEl.textContent="";errEl.style.color="";
     if(!email||!pass){errEl.textContent="Renseignez l'email et le mot de passe.";return}
     btn.disabled=true;btn.textContent="Connexion...";
     var res=await supabaseClient.auth.signInWithPassword({email:email,password:pass});
@@ -1468,6 +1473,20 @@ async function doLogin(){
     if(!res.error) return; // onAuthStateChange (ci-dessous) prend le relais pour afficher l'app.
     errEl.textContent="Identifiants incorrects.";
 }
+// QR de la carte d'accès : le lien contient #acces=... (email + mot de passe provisoire). On pré-remplit le
+// formulaire de connexion, puis on efface aussitôt le fragment de l'adresse (il n'est jamais envoyé au serveur).
+(function(){
+    function lire(){
+        var m=/[#&]acces=([^&]+)/.exec(location.hash||"");if(!m)return;
+        try{
+            var o=JSON.parse(decodeURIComponent(escape(atob(m[1].replace(/-/g,"+").replace(/_/g,"/")))));
+            var u=document.getElementById("loginUser"),pw=document.getElementById("loginPass"),er=document.getElementById("loginError");
+            if(u&&pw&&o.e&&o.p){u.value=o.e;pw.value=o.p;if(er){er.style.color="var(--success)";er.textContent="✅ Identifiants reconnus : appuie sur « Connexion ».";}}
+        }catch(e){}
+        try{history.replaceState(null,"",location.pathname+location.search);}catch(e){}
+    }
+    if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lire);else lire();
+})();
 // ===== APERÇU « VUE CHEF » (administrateur) =====
 // Bascule l'appli, sans rien enregistrer, dans l'état exact d'un compte chef : mêmes onglets, sa seule fiche,
 // et la synthèse publiée (synthese_couleurs) que le serveur lui envoie. On en sort en rechargeant la page.
@@ -6050,7 +6069,7 @@ function lienAppli(){return location.origin+location.pathname.replace(/index\.ht
 // Ouvre la fenêtre d'envoi (email, SMS, WhatsApp, copier) avec un message prêt
 function ouvrirMessage(titre,texte,sujet,emailDest,carte){
     envoiCourant={email:emailDest||"",sujet:sujet,carte:carte||null};
-    document.getElementById("btnCarte").style.display=carte?"":"none";
+    document.getElementById("btnCarte").style.display=carte?"":"none";document.getElementById("btnScan").style.display=carte?"":"none";
     document.getElementById("envoiTitre").textContent=titre;
     document.getElementById("envoiTexte").value=texte;
     document.getElementById("envoiTel").value="";
@@ -6116,11 +6135,12 @@ async function genererCarteAcces(c){
     y+=48;g.fillText("Astuce : ajoute l'appli à l'écran d'accueil du téléphone.",cx,y);
     y+=44;
     try{
-        var q=qrcode(0,"M");q.addData(lienAppli());q.make();
+        var lienQR=lienAppli();if(c.pass){lienQR+="#acces="+btoa(unescape(encodeURIComponent(JSON.stringify({e:c.email,p:c.pass})))).replace(/\+/g,"-").replace(/\//g,"_");}
+        var q=qrcode(0,"L");q.addData(lienQR);q.make();
         var n=q.getModuleCount(),T=300,pad=18,m=(T-2*pad)/n,qx=cx-T/2;
         g.fillStyle="#fff";rectArrondi(g,qx,y,T,T,22);g.fill();g.fillStyle="#000";
         for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(q.isDark(r,k))g.fillRect(Math.round(qx+pad+k*m),Math.round(y+pad+r*m),Math.ceil(m),Math.ceil(m));
-        y+=T+44;g.fillStyle=TX;g.font="600 30px Inter, sans-serif";g.fillText("Scanne pour ouvrir l'appli",cx,y);
+        y+=T+44;g.fillStyle=TX;g.font="600 30px Inter, sans-serif";g.fillText(c.pass?"Scanne pour te connecter":"Scanne pour ouvrir l'appli",cx,y);
     }catch(e){}
     var py=Math.max(y+34,H-190);g.fillStyle=OR;rectArrondi(g,cx-190,py,380,64,32);g.fill();g.fillStyle="#fff";g.font="600 28px Oswald, sans-serif";g.letterSpacing="2px";g.fillText("CIS CRUZY-QUARANTE",cx,py+43);g.letterSpacing="0px";
     return await new Promise(function(ok){cv.toBlob(ok,"image/png");});
@@ -6141,6 +6161,18 @@ async function cartesAccesPDF(){
     }
     doc.save("Cartes_acces_ICP_confidentiel.pdf");
     showToast("✅ PDF des cartes enregistré","success");
+}
+
+async function afficherCarteScan(){
+    var c=envoiCourant&&envoiCourant.carte;if(!c)return;
+    var blob=await genererCarteAcces(c);if(!blob)return;
+    var img=document.getElementById("scanImg");if(img.dataset.u)URL.revokeObjectURL(img.dataset.u);
+    img.dataset.u=URL.createObjectURL(blob);img.src=img.dataset.u;
+    document.getElementById("modalScan").classList.remove("hidden");
+}
+function fermerScan(){
+    var img=document.getElementById("scanImg");document.getElementById("modalScan").classList.add("hidden");
+    if(img.dataset.u){URL.revokeObjectURL(img.dataset.u);img.dataset.u="";}img.removeAttribute("src");
 }
 async function partagerCarte(){
     var c=envoiCourant&&envoiCourant.carte;if(!c)return;
