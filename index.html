@@ -1094,7 +1094,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-primary" onclick="envoyerAcces('mail')">✉️ Email</button>
 <button class="btn btn-primary" onclick="envoyerAcces('sms')">💬 SMS</button>
 <button class="btn btn-success" id="btnPartager" onclick="envoyerAcces('partage')">📤 WhatsApp / autre</button>
-<button class="btn btn-primary" id="btnCarte" style="display:none;grid-column:1/-1" onclick="partagerCarte()">🖼️ Carte d'accès (image) → WhatsApp</button>
+<button class="btn btn-primary" id="btnCarte" style="display:none;grid-column:1/-1" onclick="partagerCarte()">🖼️ Carte d'accès (image)</button>
 <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="envoyerAcces('copie')">📋 Copier</button>
 </div>
 <div id="envoiMsg" style="font-size:13px;min-height:18px;margin-top:8px;color:var(--success)"></div>
@@ -6123,6 +6123,10 @@ async function partagerCarte(){
     if(!blob){msg.textContent="⚠️ Impossible de créer la carte.";return;}
     var nomFic="Acces_ICP_"+(c.nom||"equipe").replace(/[^A-Za-z0-9]+/g,"_")+".png";
     var fichier=new File([blob],nomFic,{type:"image/png"});
+    var mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||navigator.maxTouchPoints>1;
+    if(!mobile&&navigator.clipboard&&window.ClipboardItem){
+        try{await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);msg.textContent="✅ Carte copiée (1 image) : ouvre la discussion WhatsApp et colle-la (Cmd+V / Ctrl+V).";return;}catch(e){}
+    }
     if(navigator.canShare&&navigator.canShare({files:[fichier]})){
         try{await navigator.share({files:[fichier],title:"Accès à l'application ICP"});return;}catch(e){if(e&&e.name==="AbortError")return;}
     }
