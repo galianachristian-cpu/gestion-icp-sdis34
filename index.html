@@ -755,6 +755,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="align-items:center">
 <select id="fichePompier" onchange="renderFiche()" style="max-width:280px"></select>
 <button class="btn btn-primary btn-sm" onclick="ficheExportPDF()">📄 Télécharger ma fiche (PDF)</button>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="partagerCarteResultat()">🖼️ Carte à partager (image)</button>
 </div>
 <div id="ficheContenu"></div>
 </div>
@@ -1916,7 +1917,7 @@ function renderSessions(){
       +'<div><div style="font-size:13px;color:var(--muted)">Prochaine session · <b style="color:var(--primary)">'+quand+'</b></div>'
       +'<div style="font-family:var(--titre);font-size:24px;color:var(--text);margin-top:2px">'+escAttr(libelleSession(next))+'</div>'
       +(next.note?'<div style="font-size:13px;color:var(--muted);margin-top:4px">'+escAttr(next.note)+'</div>':'')+'</div>'
-      +'<button class="btn btn-primary btn-sm" onclick="genererRelance()">📣 Prévenir les pompiers</button></div>';
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="genererRelance()">📣 Prévenir les pompiers</button>'+(isAdmin?'<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="partagerVisuelSession()">🖼️ Visuel (image)</button>':'')+'</div></div>';
     html+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted);font-size:13px"><b style="color:var(--text)">'+attendus.length+'</b> pompier(s) attendu(s) — tests encore à passer</summary>'
       +'<ul style="margin:8px 0 0 18px;font-size:13px;color:var(--muted);columns:2 260px">'+attendus.map(function(p){var m=testsManquants(p);
         return '<li><b style="color:var(--text)">'+escAttr(p.prenom)+' '+escAttr(p.nom)+'</b> : '+(m.length===EPREUVES_ICP.length?"tous les tests":m.join(", "))+'</li>'}).join("")+'</ul></details>';
@@ -6202,6 +6203,111 @@ async function afficherCarteScan(){
 function fermerScan(){
     var img=document.getElementById("scanImg");document.getElementById("modalScan").classList.add("hidden");
     if(img.dataset.u){URL.revokeObjectURL(img.dataset.u);img.dataset.u="";}img.removeAttribute("src");
+}
+
+// --- Visuels à partager (WhatsApp) : session ICP et carte de résultats individuelle ---
+async function diffuserImage(blob,nomFic,titre){
+    var fichier=new File([blob],nomFic,{type:"image/png"});
+    var mobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||navigator.maxTouchPoints>1;
+    if(!mobile&&navigator.clipboard&&window.ClipboardItem){
+        try{await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);showToast("✅ Image copiée : colle-la dans WhatsApp (Cmd+V / Ctrl+V).","success");return;}catch(e){}
+    }
+    if(navigator.canShare&&navigator.canShare({files:[fichier]})){
+        try{await navigator.share({files:[fichier],title:titre});return;}catch(e){if(e&&e.name==="AbortError")return;}
+    }
+    var u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=nomFic;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
+    showToast("✅ Image enregistrée : joins-la dans WhatsApp.","success");
+}
+function lignesTexte(g,txt,maxw){
+    var mots=(txt||"").split(/\s+/),l=[],cur="";
+    mots.forEach(function(m){var t=cur?cur+" "+m:m;if(g.measureText(t).width>maxw&&cur){l.push(cur);cur=m;}else cur=t;});
+    if(cur)l.push(cur);return l;
+}
+async function baseCarteVisuelle(H,sousTitre){
+    try{await document.fonts.load("700 40px Oswald");await document.fonts.load("500 24px Inter");}catch(e){}
+    var logo=await chargerImageCarte("icons/logo.webp");
+    var W=1080,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+    g.fillStyle="#0c0a09";g.fillRect(0,0,W,H);
+    var rg=g.createRadialGradient(W/2,-120,40,W/2,-120,760);rg.addColorStop(0,"rgba(234,88,12,.30)");rg.addColorStop(1,"rgba(234,88,12,0)");g.fillStyle=rg;g.fillRect(0,0,W,H);
+    g.fillStyle="#1c1917";rectArrondi(g,50,50,W-100,H-100,40);g.fill();g.strokeStyle="#44403c";g.lineWidth=3;g.stroke();
+    var cx=W/2,y=110;if(logo)g.drawImage(logo,cx-90,y,180,180);y+=225;
+    g.textAlign="left";g.font="700 64px Oswald, sans-serif";var a="ICP ",b="CRUZY-QUARANTE",wa=g.measureText(a).width,wb=g.measureText(b).width,x0=cx-(wa+wb)/2;
+    g.fillStyle="#fafaf9";g.fillText(a,x0,y+30);g.fillStyle="#fbbf24";g.fillText(b,x0+wa,y+30);
+    g.textAlign="center";g.fillStyle="#a8a29e";g.font="500 26px Inter, sans-serif";g.fillText(sousTitre,cx,y+76);
+    g.fillStyle="#44403c";g.fillRect(120,y+110,W-240,3);
+    return {cv:cv,g:g,W:W,H:H,cx:cx,y:y+110};
+}
+function pilule(g,cx,py,txt){
+    g.font="600 28px Oswald, sans-serif";g.letterSpacing="2px";var w=g.measureText(txt).width+80;
+    g.fillStyle="#ea580c";rectArrondi(g,cx-w/2,py,w,64,32);g.fill();g.fillStyle="#fff";g.textAlign="center";g.fillText(txt,cx,py+43);g.letterSpacing="0px";
+}
+function versBlob(cv){return new Promise(function(ok){cv.toBlob(ok,"image/png");});}
+
+async function genererVisuelSession(x){
+    var B=await baseCarteVisuelle(1480,"Indices de condition physique · SDIS 34"),g=B.g,cx=B.cx,y=B.y+90;
+    g.textAlign="center";g.fillStyle="#fbbf24";g.font="600 38px Oswald, sans-serif";g.letterSpacing="6px";g.fillText("SESSION ICP",cx,y);g.letterSpacing="0px";y+=40;
+    var d=new Date(x.date+"T12:00:00");
+    var jour=d.toLocaleDateString("fr-FR",{weekday:"long"}).toUpperCase(),num=String(d.getDate()),mois=d.toLocaleDateString("fr-FR",{month:"long",year:"numeric"}).toUpperCase();
+    g.fillStyle="#a8a29e";g.font="500 40px Oswald, sans-serif";y+=50;g.fillText(jour,cx,y);
+    g.fillStyle="#fafaf9";g.font="700 230px Oswald, sans-serif";y+=215;g.fillText(num,cx,y);
+    g.fillStyle="#ea580c";g.font="600 54px Oswald, sans-serif";y+=70;g.fillText(mois,cx,y);
+    y+=40;
+    function bloc(lib,val){
+        if(!val)return;
+        g.fillStyle="#292524";rectArrondi(g,120,y,B.W-240,104,22);g.fill();g.strokeStyle="#44403c";g.lineWidth=2;g.stroke();
+        g.textAlign="left";g.fillStyle="#a8a29e";g.font="600 22px Oswald, sans-serif";g.letterSpacing="3px";g.fillText(lib,150,y+38);g.letterSpacing="0px";
+        g.fillStyle="#fafaf9";g.font="500 36px Inter, sans-serif";g.fillText(val,150,y+82);y+=124;g.textAlign="center";
+    }
+    bloc("HEURE",x.heure);bloc("LIEU",x.lieu);
+    g.textAlign="center";g.fillStyle="#a8a29e";g.font="500 26px Inter, sans-serif";
+    if(x.note){lignesTexte(g,x.note,B.W-300).slice(0,3).forEach(function(l){g.fillText(l,cx,y+30);y+=36;});y+=10;}
+    y+=16;g.fillStyle="#fafaf9";g.font="500 26px Inter, sans-serif";
+    g.fillText("Tests : rameur ou Luc Léger · souplesse · pompes ou tractions",cx,y+24);
+    pilule(g,cx,B.H-170,"CIS CRUZY-QUARANTE");
+    return await versBlob(B.cv);
+}
+async function partagerVisuelSession(){
+    var x=prochaineSession();if(!x){showToast("Aucune session à venir.","warning");return;}
+    var blob=await genererVisuelSession(x);if(blob)diffuserImage(blob,"Session_ICP_"+x.date+".png","Session ICP");
+}
+
+async function genererCarteResultat(p){
+    var age=getAge(p.annee),gl=getNiveauGlobal(p);
+    var lignes=TESTS_SYNTHESE.map(function(t){
+        var v=p[t.field],n="";
+        if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
+        return {lib:t.label,val:(v&&v.toString().trim())?v.toString().trim()+(UNITES_TEST[t.key]||""):"",n:n};
+    });
+    var B=await baseCarteVisuelle(1680,"Indices de condition physique · SDIS 34"),g=B.g,cx=B.cx,y=B.y+80;
+    g.textAlign="center";g.fillStyle="#a8a29e";g.font="500 26px Inter, sans-serif";g.fillText("Mon bilan ICP",cx,y);y+=60;
+    g.fillStyle="#fbbf24";g.font="600 50px Oswald, sans-serif";var nom=nomGrade(p).toUpperCase();
+    while(g.measureText(nom).width>B.W-240&&parseInt(g.font.match(/(\d+)px/)[1])>28){g.font=g.font.replace(/(\d+)px/,function(m,n){return (n-2)+"px"});}
+    g.fillText(nom,cx,y);y+=30;
+    var cg=(gl&&COULEURS_NIVEAU[gl]&&gl!=="?")?COULEURS_NIVEAU[gl]:null;
+    var txtG=cg?"Niveau global : "+TEXTE_NIVEAU[gl]:"Niveau global : à évaluer";
+    g.font="600 32px Oswald, sans-serif";var wg=g.measureText(txtG).width+80;
+    g.fillStyle=cg?cg.hex:"#44403c";rectArrondi(g,cx-wg/2,y,wg,72,36);g.fill();g.fillStyle=cg?(gl==="2"?"#1c1917":"#fff"):"#fafaf9";g.fillText(txtG,cx,y+49);y+=100;
+    lignes.forEach(function(l){
+        g.fillStyle="#292524";rectArrondi(g,120,y,B.W-240,118,22);g.fill();g.strokeStyle="#44403c";g.lineWidth=2;g.stroke();
+        g.textAlign="left";g.fillStyle="#a8a29e";g.font="600 24px Oswald, sans-serif";g.letterSpacing="3px";g.fillText(l.lib.toUpperCase(),150,y+42);g.letterSpacing="0px";
+        g.fillStyle="#fafaf9";g.font="600 38px Inter, sans-serif";g.fillText(l.val||"—",150,y+92);
+        var c=COULEURS_NIVEAU[l.n];
+        g.textAlign="right";g.font="600 26px Inter, sans-serif";
+        if(c){var t=TEXTE_NIVEAU[l.n]||c.txt,w=g.measureText(t).width+44;g.fillStyle=c.hex;rectArrondi(g,B.W-150-w,y+34,w,52,26);g.fill();g.fillStyle=l.n==="2"?"#1c1917":"#fff";g.fillText(t,B.W-150-22,y+70);}
+        else{g.fillStyle="#78716c";g.fillText("à passer",B.W-150,y+70);}
+        y+=138;g.textAlign="center";
+    });
+    g.fillStyle="#a8a29e";g.font="500 24px Inter, sans-serif";g.textAlign="center";
+    g.fillText("Vert : optimal · Orange : engagement · Rouge : vigilance",cx,y+20);
+    pilule(g,cx,B.H-170,"CIS CRUZY-QUARANTE");
+    return await versBlob(B.cv);
+}
+async function partagerCarteResultat(){
+    var sel=document.getElementById("fichePompier");
+    var p=(monPompierId&&data.find(function(x){return x.id===monPompierId}))||data.find(function(x){return String(x.id)===sel.value})||data[0];
+    if(!p)return;
+    var blob=await genererCarteResultat(p);
+    if(blob)diffuserImage(blob,"Bilan_ICP_"+(p.nom+"_"+p.prenom).replace(/[^A-Za-z0-9]+/g,"_")+".png","Mon bilan ICP");
 }
 async function partagerCarte(){
     var c=envoiCourant&&envoiCourant.carte;if(!c)return;
