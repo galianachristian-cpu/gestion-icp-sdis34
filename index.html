@@ -1055,6 +1055,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-primary" onclick="envoyerAcces('mail')">✉️ Email</button>
 <button class="btn btn-primary" onclick="envoyerAcces('sms')">💬 SMS</button>
 <button class="btn btn-success" id="btnPartager" onclick="envoyerAcces('partage')">📤 WhatsApp / autre</button>
+<button class="btn btn-primary" id="btnCarte" style="display:none;grid-column:1/-1" onclick="partagerCarte()">🖼️ Carte d'accès (image) → WhatsApp</button>
 <button class="btn" style="background:var(--surface2);color:var(--text)" onclick="envoyerAcces('copie')">📋 Copier</button>
 </div>
 <div id="envoiMsg" style="font-size:13px;min-height:18px;margin-top:8px;color:var(--success)"></div>
@@ -1922,7 +1923,7 @@ function messageAccesPompier(p,email,pass){
     +"🔗 Lien : "+lienAppli()+"\n👤 Identifiant : "+email+"\n🔑 Mot de passe : "+pass+"\n\n"
     +"À la première connexion, choisissez votre propre mot de passe : touchez la pastille à vos initiales, en haut à droite.\n"
     +"Astuce : ajoutez l'appli à l'écran d'accueil du téléphone (Partager → « Sur l'écran d'accueil »).\n\nChristian",
-    "Votre accès à l'application ICP — Cruzy-Quarante",email);
+    "Votre accès à l'application ICP — Cruzy-Quarante",email,{nom:(p.prenom+" "+p.nom).trim(),email:email,pass:pass});
 }
 async function creerAccesPompier(p,email){
   var pass=genererMotDePasse();
@@ -5893,8 +5894,9 @@ function genererMotDePasse(){
 }
 function lienAppli(){return location.origin+location.pathname.replace(/index\.html$/,"");}
 // Ouvre la fenêtre d'envoi (email, SMS, WhatsApp, copier) avec un message prêt
-function ouvrirMessage(titre,texte,sujet,emailDest){
-    envoiCourant={email:emailDest||"",sujet:sujet};
+function ouvrirMessage(titre,texte,sujet,emailDest,carte){
+    envoiCourant={email:emailDest||"",sujet:sujet,carte:carte||null};
+    document.getElementById("btnCarte").style.display=carte?"":"none";
     document.getElementById("envoiTitre").textContent=titre;
     document.getElementById("envoiTexte").value=texte;
     document.getElementById("envoiTel").value="";
@@ -5912,12 +5914,67 @@ function ouvrirEnvoi(email, pass){
         +"Après votre première connexion, vous pourrez choisir votre propre mot de passe avec le bouton « 🔑 Mot de passe ».\n"
         +"Astuce : sur téléphone, ajoutez l'appli à l'écran d'accueil (Partager → « Sur l'écran d'accueil »).\n\n"
         +"Christian",
-        "Accès à l'application Gestion ICP — SDIS 34", email);
+        "Accès à l'application Gestion ICP — SDIS 34", email,{nom:"",email:email,pass:pass});
 }
 function fermerEnvoi(){
     document.getElementById("modalEnvoi").classList.add("hidden");
     document.getElementById("envoiTexte").value=""; // le mot de passe ne reste pas affiché
     envoiCourant=null;
+}
+
+// --- Carte d'accès (image PNG) à envoyer par WhatsApp : emblème, lien, identifiant, mot de passe ---
+function chargerImageCarte(src){return new Promise(function(ok){var i=new Image();i.onload=function(){ok(i)};i.onerror=function(){ok(null)};i.src=src;});}
+function rectArrondi(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+async function genererCarteAcces(c){
+    try{await document.fonts.load("700 40px Oswald");await document.fonts.load("500 24px Inter");}catch(e){}
+    var logo=await chargerImageCarte("icons/logo.webp");
+    var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+    var OR="#ea580c",OR2="#c2410c",AC="#fbbf24",BG="#0c0a09",SU="#1c1917",S2="#292524",BD="#44403c",TX="#fafaf9",MU="#a8a29e";
+    g.fillStyle=BG;g.fillRect(0,0,W,H);
+    var rg=g.createRadialGradient(W/2,-120,40,W/2,-120,760);rg.addColorStop(0,"rgba(234,88,12,.30)");rg.addColorStop(1,"rgba(234,88,12,0)");g.fillStyle=rg;g.fillRect(0,0,W,H);
+    g.fillStyle=SU;rectArrondi(g,50,50,W-100,H-100,40);g.fill();g.strokeStyle=BD;g.lineWidth=3;g.stroke();
+    var cx=W/2,y=120;
+    if(logo){g.drawImage(logo,cx-110,y,220,220);}y+=250;
+    g.textAlign="center";g.textBaseline="alphabetic";
+    g.font="700 74px Oswald, sans-serif";var a="ICP ",b="CRUZY-QUARANTE",wa=g.measureText(a).width,wb=g.measureText(b).width,x0=cx-(wa+wb)/2;
+    g.textAlign="left";g.fillStyle=TX;g.fillText(a,x0,y+50);g.fillStyle=AC;g.fillText(b,x0+wa,y+50);
+    g.textAlign="center";g.fillStyle=MU;g.font="500 28px Inter, sans-serif";g.fillText("Indices de condition physique · SDIS 34",cx,y+98);
+    y+=150;
+    g.fillStyle=BD;g.fillRect(120,y,W-240,3);y+=60;
+    g.textAlign="left";
+    if(c.nom){g.fillStyle=MU;g.font="500 26px Inter, sans-serif";g.fillText("Accès personnel",120,y);y+=56;g.fillStyle=AC;g.font="600 52px Oswald, sans-serif";g.fillText(c.nom.toUpperCase(),120,y);y+=40;}
+    else{g.fillStyle=AC;g.font="600 46px Oswald, sans-serif";g.fillText("VOTRE ACCÈS À L'APPLICATION",120,y);y+=30;}
+    function champ(lib,val,mono,haut){
+        y+=26;g.fillStyle=S2;rectArrondi(g,120,y,W-240,haut,22);g.fill();g.strokeStyle=BD;g.lineWidth=2;g.stroke();
+        g.fillStyle=MU;g.font="600 22px Oswald, sans-serif";g.letterSpacing="3px";g.fillText(lib,150,y+38);g.letterSpacing="0px";
+        g.fillStyle=TX;var f=mono?"600 44px 'Courier New', monospace":"500 34px Inter, sans-serif";g.font=f;
+        var t=val,maxw=W-300;while(g.measureText(t).width>maxw&&parseInt(g.font.match(/(\d+)px/)[1])>20){g.font=g.font.replace(/(\d+)px/,function(m,n){return (n-2)+"px"});}
+        g.fillText(t,150,y+haut-24);y+=haut;
+    }
+    var lien=lienAppli().replace(/^https?:\/\//,"");
+    champ("LIEN",lien,false,100);
+    champ("IDENTIFIANT",c.email,false,100);
+    if(c.pass)champ("MOT DE PASSE",c.pass,true,110);
+    y+=44;g.textAlign="center";g.fillStyle=MU;g.font="500 25px Inter, sans-serif";
+    var l1=c.pass?"À la première connexion, choisis ton propre mot de passe":"Utilise le mot de passe que tu as choisi";
+    g.fillText(l1,cx,y);
+    if(c.pass){g.fillText("(pastille à tes initiales, en haut à droite).",cx,y+36);y+=36;}
+    y+=48;g.fillText("Astuce : ajoute l'appli à l'écran d'accueil du téléphone.",cx,y);
+    var py=Math.max(y+34,H-190);g.fillStyle=OR;rectArrondi(g,cx-190,py,380,64,32);g.fill();g.fillStyle="#fff";g.font="600 28px Oswald, sans-serif";g.letterSpacing="2px";g.fillText("CIS CRUZY-QUARANTE",cx,py+43);g.letterSpacing="0px";
+    return await new Promise(function(ok){cv.toBlob(ok,"image/png");});
+}
+async function partagerCarte(){
+    var c=envoiCourant&&envoiCourant.carte;if(!c)return;
+    var msg=document.getElementById("envoiMsg");msg.textContent="";
+    var blob=await genererCarteAcces(c);
+    if(!blob){msg.textContent="⚠️ Impossible de créer la carte.";return;}
+    var nomFic="Acces_ICP_"+(c.nom||"equipe").replace(/[^A-Za-z0-9]+/g,"_")+".png";
+    var fichier=new File([blob],nomFic,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[fichier]})){
+        try{await navigator.share({files:[fichier],title:"Accès à l'application ICP"});return;}catch(e){if(e&&e.name==="AbortError")return;}
+    }
+    var u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=nomFic;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);
+    msg.textContent="✅ Carte enregistrée : joins-la dans WhatsApp.";
 }
 async function envoyerAcces(mode){
     var texte=document.getElementById("envoiTexte").value;
