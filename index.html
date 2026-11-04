@@ -1048,6 +1048,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="align-items:center">
 <label class="case-terrain"><input type="checkbox" id="identVoir" onchange="renderIdentifiants()"> 👁 Afficher les mots de passe</label>
 <button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="identifiantsPDF()">🖨️ Liste à imprimer (PDF)</button>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="cartesAccesPDF()">🖼️ Toutes les cartes (PDF)</button>
 </div>
 <div id="identifiantsListe"><div class="squelette" style="min-height:80px"></div></div>
 </div>
@@ -6081,7 +6082,7 @@ function rectArrondi(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(
 async function genererCarteAcces(c){
     try{await document.fonts.load("700 40px Oswald");await document.fonts.load("500 24px Inter");}catch(e){}
     var logo=await chargerImageCarte("icons/logo.webp");
-    var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+    var W=1080,H=1760,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
     var OR="#ea580c",OR2="#c2410c",AC="#fbbf24",BG="#0c0a09",SU="#1c1917",S2="#292524",BD="#44403c",TX="#fafaf9",MU="#a8a29e";
     g.fillStyle=BG;g.fillRect(0,0,W,H);
     var rg=g.createRadialGradient(W/2,-120,40,W/2,-120,760);rg.addColorStop(0,"rgba(234,88,12,.30)");rg.addColorStop(1,"rgba(234,88,12,0)");g.fillStyle=rg;g.fillRect(0,0,W,H);
@@ -6113,8 +6114,33 @@ async function genererCarteAcces(c){
     g.fillText(l1,cx,y);
     if(c.pass){g.fillText("(pastille à tes initiales, en haut à droite).",cx,y+36);y+=36;}
     y+=48;g.fillText("Astuce : ajoute l'appli à l'écran d'accueil du téléphone.",cx,y);
+    y+=44;
+    try{
+        var q=qrcode(0,"M");q.addData(lienAppli());q.make();
+        var n=q.getModuleCount(),T=300,pad=18,m=(T-2*pad)/n,qx=cx-T/2;
+        g.fillStyle="#fff";rectArrondi(g,qx,y,T,T,22);g.fill();g.fillStyle="#000";
+        for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(q.isDark(r,k))g.fillRect(Math.round(qx+pad+k*m),Math.round(y+pad+r*m),Math.ceil(m),Math.ceil(m));
+        y+=T+44;g.fillStyle=TX;g.font="600 30px Inter, sans-serif";g.fillText("Scanne pour ouvrir l'appli",cx,y);
+    }catch(e){}
     var py=Math.max(y+34,H-190);g.fillStyle=OR;rectArrondi(g,cx-190,py,380,64,32);g.fill();g.fillStyle="#fff";g.font="600 28px Oswald, sans-serif";g.letterSpacing="2px";g.fillText("CIS CRUZY-QUARANTE",cx,py+43);g.letterSpacing="0px";
     return await new Promise(function(ok){cv.toBlob(ok,"image/png");});
+}
+
+// Toutes les cartes d'accès (mots de passe provisoires) dans un PDF : 4 cartes par page A4, à découper
+async function cartesAccesPDF(){
+    var lignes=comptesCache.filter(function(c){var m=mdpProvisoires[c.email];return m&&m.mot_de_passe}).sort(function(a,b){return nomCompte(a).localeCompare(nomCompte(b),'fr')});
+    if(!lignes.length){alert("Aucune carte possible : tout le monde a déjà choisi son mot de passe (ou aucun compte).");return;}
+    showToast("Création de "+lignes.length+" cartes…","info");
+    var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    for(var i=0;i<lignes.length;i++){
+        var c=lignes[i],blob=await genererCarteAcces({nom:c.pompier_id?nomCompte(c):"",email:c.email,pass:mdpProvisoires[c.email].mot_de_passe});
+        var url=await new Promise(function(ok){var f=new FileReader();f.onload=function(){ok(f.result)};f.readAsDataURL(blob);});
+        var pos=i%4;if(i>0&&pos===0)doc.addPage();
+        var x=15+(pos%2)*95,y=10+Math.floor(pos/2)*140;
+        doc.addImage(url,"PNG",x,y,85,134,undefined,"FAST");
+    }
+    doc.save("Cartes_acces_ICP_confidentiel.pdf");
+    showToast("✅ PDF des cartes enregistré","success");
 }
 async function partagerCarte(){
     var c=envoiCourant&&envoiCourant.carte;if(!c)return;
@@ -6202,6 +6228,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('Service worker :', e.message); });
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
