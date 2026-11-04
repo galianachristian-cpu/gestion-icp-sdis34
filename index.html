@@ -1490,8 +1490,16 @@ async function doLogin(){
         var th=decodeURIComponent(m[1]),er=document.getElementById("loginError");
         try{history.replaceState(null,"",location.pathname+location.search);}catch(e){}
         if(er){er.style.color="var(--success)";er.textContent="Connexion en cours…";}
-        supabaseClient.auth.verifyOtp({token_hash:th,type:"email"}).then(function(r){
-            if(r&&r.error&&er){er.style.color="var(--danger)";er.textContent="Lien expiré ou déjà utilisé : demande un nouveau scan.";}
+        // Si le téléphone est déjà connecté (autre compte), on ferme d'abord cette session, puis on se connecte
+        // avec le lien et on recharge la page pour repartir d'un état propre (sinon l'ancien profil reste affiché).
+        Promise.resolve(supabaseClient.auth.signOut({scope:"local"})).catch(function(){}).then(function(){
+            return supabaseClient.auth.verifyOtp({token_hash:th,type:"email"});
+        }).then(function(r){
+            if(r&&r.error){
+                var e2=document.getElementById("loginError");
+                try{showLoginScreen();}catch(x){}
+                if(e2){e2.style.color="var(--danger)";e2.textContent="Lien expiré ou déjà utilisé : demande un nouveau scan.";}
+            }else{location.replace(location.pathname+location.search);}
         });
     }
     if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){lire();lireJeton();});else{lire();lireJeton();}
