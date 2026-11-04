@@ -591,6 +591,41 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 @media(max-width:720px){#tab-defis{padding:10px}#tab-defis .dfs-g2{grid-template-columns:1fr}
   #tab-defis .dfs-chiffres b{font-size:33px}#tab-defis .dfs-l{grid-template-columns:26px 1fr 50px}
   #tab-defis .dfs-l .b{display:none}}
+/* ===== AIDE ===== */
+#tab-aide .aide-intro{font-size:14px;color:var(--muted);line-height:1.6}
+#tab-aide .aide-pas{display:flex;flex-direction:column;gap:12px}
+#tab-aide .aide-p{display:flex;gap:13px;align-items:flex-start}
+#tab-aide .aide-p span{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--rouge),var(--primary));
+  color:#fff;font-weight:800;display:grid;place-items:center;font-size:14px}
+#tab-aide .aide-p b{display:block;font-size:14.5px}
+#tab-aide .aide-p em{font-style:normal;display:block;font-size:13px;color:var(--muted);margin-top:3px;line-height:1.5}
+#tab-aide .aide-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:12px}
+#tab-aide .aide-o{border:1px solid var(--border);background:var(--surface2);border-radius:14px;padding:14px;display:flex;flex-direction:column}
+#tab-aide .aide-oh{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+#tab-aide .aide-oh i{font-style:normal;font-size:21px}
+#tab-aide .aide-oh b{font-family:var(--titre);font-size:15.5px;text-transform:uppercase;letter-spacing:.3px}
+#tab-aide .aide-o p{font-size:13px;color:var(--muted);line-height:1.5;flex:1;margin-bottom:11px}
+#tab-aide .aide-o .btn{align-self:flex-start;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+#tab-aide .aide-o .btn:hover{border-color:var(--primary)}
+#tab-aide .aide-faq{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+#tab-aide .aide-q{border-bottom:1px solid var(--border)}
+#tab-aide .aide-q:last-child{border-bottom:0}
+#tab-aide .aide-q button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:transparent;border:0;color:var(--text);font:inherit;font-size:14.5px;font-weight:600;
+  text-align:left;padding:14px 16px;cursor:pointer}
+#tab-aide .aide-q button:hover{background:var(--surface2)}
+#tab-aide .aide-q.on button{color:var(--accent)}
+#tab-aide .aide-q s{text-decoration:none;flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--surface2);
+  display:grid;place-items:center;font-size:15px;font-weight:800;color:var(--muted)}
+#tab-aide .aide-q.on s{background:var(--primary);color:#fff}
+#tab-aide .aide-r{padding:0 16px 15px;font-size:13.5px;color:var(--muted);line-height:1.65}
+#tab-aide .aide-r b{color:var(--text)}
+#tab-aide .aide-regles{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:12px}
+#tab-aide .aide-rg{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--border);border-radius:13px;padding:12px;background:var(--surface2)}
+#tab-aide .aide-rg i{font-style:normal;font-size:21px;flex:0 0 auto}
+#tab-aide .aide-rg b{display:block;font-size:14px}
+#tab-aide .aide-rg em{font-style:normal;display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45}
+@media(max-width:720px){#tab-aide .aide-grille{grid-template-columns:1fr}}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -659,6 +694,9 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="nav-bloc" data-groupe="referentiels"><button type="button" class="nav-groupe" data-groupe="referentiels" onclick="ouvrirGroupe('referentiels')" title="Ouvrir la rubrique Référentiels">Référentiels</button>
 <div class="tab" data-groupe="referentiels" id="navtab-echelles" onclick="switchTab('echelles',this)">📏 Barèmes</div>
 <div class="tab" data-groupe="referentiels" id="navtab-ppa" onclick="switchTab('ppa',this)">🧗 PPA</div>
+</div>
+<div class="nav-bloc" data-groupe="aide"><button type="button" class="nav-groupe" data-groupe="aide" onclick="ouvrirGroupe('aide')" title="Ouvrir l'aide">Aide</button>
+<div class="tab" data-groupe="aide" id="navtab-aide" onclick="switchTab('aide',this)">❔ Aide</div>
 </div>
 <div class="nav-bloc" data-groupe="admin"><button type="button" class="nav-groupe" data-groupe="admin" onclick="ouvrirGroupe('admin')" title="Ouvrir la rubrique Administration">Administration</button>
 <div class="tab" data-groupe="admin" id="navtab-export" onclick="switchTab('export',this)">📄 Export PDF</div>
@@ -914,6 +952,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </div>
 <div id="tab-programme" class="hidden"><div id="prgContent"></div></div>
+<div id="tab-aide" class="hidden"><div id="aideContent"></div></div>
 <div id="tab-defis" class="hidden"><div id="dfsContent"></div></div>
 <div id="tab-menage" class="hidden">
 <div class="card">
@@ -1160,6 +1199,7 @@ const TABS_INFO = [
     {id:"programme",label:"💪 Mon sport"},
     {id:"echelles",label:"📏 Barèmes"},
     {id:"ppa",label:"🧗 PPA"},
+    {id:"aide",label:"❔ Aide"},
     {id:"export",label:"📄 Export PDF"}
 ];
 var misOnglets = [];        // onglets autorisés pour le compte non-admin connecté
@@ -1610,7 +1650,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -4072,6 +4112,119 @@ function pushCarte(){
   return h+'</div>';
 }
 
+// ===== AIDE =====
+// Mode d'emploi de l'appli, affiché selon ce que la personne connectée voit vraiment :
+// un pompier n'a que sa fiche, Mon sport et les Défis, l'administrateur a tout.
+var AIDE_ONGLETS={
+ dashboard:"La vue d'ensemble du centre : participation, répartition des niveaux, alertes et meilleures performances.",
+ synthese:"Tous les pompiers et tous les tests en couleurs, sur un seul écran.",
+ fiche:"Tes résultats aux cinq tests, ton niveau global et ton évolution. Le bouton rouge télécharge ta fiche en PDF.",
+ saisie:"La saisie des résultats pour tout le centre, test par test.",
+ terrain:"La saisie pendant les tests, un pompier à la fois, en gros caractères.",
+ bilan:"Le bilan d'une campagne : participation, niveaux, comparatifs, export PDF.",
+ progression:"L'historique des campagnes et l'évolution d'une année sur l'autre.",
+ menage:"Le planning de nettoyage de la salle. Touche la mission que tu viens de faire, elle passe au vert.",
+ defis:"Les défis du centre. Tu ajoutes ce que tu as fait, la jauge collective monte pour tout le monde.",
+ cardio:"Tes zones cardio : fréquence maximale, de repos, et les paliers d'intensité.",
+ muscu:"Ta charge maximale estimée à partir d'une série, et les charges à prendre selon l'objectif.",
+ seances:"Le générateur de séance d'après le livret CNFPT, avec la fiche en PDF.",
+ programme:"Ton espace d'entraînement personnel : séance du jour, programme, nutrition, progrès et chrono.",
+ echelles:"Les barèmes officiels de l'Hérault, par âge et par sexe.",
+ ppa:"Le Parcours Professionnel Adapté : les six étapes et le détail réglementaire.",
+ export:"L'export PDF des bilans et des fiches.",
+ comptes:"La gestion des comptes : création, onglets visibles, liaison à une fiche pompier."
+};
+var AIDE_FAQ=[
+ {q:"J'ai oublié mon mot de passe",
+  r:"Touche « Mot de passe oublié » sur l'écran de connexion, ou vois Christian : il peut t'en remettre un nouveau en trente secondes depuis l'onglet Comptes."},
+ {q:"Je ne vois pas un onglet dont on m'a parlé",
+  r:"Chaque compte n'affiche que les onglets qui lui ont été ouverts. Si l'un te manque, demande à Christian de le cocher sur ton compte. Pense aussi à recharger la page après un changement."},
+ {q:"Est-ce que les autres voient mes données ?",
+  r:"Non. Dans Mon sport, tes séances, ton poids et tes repas ne sont visibles que par toi. Christian voit seulement des totaux : combien de personnes se servent de l'appli, jamais ce qu'elles y font. Tes résultats aux tests ICP, eux, sont visibles par l'encadrement, comme sur le relevé papier."},
+ {q:"Comment installer l'appli sur mon téléphone ?",
+  r:"Ouvre l'appli dans ton navigateur, puis le menu du navigateur, puis « Ajouter à l'écran d'accueil ». Elle s'ouvre ensuite comme une vraie appli et fonctionne sans réseau. Sur iPhone, c'est indispensable pour recevoir les rappels."},
+ {q:"Comment recevoir les rappels de séance ?",
+  r:"Onglet Mon sport, carte « Rappels de séance », bouton « Activer sur cet appareil ». Tu choisis ensuite tes jours et ton heure. Le rappel arrive même si l'appli est fermée. À faire sur chaque téléphone."},
+ {q:"Ça marche sans réseau ?",
+  r:"Oui, une fois l'appli installée sur ton téléphone. Ce que tu saisis est gardé sur l'appareil et remonte tout seul au retour du réseau."},
+ {q:"Je me suis trompé en saisissant quelque chose",
+  r:"Dans Ménage et dans les Défis, tu peux retirer ce que tu as ajouté toi-même, le jour même ou la veille. Au-delà, ou pour les résultats de tests, demande à Christian."},
+ {q:"Je reprends après une blessure",
+  r:"Demande d'abord un avis médical. Ensuite, dans Mon sport, adapte ton programme et vas-y progressivement. En astreinte, on vise un effort où l'on peut encore parler : pas de charge maximale, pas d'échec musculaire."}
+];
+var AIDE_ADMIN=[
+ {q:"Créer un compte pour un nouveau",
+  r:"Onglet Comptes, « Nouveau compte » : son adresse, un mot de passe, et tu le relies à sa fiche pompier dans la liste déroulante. <b>Pense à cocher les onglets qu'il doit voir</b> : ils ne le sont pas par défaut."},
+ {q:"Lancer un défi pour le centre",
+  r:"Onglet Défis, « Lancer un défi ». Tu choisis un thème, un titre, un objectif, des dates et une récompense. L'unité et un objectif suggéré se remplissent tout seuls. Tu peux ensuite sortir une affiche PDF pour la salle."},
+ {q:"Saisir une campagne de tests",
+  r:"Onglet Terrain pour saisir pendant les tests, un pompier à la fois. Onglet Saisie pour tout reprendre au calme. Quand c'est fini, onglet Progression, bouton « Clôturer la campagne » : elle part dans l'historique et une nouvelle commence."},
+ {q:"Recopier la feuille de ménage",
+  r:"Onglet Ménage, section « Grille du mois ». Tu recopies les codes à quatre lettres de la feuille papier, puis « Enregistrer le mois »."},
+ {q:"Suivre qui utilise l'appli",
+  r:"Onglet Mon sport, carte « Participation du centre » en haut : espaces ouverts, pompiers actifs ce mois et journées d'utilisation. Rien que des totaux."}
+];
+var aideOuvert={};
+
+function aideEsc(s){return menEsc(s)}
+function aideMoi(){
+  var p=null;
+  if(monPompierId) p=(data||[]).filter(function(x){return x.id===monPompierId})[0];
+  if(!p&&isAdmin&&typeof menageMoi==="function"){var m=menageMoi();if(m)p=(data||[]).filter(function(x){return x.id===m.id})[0]}
+  return p||null;
+}
+function aideBascule(k){aideOuvert[k]=!aideOuvert[k];renderAide()}
+function aideBloc(liste,prefixe){
+  return '<div class="aide-faq">'+liste.map(function(x,i){
+    var k=prefixe+i,on=!!aideOuvert[k];
+    return '<div class="aide-q'+(on?" on":"")+'">'
+      +'<button type="button" onclick="aideBascule(\''+k+'\')"><span>'+aideEsc(x.q)+'</span><s>'+(on?"−":"+")+'</s></button>'
+      +(on?'<div class="aide-r">'+x.r+'</div>':'')+'</div>';
+  }).join("")+'</div>';
+}
+function renderAide(){
+  var box=document.getElementById("aideContent");if(!box)return;
+  var moi=aideMoi(),prenom=moi?moi.prenom:"";
+  var vus=(typeof ongletsVisibles==="function")?ongletsVisibles().filter(function(t){return t!=="aide"}):[];
+  var h='<div class="card aide-tete"><div class="card-title">❔ Mode d\'emploi</div>'
+    +'<p class="aide-intro">'+(prenom?"Salut "+aideEsc(prenom)+" ! ":"")
+    +'Tu trouveras ici à quoi sert chaque onglet et la réponse aux questions les plus courantes. '
+    +'Rien à apprendre par cœur : reviens ici quand tu veux.</p></div>';
+
+  // premiers pas
+  h+='<div class="card"><div class="card-title">🚀 Pour bien démarrer</div><div class="aide-pas">'
+    +[["1","Installe l'appli sur ton téléphone","Menu du navigateur, puis « Ajouter à l'écran d'accueil ». Elle s'ouvre comme une vraie appli et marche sans réseau."],
+      ["2","Change ton mot de passe","Touche ton nom en haut à droite, puis la clé 🔑. Choisis-en un que tu retiens."],
+      ["3","Fais le tour de tes onglets","Ils sont listés juste en dessous. Tu peux tout ouvrir sans rien casser."]]
+      .map(function(x){return '<div class="aide-p"><span>'+x[0]+'</span><div><b>'+x[1]+'</b><em>'+x[2]+'</em></div></div>'}).join("")
+    +'</div></div>';
+
+  // les onglets de la personne
+  h+='<div class="card"><div class="card-title">🧭 Tes onglets</div>';
+  if(!vus.length) h+='<p class="aide-intro">Aucun autre onglet n\'est ouvert sur ton compte. Vois Christian.</p>';
+  else h+='<div class="aide-grille">'+vus.map(function(t){
+    var o=(typeof infoOnglet==="function")?infoOnglet(t):{ic:"•",lib:t};
+    return '<div class="aide-o"><div class="aide-oh"><i>'+o.ic+'</i><b>'+aideEsc(o.lib)+'</b></div>'
+      +'<p>'+aideEsc(AIDE_ONGLETS[t]||"")+'</p>'
+      +'<button class="btn btn-sm" onclick="switchTab(\''+t+'\')">Ouvrir →</button></div>';
+  }).join("")+'</div>';
+  h+='</div>';
+
+  h+='<div class="card"><div class="card-title">💬 Questions fréquentes</div>'+aideBloc(AIDE_FAQ,"f")+'</div>';
+  if(isAdmin) h+='<div class="card"><div class="card-title">🔧 Côté administrateur</div>'+aideBloc(AIDE_ADMIN,"a")+'</div>';
+
+  h+='<div class="card aide-fin"><div class="card-title">🚨 À ne jamais oublier</div>'
+    +'<div class="aide-regles">'
+    +[["🚨","Au bip, on lâche tout.","La séance peut être coupée sans remords."],
+      ["💪","Pas de record ici.","Tu restes sollicitable : vise un effort où tu peux encore parler."],
+      ["🛑","Douleur = on arrête.","Et on prévient un collègue. En cas de reprise, avis médical d'abord."],
+      ["🧹","Tu ranges ce que tu sors.","La salle est à tout le monde."]]
+      .map(function(x){return '<div class="aide-rg"><i>'+x[0]+'</i><div><b>'+x[1]+'</b><em>'+x[2]+'</em></div></div>'}).join("")
+    +'</div>'
+    +'<p class="aide-intro" style="margin-top:14px">Une question qui n\'est pas ici ? Vois Christian (EAP2).</p></div>';
+  box.innerHTML=h;
+}
+
 // ===== DÉFIS COLLECTIFS =====
 // Christian crée un défi (thème, objectif, période, récompense) ; chacun saisit sa
 // contribution et la jauge collective monte. Tables Supabase : defis, defis_contrib.
@@ -5699,7 +5852,7 @@ function basculerTheme(){
     try{localStorage.setItem("icp_theme",clair?"dark":"light")}catch(e){}
     majBoutonTheme();
 }
-var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","defis","export","comptes"];
+var NAV_PRIORITE=["dashboard","synthese","fiche","saisie","seances","programme","terrain","bilan","progression","cardio","muscu","echelles","ppa","menage","defis","aide","export","comptes"];
 var LIB_COURT={"Tableau de bord":"Accueil","Zones cardio":"Cardio","Musculation":"Muscu","Export PDF":"PDF","Progression":"Progrès","Ménage":"Ménage","Mon sport":"Sport","Défis":"Défis"};
 function infoOnglet(t){
     var el=document.getElementById("navtab-"+t);
@@ -5732,7 +5885,7 @@ function majNavActive(tab){
     if(window.innerWidth<=720) window.scrollTo({top:0});
 }
 function ouvrirPlus(){
-    var groupes=[["suivi","Suivi"],["entrainement","Entraînement"],["referentiels","Référentiels"],["admin","Administration"]];
+    var groupes=[["suivi","Suivi"],["entrainement","Entraînement"],["referentiels","Référentiels"],["aide","Aide"],["admin","Administration"]];
     var actif=ongletActif(),html="";
     groupes.forEach(function(g){
         var tabs=ongletsVisibles().filter(function(t){var el=document.getElementById("navtab-"+t);return el.dataset.groupe===g[0]});
