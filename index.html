@@ -4332,24 +4332,30 @@ function dfsStats(d){
 }
 
 // ---- rendu ----
+// Un défi programmé à l'avance reste invisible pour les pompiers
+// jusqu'à sa date de début ; l'admin le voit, marqué « à venir ».
+function dfsAVenir(d){return !!d&&d.debut>dfsIso(new Date())}
+function dfsVisibles(){
+  return isAdmin?dfsListe:dfsListe.filter(function(d){return !dfsAVenir(d)});
+}
 function renderDefis(){
   var box=document.getElementById("dfsContent");if(!box)return;
   if(!dfsCharge){chargerDefis();box.innerHTML='<div class="pcard">Chargement…</div>';return}
   if(dfsErreur){box.innerHTML='<div class="pcard"><p style="color:#f87171">⚠️ '+dfsEsc(dfsErreur)+'</p></div>';return}
   if(dfsForm){box.innerHTML=dfsFormulaire();dfsEnterFx();return}
-  var h="";
+  var h="",L=dfsVisibles();
   if(isAdmin) h+='<div class="dfs-barre"><button class="pbtn pri" onclick="dfsNouveau()">➕ Lancer un défi</button></div>';
-  if(!dfsListe.length){
+  if(!L.length){
     h+='<div class="pcard"><div class="ptitre"><i>🏆</i> Pas de défi en cours</div>'
       +'<p class="psous">'+(isAdmin?"Lance le premier : choisis un thème, un objectif et une récompense."
         :"Christian n'a pas encore lancé de défi. Reviens bientôt.")+'</p></div>';
   } else {
-    if(dfsSel>=dfsListe.length)dfsSel=0;
-    if(dfsListe.length>1) h+='<div class="dfs-ongl">'+dfsListe.map(function(d,i){
+    if(dfsSel>=L.length)dfsSel=0;
+    if(L.length>1) h+='<div class="dfs-ongl">'+L.map(function(d,i){
       var t=dfsTheme(d.theme);
-      return '<button type="button" class="dfs-o'+(i===dfsSel?" on":"")+(d.actif?"":" fini")+'" onclick="dfsVoir('+i+')">'
+      return '<button type="button" class="dfs-o'+(i===dfsSel?" on":"")+(d.actif&&!dfsAVenir(d)?"":" fini")+'" onclick="dfsVoir('+i+')">'
         +'<i>'+t.ic+'</i>'+dfsEsc(d.titre)+'</button>'}).join("")+'</div>';
-    h+=dfsCarte(dfsListe[dfsSel]);
+    h+=dfsCarte(L[dfsSel]);
   }
   box.innerHTML=h;
   dfsEnterFx();
@@ -4362,7 +4368,8 @@ function dfsCarte(d){
     +'<div class="dfs-t"><i>'+dfsEsc(d.icone)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'
     +'<span>'+dfsEsc(t.lib)+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
     +' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+'</span></div>'
-    +(d.actif?(S.reste>=0?'<span class="dfs-pill">'+(S.reste===0?"dernier jour":S.reste+" jour"+(S.reste>1?"s":""))+'</span>'
+    +(dfsAVenir(d)?'<span class="dfs-pill fin">à venir</span>'
+      :d.actif?(S.reste>=0?'<span class="dfs-pill">'+(S.reste===0?"dernier jour":S.reste+" jour"+(S.reste>1?"s":""))+'</span>'
                         :'<span class="dfs-pill fin">terminé</span>')
              :'<span class="dfs-pill fin">clos</span>')+'</div>'
     +'<div class="dfs-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em></div>'
@@ -4374,7 +4381,12 @@ function dfsCarte(d){
     +(d.recompense?'<div class="dfs-reco">🎁 <b>À la clé :</b> '+dfsEsc(d.recompense)+'</div>':'')
     +'</div>';
   // ma contribution
-  if(moi&&d.actif){
+  if(dfsAVenir(d)){
+    h+='<div class="pcard"><p class="psous">⏳ Ce défi démarre le '
+      +new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})
+      +'. Les pompiers ne le voient pas encore : il apparaîtra tout seul dans leur onglet Défis ce jour-là.</p></div>';
+  }
+  if(moi&&d.actif&&!dfsAVenir(d)){
     h+='<div class="pcard"><div class="sec">Ma part</div>'
       +'<div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(maPart?maPart.v:0)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
