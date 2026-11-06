@@ -230,6 +230,10 @@ img.avatar-mini{object-fit:cover;border:1px solid var(--border)}
 html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 .bonnet{position:absolute;left:50%;top:-11px;width:16px;height:14px;transform:translateX(-30%) rotate(-14deg)}
 .etape-noel{display:inline-block;margin-top:8px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,#dc2626 22%,transparent);border:1px solid color-mix(in srgb,#dc2626 55%,transparent)}
+.bdf-humour{margin-top:8px;font-size:13px;font-style:italic;color:var(--text);opacity:.92}
+#tab-defis .titre-fun{display:block;font-size:11px;font-weight:600;color:var(--pmuted);margin-top:1px}
+#tab-defis .titre-moi{font-size:13px;color:var(--pmuted);margin:-4px 0 10px}
+#tab-defis .titre-moi b{color:var(--a2)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -2534,6 +2538,8 @@ function renderBandeauDefi(){
     +'<div class="bdf-bas"><span>'+rythme+'</span>'+(moi&&!avenir?'<span>Ma part : <b>'+dfsNum(maPart?maPart.v:0)+' '+dfsEsc(d.unite)+'</b></span>':'')
     +(moi&&!avenir?'<button class="bdf-btn" onclick="ouvrirAjoutDefi()">➕ J\'ai fait…</button>':'')+'</div>'
     +(estNoel(d)&&!avenir?'<span class="etape-noel">'+etapeNoel(S.pct)+'</span>':'')
+    +(function(){var hu=HUMOUR[themeHumour(d)];if(!hu)return "";var etat=avenir?"avenir":S.atteint?"atteint":S.pct>=attendu?"avance":"retard";
+      return '<div class="bdf-humour">'+dfsEsc(phraseDuJour(hu[etat],d.id))+'</div>';})()
     +(fil?'<div class="bdf-fil">'+fil+'</div>':'')+'</div>';
   feterPalierDefi(d,S);
   majPastilleDefis();
@@ -2587,6 +2593,37 @@ function poserIconesOnglets(){
     el.innerHTML=iconeSvg(t)+'<span>'+escAttr(el.dataset.lib)+'</span>';
   });
 }
+// ===== HUMOUR DES DÉFIS (Noël, Movember) =====
+// On rigole AVEC les gars : les titres valorisent tout le monde, personne n'est pointé du doigt.
+function themeHumour(d){return estNoel(d)?"noel":estMovember(d)?"movember":null}
+var HUMOUR={
+ noel:{
+  avenir:["🎅 Le Père Noël a sorti ses skis du grenier. Ils sentent un peu le renne.","🦌 Les rennes font leurs étirements. Faites pareil.","🧝 Les lutins ont tout prévu, sauf la condition physique du Père Noël. C'est là que vous intervenez."],
+  avance:["🦌 Rudolph demande ce que vous mettez dans votre café.","🎅 Ho ho ho ! À ce rythme, le Père Noël arrive avant les cadeaux.","🧝 Les lutins sont impressionnés. Ils ont arrêté d'emballer pour regarder.","🍪 Le Père Noël a le temps de s'arrêter manger des biscuits. Merci à vous."],
+  retard:["🎅 Le Père Noël commence à transpirer sous la barbe.","🦌 Les rennes regardent le planning d'un air inquiet.","🧝 Les lutins chuchotent qu'il va falloir prendre le bus.","❄️ Le Père Noël est coincé dans un virage. Il a besoin de vos bras."],
+  atteint:["🎁 Mission accomplie : le Père Noël est au Pôle Nord, les rennes font la sieste.","🎅 Ho ho ho ! Le centre est officiellement sur la liste des gentils."],
+  ajout:["🎅 Ho ho ho ! +{v} km, tu passes sur la liste des gentils.","🦌 +{v} km : Rudolph te fait un clin d'œil rouge.","🧝 +{v} km : un lutin vient de t'ajouter au calendrier de l'Avent.","❄️ +{v} km de neige avalés. Le Père Noël dit merci (et reprend son souffle).","🍪 +{v} km : tu as gagné un biscuit virtuel. Il ne fait pas grossir."],
+  titres:[[0,"🍪 Goûteur de biscuits"],[3,"🧝 Lutin stagiaire"],[8,"🦌 Renne en formation"],[15,"🛷 Pilote de traîneau"],[25,"🎅 Bras droit du Père Noël"]],
+  oeuf:["Ho ho ho ! Arrête de chatouiller le Père Noël, il skie !","🎅 « Je ne suis pas en retard, je suis en avance pour l'année prochaine. »","🦌 Rudolph : « Pourquoi c'est moi qui tire, déjà ? »"]
+ },
+ movember:{
+  avenir:["🥸 Rasez-vous une dernière fois, après c'est trop tard.","🥸 Le rameur vous attend. Lui, il n'a pas besoin de moustache."],
+  avance:["🥸 À ce rythme, les moustaches poussent à vue d'œil.","🚣 Le rameur demande grâce. Continuez.","🥸 Tom Selleck serait fier de vous."],
+  retard:["🥸 Les moustaches poussent plus vite que le compteur… on rame !","🚣 Le rameur s'ennuie. Allez lui rendre visite.","🥸 Même un duvet d'ado avance plus vite. Allez !"],
+  atteint:["🥸 100 km ! Les moustaches du centre entrent dans la légende.","🏆 Mission Movember accomplie. Vous pouvez (peut-être) vous raser."],
+  ajout:["🥸 +{v} km : ta moustache vient de gagner 1 mm.","🚣 +{v} km : le rameur te salue bien bas.","🥸 +{v} km : Movember te remercie, ta prostate aussi.","💪 +{v} km : moustache validée par le centre."],
+  titres:[[0,"🥸 Duvet naissant"],[5,"🥸 Moustache de gendarme"],[12,"🥸 Moustache de mousquetaire"],[20,"🥸 Moustache de légende"]],
+  oeuf:["🥸 Touche pas à ma moustache !","🚣 « Plus vite, moussaillon ! »"]
+ }
+};
+// Phrase du jour : stable dans la journée, change chaque jour
+function phraseDuJour(liste,graine){if(!liste||!liste.length)return "";var j=Math.floor(Date.now()/864e5)+(graine||0);return liste[j%liste.length]}
+function phraseAuHasard(liste){return liste&&liste.length?liste[Math.floor(Math.random()*liste.length)]:""}
+function titreHumour(d,total){var h=HUMOUR[themeHumour(d)];if(!h)return "";var t="";h.titres.forEach(function(x){if(total>=x[0])t=x[1]});return t}
+function oeufDePaques(e){
+  if(e)e.stopPropagation();var d=dfsDefiDuBandeau()||dfsListe[0];var h=d&&HUMOUR[themeHumour(d)];
+  showToast(h?phraseAuHasard(h.oeuf):"🎉","info");if(d)confettis(estNoel(d)?"flocon":estMovember(d)?"moustache":null);
+}
 // ===== THÈME NOËL : « Aidons le Père Noël à skier » =====
 function estNoel(d){return /no[eë]l|p[eè]re[ -]no/i.test((d.titre||"")+" "+(d.theme||""))}
 function neigeHtml(){
@@ -2604,7 +2641,7 @@ function estMovember(d){return /movember/i.test((d.titre||"")+" "+(d.theme||""))
 var MOUSTACHE='<svg class="moustache" viewBox="0 0 64 22" aria-hidden="true"><path d="M32 7c-3-5-9-7-15-5C10 4 6 10 1 9c3 6 10 10 18 8 6-1 10-5 13-8 3 3 7 7 13 8 8 2 15-2 18-8-5 1-9-5-16-7-6-2-12 0-15 5z"/></svg>';
 function bateauHtml(d,pct){
   var ic=(d.icone&&d.icone.length<=4)?d.icone:"🚣";
-  return '<span class="bateau" style="left:'+Math.max(3,Math.min(97,pct))+'%">'+dfsEsc(ic)+(estNoel(d)?BONNET:'')+'</span>';
+  return '<span class="bateau" style="left:'+Math.max(3,Math.min(97,pct))+'%;cursor:pointer" onclick="oeufDePaques(event)" title="Psst…">'+dfsEsc(ic)+(estNoel(d)?BONNET:'')+'</span>';
 }
 // 7. Photos de profil (table photos_pompiers : lecture par tous les comptes, chacun modifie la sienne)
 var PHOTOS={};
@@ -4616,7 +4653,8 @@ function dfsTexteAnnonce(d){
   var n=dfsJoursAvant(d),jour=new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
   var quand=n<=1?"demain":"dans "+n+" jours";
   var we=new Date().getDay(),avantLundi=new Date(d.debut+"T00:00:00").getDay()===1&&n<=4&&(we===5||we===6||we===0||we===4);
-  return "⏳ Ça commence "+quand+", le "+jour+" !"+(avantLundi?" Vous avez le week-end pour vous préparer psychologiquement 😄":" Préparez-vous 💪");
+  var hu=HUMOUR[themeHumour(d)];
+  return "⏳ Ça commence "+quand+", le "+jour+" !"+(avantLundi?" Vous avez le week-end pour vous préparer psychologiquement 😄":hu?" "+phraseDuJour(hu.avenir,d.id):" Préparez-vous 💪");
 }
 function renderDefis(){
   var box=document.getElementById("dfsContent");if(!box)return;
@@ -4667,6 +4705,7 @@ function dfsCarte(d){
   }
   if(moi&&d.actif&&!dfsAVenir(d)){
     h+='<div class="pcard"><div class="sec">Ma part</div>'
+      +(titreHumour(d,maPart?maPart.v:0)?'<div class="titre-moi">Ton grade : <b>'+titreHumour(d,maPart?maPart.v:0)+'</b></div>':'')
       +'<div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(maPart?maPart.v:0)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
       +'<button class="pbtn pri" onclick="dfsAjouter('+d.id+')">Ajouter</button></div></div>'
@@ -4682,7 +4721,8 @@ function dfsCarte(d){
     var max=S.classement[0].v,medals=["🥇","🥈","🥉"];
     h+='<div class="dfs-cl">'+S.classement.map(function(c,i){
       return '<div class="dfs-l"><span class="r">'+(medals[i]||(i+1))+'</span>'
-        +'<span class="n">'+avatarMini(c.pid,initialesDe(c.pid))+dfsEsc(dfsNom(c.pid))+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+'</span>'
+        +'<span class="n">'+avatarMini(c.pid,initialesDe(c.pid))+dfsEsc(dfsNom(c.pid))
+        +(titreHumour(d,c.v)?'<small class="titre-fun">'+titreHumour(d,c.v)+'</small>':'')+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+'</span>'
         +'<span class="b"><i style="width:'+Math.round(100*c.v/max)+'%"></i></span>'
         +'<span class="v">'+dfsNum(c.v)+'</span></div>'}).join("")+'</div>';
     h+='<p class="note">'+S.classement.length+' participant'+(S.classement.length>1?'s':'')
@@ -4724,7 +4764,8 @@ async function dfsAjouter(id){
     var r=await supabaseClient.from("defis_contrib")
       .insert({defi_id:id,pompier_id:moi.id,valeur:v,date:dfsIso(new Date())});
     if(r.error)throw r.error;
-    showToast("💪 +"+dfsNum(v)+" pour le centre","success");
+    var dAj=dfsListe.filter(function(x){return x.id===id})[0],huA=dAj&&HUMOUR[themeHumour(dAj)];
+    showToast(huA?phraseAuHasard(huA.ajout).replace("{v}",dfsNum(v)):"💪 +"+dfsNum(v)+" pour le centre","success");
     await chargerDefis(true);
   }catch(e){showToast("Impossible : "+(e.message||e),"error")}
   finally{dfsOccupe=false}
@@ -4915,7 +4956,9 @@ function dfsAfficheFinalePdf(d,photo,ratio){
   doc.setFillColor(12,10,9);doc.rect(0,0,W,46,'F');doc.setFillColor(234,88,12);doc.rect(0,46,W,1.6,'F');
   if(typeof pdfLogo==="function")pdfLogo(doc,m-3,7,32);
   doc.setFont("helvetica","bold");doc.setFontSize(24);doc.setTextColor(251,191,36);
-  doc.text(S.atteint?"DÉFI RÉUSSI !":"BILAN DU DÉFI",W/2+14,19,{align:"center"});
+  var titreAff=estNoel(d)?(S.atteint?"MISSION PÈRE NOËL ACCOMPLIE !":"LE PÈRE NOËL A PRIS LE BUS")
+    :estMovember(d)?(S.atteint?"MOUSTACHES DE LÉGENDE !":"MOUSTACHES EN COURS DE POUSSE"):(S.atteint?"DÉFI RÉUSSI !":"BILAN DU DÉFI");
+  doc.text(titreAff,W/2+14,19,{align:"center"});
   doc.setFontSize(15);doc.setTextColor(255,255,255);doc.text(dfsTextePdf(d.titre),W/2+14,29,{align:"center",maxWidth:150});
   doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(214,211,209);
   doc.text("Du "+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")+" au "+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+" — CIS Cruzy-Quarante — SDIS 34",W/2+14,38,{align:"center"});
