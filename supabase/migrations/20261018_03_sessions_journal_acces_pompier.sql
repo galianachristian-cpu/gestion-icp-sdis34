@@ -83,3 +83,6 @@ alter table public.pompiers add column if not exists confidentiel boolean defaul
 
 -- 2026-11-06 : onglets personnels (programme, defis, aide) : un compte pompier / chef qui les a garde
 -- son type (sa seule fiche). annuaire_icp() : prénom, nom, grade de chacun (sans résultat) pour les défis.
+
+-- 2026-11-06 : photos de profil (photos_pompiers : image JPEG 240 px en data URL, < 150 ko)
+-- lecture : tout compte connu ; écriture : admin ou la personne elle-même (mon_pompier_id())
