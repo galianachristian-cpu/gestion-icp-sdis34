@@ -4674,9 +4674,22 @@ function dfsAffiche(id){
 // Lundi → dimanche. On récompense la régularité : nombre de jours avec au moins une contribution,
 // puis le total en cas d'égalité.
 function dfsLundi(decalage){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+7*(decalage||0));return d}
-function dfsPodium(d,decalage){
+// Semaine (lundi-dimanche) limitée aux dates du défi ; null si elle est avant son départ ou après sa fin
+function dfsSemaine(d,decalage){
   var l=dfsLundi(decalage),dim=new Date(l);dim.setDate(l.getDate()+6);
-  var a=dfsIso(l),b=dfsIso(dim),par={};
+  var a=dfsIso(l),b=dfsIso(dim);
+  if(b<d.debut||a>d.fin)return null;
+  if(a<d.debut)a=d.debut;if(b>d.fin)b=d.fin;
+  var deb=new Date(d.debut+"T00:00:00"),lundiDeb=new Date(deb);lundiDeb.setDate(deb.getDate()-((deb.getDay()+6)%7));
+  return {a:a,b:b,num:Math.round((l-lundiDeb)/(7*864e5))+1};
+}
+function dfsLibSemaine(S){
+  var f=function(x){return new Date(x+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"})};
+  return "Semaine "+S.num+" du défi ("+f(S.a)+" – "+f(S.b)+")";
+}
+function dfsPodium(d,decalage){
+  var sem=dfsSemaine(d,decalage);if(!sem)return [];
+  var a=sem.a,b=sem.b,par={};
   dfsContrib.forEach(function(x){
     if(x.defi_id!==d.id||x.date<a||x.date>b)return;
     var p=par[x.pompier_id]||(par[x.pompier_id]={pid:x.pompier_id,jours:{},v:0});p.jours[x.date]=1;p.v+=Number(x.valeur||0);
@@ -4685,14 +4698,15 @@ function dfsPodium(d,decalage){
     .sort(function(x,y){return (y.jours-x.jours)||(y.v-x.v)}).slice(0,3);
 }
 function dfsPodiumHtml(d){
-  var cette=dfsPodium(d,0),avant=dfsPodium(d,-1),med=["🥇","🥈","🥉"];
+  var sc=dfsSemaine(d,0),sp=dfsSemaine(d,-1),cette=dfsPodium(d,0),avant=dfsPodium(d,-1),med=["🥇","🥈","🥉"];
+  if(!sc&&!sp)return "";
   var bloc=function(lib,L){return '<div class="dfs-pod"><div class="ss">'+lib+'</div>'+(L.length?L.map(function(c,i){
     return '<div class="dfs-l"><span class="r">'+med[i]+'</span><span class="n">'+dfsEsc(dfsNom(c.pid))+'</span>'
       +'<span class="v">'+c.jours+' jour'+(c.jours>1?'s':'')+' · '+dfsNum(c.v)+' '+dfsEsc(d.unite)+'</span></div>'}).join("")
     :'<p class="note">Personne pour l\'instant.</p>')+'</div>'};
   return '<div class="pcard"><div class="sec">🏅 Podium de la semaine</div>'
     +'<p class="note" style="margin-top:0">On récompense la régularité : le nombre de jours où chacun a contribué.</p>'
-    +bloc("Cette semaine",cette)+(avant.length?bloc("Semaine dernière",avant):"")+'</div>';
+    +(sc?bloc(dfsLibSemaine(sc),cette):"")+(sp&&avant.length?bloc(dfsLibSemaine(sp),avant):"")+'</div>';
 }
 // ===== AFFICHE FINALE (PDF, avec photo de groupe facultative) =====
 function dfsAfficheFinale(id){
