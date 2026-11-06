@@ -236,42 +236,36 @@ html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 #tab-defis .titre-moi b{color:var(--a2)}
 /* ===== PERSONNAGES ANIMÉS DES DÉFIS ===== */
 .perso-zone{position:absolute;bottom:calc(100% - 4px);transform:translateX(-50%);z-index:3;cursor:pointer;animation:bateau-glisse 1.8s cubic-bezier(.2,.8,.2,1) both}
-.perso{display:block;width:70px;height:62px;}
-.perso.rameur{width:86px;height:60px}
-.perso{overflow:visible;filter:drop-shadow(0 4px 5px rgba(0,0,0,.45))}
-.bdf-jauge.avec-perso{margin-top:62px}
-#tab-defis .dfs-jauge.avec-perso{margin-top:66px}
+.perso{position:relative;display:block;width:92px;height:86px;filter:drop-shadow(0 5px 6px rgba(0,0,0,.5))}
+.perso img{position:relative;z-index:2;display:block;width:100%;height:100%;object-fit:contain;-webkit-user-drag:none;user-select:none}
+.perso-noel img{transform-origin:40% 90%;animation:pn-glisse .9s ease-in-out infinite}
+@keyframes pn-glisse{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(2deg) translateY(1.5px)}}
+.perso-movember img{transform-origin:35% 85%;animation:pr-rame 1.6s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes pr-rame{0%,100%{transform:translateX(-4px) rotate(4deg)}45%{transform:translateX(5px) rotate(-5deg)}}
+.p-neige{position:absolute;left:4px;bottom:4px;z-index:1}
+.p-neige i{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff;animation:p-spray .9s ease-out infinite}
+.p-neige i:nth-child(2){animation-delay:.22s;width:4px;height:4px}.p-neige i:nth-child(3){animation-delay:.45s}.p-neige i:nth-child(4){animation-delay:.68s;width:3px;height:3px}
+@keyframes p-spray{from{transform:translate(0,0);opacity:1}to{transform:translate(-14px,-9px);opacity:0}}
+.p-vitesse{display:none;position:absolute;left:-14px;top:26%;z-index:1}
+.p-vitesse i{display:block;height:2px;margin:6px 0;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.85));animation:p-vit .5s linear infinite}
+.p-vitesse i:nth-child(1){width:16px}.p-vitesse i:nth-child(2){width:24px;animation-delay:.15s}.p-vitesse i:nth-child(3){width:12px;animation-delay:.3s}
+@keyframes p-vit{from{transform:translateX(6px);opacity:0}50%{opacity:1}to{transform:translateX(-8px);opacity:0}}
+.p-goutte{display:none;position:absolute;z-index:3;width:5px;height:7px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#93c5fd;box-shadow:0 0 3px #bfdbfe;animation:p-goutte 1.1s ease-in infinite}
+.perso-noel .p-goutte{left:58%;top:12%}.perso-noel .p-goutte.g2{left:84%;top:20%;animation-delay:.5s}
+.perso-movember .p-goutte{left:20%;top:8%}.perso-movember .p-goutte.g2{left:44%;top:14%;animation-delay:.5s}
+@keyframes p-goutte{from{transform:translateY(0);opacity:1}to{transform:translateY(9px);opacity:0}}
+.p-etoiles{display:none;position:absolute;right:-6px;top:-8px;z-index:3;font-size:16px;animation:pop .6s cubic-bezier(.2,1.6,.4,1) infinite alternate}
+.perso.humeur-avance .p-vitesse{display:block}
+.perso.humeur-avance img{animation-duration:.6s}.perso-movember.humeur-avance img{animation-duration:1.1s}
+.perso.humeur-retard .p-goutte{display:block}
+.perso.humeur-retard img{animation-duration:1.7s}.perso-movember.humeur-retard img{animation-duration:2.6s}
+.perso.humeur-atteint{animation:p-saute .7s ease-in-out infinite}.perso.humeur-atteint .p-etoiles{display:block}
+.bdf-jauge.avec-perso{margin-top:88px}
+.ic-illu{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+#tab-defis .dfs-jauge.avec-perso{margin-top:92px}
 /* skieur */
-.perso .p-corps{animation:p-bob .9s ease-in-out infinite}
-.perso .p-bras{transform-box:fill-box;transform-origin:0% 0%;animation:p-pousse .9s ease-in-out infinite}
-.perso .p-bras2{transform-box:fill-box;transform-origin:0% 0%;animation:p-pousse .9s ease-in-out .45s infinite}
-.perso .p-echarpe{transform-box:fill-box;transform-origin:100% 0%;animation:p-flotte .5s ease-in-out infinite alternate}
-.perso .p-spray circle{animation:p-spray .9s ease-out infinite}
-.perso .p-spray circle:nth-child(2){animation-delay:.3s}.perso .p-spray circle:nth-child(3){animation-delay:.6s}
-@keyframes p-bob{50%{transform:translateY(1.5px)}}
-@keyframes p-pousse{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(22deg)}}
-@keyframes p-flotte{to{transform:skewY(-12deg) scaleX(1.12)}}
-@keyframes p-spray{from{transform:translate(0,0);opacity:1}to{transform:translate(-10px,-6px);opacity:0}}
 /* rameur */
-.perso .p-glisse{animation:p-rame 1.6s cubic-bezier(.45,0,.55,1) infinite}
-.perso .p-volant{transform-box:fill-box;transform-origin:50% 50%;animation:p-tourne .8s linear infinite}
-.perso .p-moustache{transform-box:fill-box;transform-origin:50% 50%;animation:moustache 2.2s ease-in-out infinite}
-@keyframes p-rame{0%,100%{transform:translateX(0)}45%{transform:translateX(15px)}}
-@keyframes p-tourne{to{transform:rotate(360deg)}}
 /* humeurs */
-.perso .p-lunettes,.perso .p-goutte,.perso .p-joues{display:none}
-.perso.humeur-avance .p-lunettes{display:inline}
-.perso.humeur-avance .p-bras,.perso.humeur-avance .p-bras2,.perso.humeur-avance .p-corps{animation-duration:.6s}
-.perso.humeur-avance .p-glisse{animation-duration:1.1s}
-.perso.humeur-retard .p-goutte,.perso.humeur-retard .p-joues{display:inline}
-.perso.humeur-retard .p-goutte{animation:p-goutte 1.1s ease-in infinite}
-.perso.humeur-retard .p-bras,.perso.humeur-retard .p-bras2,.perso.humeur-retard .p-corps{animation-duration:1.7s}
-.perso.humeur-retard .p-glisse{animation-duration:2.6s}
-@keyframes p-goutte{from{transform:translateY(0);opacity:1}to{transform:translateY(7px);opacity:0}}
-.perso.humeur-atteint{animation:p-saute .7s ease-in-out infinite}
-.perso.humeur-atteint .p-bras{animation:p-victoire .7s ease-in-out infinite}.perso.humeur-atteint .p-bras2{animation:none;transform:rotate(-30deg)}
-@keyframes p-victoire{0%,100%{transform:rotate(-70deg)}50%{transform:rotate(-85deg)}}
-.perso.humeur-atteint .p-lunettes{display:inline}
 @keyframes p-saute{50%{transform:translateY(-6px)}}
 /* bulle de BD */
 .bulle{position:absolute;bottom:62%;left:78%;white-space:nowrap;padding:5px 10px;border-radius:12px;background:#fff;color:#1c1917;
@@ -2580,7 +2574,7 @@ function renderBandeauDefi(){
   var pod=avenir?[]:dfsPodium(d,0);
   if(pod.length)fil='<span>🏅 Le plus régulier cette semaine : <b>'+dfsEsc(dfsNom(pod[0].pid).split(" ")[0])+'</b> ('+pod[0].jours+' j)</span>'+fil;
   el.innerHTML='<div class="bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'" onclick="if(!event.target.closest(\'.bdf-btn\'))switchTab(\'defis\')" title="Voir le défi">'
-    +(estNoel(d)?neigeHtml():'')+'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
+    +(estNoel(d)?neigeHtml():'')+'<div class="bdf-haut"><span class="bdf-ic">'+iconeDefi(d)+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
     +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
     +'<span class="bdf-pill">'+(avenir?'J-'+dfsJoursAvant(d)+' avant le départ':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
     +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
@@ -2655,53 +2649,24 @@ var BULLES={
  noel:{normal:["Ho ho ho !","Allez le centre !","Qui a mangé mes biscuits ?","Plus vite les lutins !"],avance:["Je vole !","Trop facile !","Ho ho ho, quel rythme !"],retard:["À l'aide les gars !","J'ai chaud sous la barbe…","Je fatigue…"],atteint:["Merci les gars !","Pôle Nord atteint !"]},
  movember:{normal:["Rame, moussaillon !","Ma moustache pousse !","Allez le centre !"],avance:["Moustache au vent !","On file !"],retard:["Je rame dans le vide…","À l'aide, je coule !"],atteint:["Moustaches de légende !"]}
 };
-function svgSkieur(){
-  return '<svg class="perso" viewBox="0 0 80 72" aria-hidden="true">'
-  +'<g class="p-spray"><circle cx="9" cy="64" r="2.2" fill="#fff"/><circle cx="6" cy="60" r="1.6" fill="#e0f2fe"/><circle cx="4" cy="66" r="1.3" fill="#fff"/></g>'
-  +'<g class="p-corps">'
-  +'<path d="M8 66 L66 61" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/><path d="M65 61 q6 -1 8 -5" stroke="#1f2937" stroke-width="3" fill="none" stroke-linecap="round"/>'
-  +'<path class="p-bras2" d="M36 32 L28 42 L20 66" stroke="#9ca3af" stroke-width="1.6" fill="none" stroke-linecap="round"/>'
-  +'<path d="M30 47 L27 60" stroke="#991b1b" stroke-width="6" stroke-linecap="round"/><path d="M39 47 L45 59" stroke="#991b1b" stroke-width="6" stroke-linecap="round"/>'
-  +'<rect x="23" y="58" width="8" height="4" rx="1.5" fill="#111"/><rect x="42" y="56.5" width="8" height="4" rx="1.5" fill="#111"/>'
-  +'<path class="p-echarpe" d="M30 28 Q20 25 11 30 Q17 31 23 34 Z" fill="#16a34a"/>'
-  +'<path d="M24 30 Q35 22 47 30 L49 50 Q36 54 22 50 Z" fill="#dc2626"/>'
-  +'<path d="M22 49 Q36 54 49 49" stroke="#fff" stroke-width="4" fill="none"/><rect x="23" y="39.5" width="26" height="4" fill="#111"/><rect x="33.5" y="39" width="5" height="5" rx="1" fill="#fbbf24"/>'
-  +'<circle cx="38" cy="20" r="8" fill="#fcd7b6"/>'
-  +'<path d="M30 20 Q31 33 38 34.5 Q45 33 46 20 Q42 25 38 25 Q34 25 30 20Z" fill="#fff"/>'
-  +'<path d="M33.5 24.5 q4.5 -2.6 9 0" stroke="#e5e7eb" stroke-width="2.2" fill="none" stroke-linecap="round"/>'
-  +'<circle cx="42.5" cy="21.5" r="1.7" fill="#f87171"/><circle cx="41" cy="18" r="1.1" fill="#111"/>'
-  +'<circle class="p-joues" cx="44" cy="22.5" r="2.2" fill="#fca5a5"/>'
-  +'<rect class="p-lunettes" x="36.5" y="16.3" width="9" height="3.4" rx="1.4" fill="#111"/>'
-  +'<path d="M30 15 Q36 2 47 8 L53 14 Q45 9 46 15 Z" fill="#dc2626"/><rect x="29" y="13" width="19" height="4.2" rx="2" fill="#fff"/><circle cx="53" cy="14" r="2.8" fill="#fff"/>'
-  +'<path class="p-goutte" d="M29 10 q1.6 3.2 0 4.4 q-1.6 -1.2 0 -4.4Z" fill="#93c5fd"/>'
-  +'<g class="p-bras"><path d="M40 32 L52 40" stroke="#dc2626" stroke-width="5" stroke-linecap="round"/><circle cx="52.5" cy="40.5" r="2.7" fill="#16a34a"/><path d="M52.5 40.5 L46 67" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/></g>'
-  +'</g></svg>';
-}
-function svgRameur(){
-  return '<svg class="perso" viewBox="0 0 96 64" aria-hidden="true">'
-  +'<rect x="4" y="54" width="86" height="4" rx="2" fill="#4b5563"/><rect x="8" y="57" width="4" height="6" fill="#4b5563"/><rect x="80" y="57" width="4" height="6" fill="#4b5563"/>'
-  +'<g class="p-volant"><circle cx="84" cy="42" r="10" fill="#1f2937" stroke="#9ca3af" stroke-width="2"/><path d="M84 34 V50 M76 42 H92" stroke="#9ca3af" stroke-width="2"/></g>'
-  +'<rect x="67" y="42" width="4" height="12" rx="1" fill="#6b7280"/>'
-  +'<g class="p-glisse">'
-  +'<path d="M46 36 L78 41" stroke="#9ca3af" stroke-width="1.3" stroke-dasharray="2 1.6"/>'
-  +'<rect x="22" y="48" width="15" height="5" rx="2" fill="#111"/>'
-  +'<path d="M31 46 L49 35 L66 48" stroke="#1e3a8a" stroke-width="6.5" fill="none" stroke-linejoin="round" stroke-linecap="round"/>'
-  +'<path d="M30 46 L24 27" stroke="#dc2626" stroke-width="10" stroke-linecap="round"/>'
-  +'<path d="M26 31 L44 36" stroke="#fcd7b6" stroke-width="4" stroke-linecap="round"/><rect x="43" y="32.5" width="3.4" height="7.5" rx="1.2" fill="#111"/>'
-  +'<circle cx="23" cy="18" r="7.5" fill="#fcd7b6"/><path d="M15.5 16.5 q7.5 -10 15 0 q-7.5 -4 -15 0Z" fill="#3f2a1d"/>'
-  +'<circle cx="27" cy="16.3" r="1.1" fill="#111"/><rect class="p-lunettes" x="22.5" y="14.6" width="8" height="3.2" rx="1.3" fill="#111"/>'
-  +'<circle class="p-joues" cx="28" cy="20.5" r="2" fill="#fca5a5"/>'
-  +'<path class="p-moustache" d="M25 21.5 c-3 -3.2 -9 -2.2 -10 1.4 c3.2 0 6 1.1 10 0 c4 1.1 6.8 0 10 0 c-1 -3.6 -7 -4.6 -10 -1.4z" fill="#3f2a1d"/>'
-  +'<path class="p-goutte" d="M16 9 q1.6 3.2 0 4.4 q-1.6 -1.2 0 -4.4Z" fill="#93c5fd"/>'
-  +'</g></svg>';
+function iconeDefi(d){
+  var th=themeHumour(d);
+  return th?'<img class="ic-illu" src="img/defis/'+(th==="noel"?"perenoel":"rameur")+'.webp" alt="">':dfsEsc(d.icone||"🏆");
 }
 function personnageHtml(d,pct){
   var th=themeHumour(d);
   if(!th)return null;
   var h=humeurDefi(d),b=BULLES[th][h]||BULLES[th].normal,phrase=b[(Math.floor(Date.now()/36e5)+d.id)%b.length];
-  var svg=th==="noel"?svgSkieur():svgRameur();
-  return '<span class="perso-zone" style="left:'+Math.max(5,Math.min(95,pct))+'%" onclick="oeufDePaques(event)" title="Psst…">'
-    +'<span class="bulle'+(pct>55?' gauche':'')+'">'+dfsEsc(phrase)+'</span>'+svg.replace('class="perso"','class="perso'+(th==="movember"?' rameur':'')+' humeur-'+h+'"')+'</span>';
+  // Illustrations : img/defis/perenoel.webp et rameur.webp (fond transparent), animées en CSS
+  var img=th==="noel"?"img/defis/perenoel.webp":"img/defis/rameur.webp";
+  return '<span class="perso-zone" style="left:'+Math.max(6,Math.min(94,pct))+'%" onclick="oeufDePaques(event)" title="Psst…">'
+    +'<span class="bulle'+(pct>55?' gauche':'')+'">'+dfsEsc(phrase)+'</span>'
+    +'<span class="perso perso-'+th+' humeur-'+h+'">'
+    +'<span class="p-vitesse"><i></i><i></i><i></i></span>'
+    +(th==="noel"?'<span class="p-neige"><i></i><i></i><i></i><i></i></span>':'')
+    +'<img src="'+img+'" alt="" width="80" height="74" draggable="false">'
+    +'<span class="p-goutte"></span><span class="p-goutte g2"></span><span class="p-etoiles">✨</span>'
+    +'</span></span>';
 }
 // Décors du voyage du Père Noël le long de la jauge
 var DECORS_NOEL=[
@@ -4807,7 +4772,7 @@ function dfsCarte(d){
   var S=dfsStats(d),t=dfsTheme(d.theme),moi=dfsMoi();
   var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
   var h='<div class="pcard dfs-h" style="--c:'+dfsEsc(d.couleur)+'">'+(estNoel(d)?neigeHtml():'')
-    +'<div class="dfs-t"><i>'+dfsEsc(d.icone)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'+(estMovember(d)?MOUSTACHE:'')
+    +'<div class="dfs-t"><i>'+iconeDefi(d)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'+(estMovember(d)?MOUSTACHE:'')
     +'<span>'+dfsEsc(DFS_THEMES.some(function(x){return x.id===d.theme})?t.lib:(d.theme||t.lib))+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
     +' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+'</span></div>'
     +(dfsAVenir(d)?'<span class="dfs-pill fin">à venir</span>'
