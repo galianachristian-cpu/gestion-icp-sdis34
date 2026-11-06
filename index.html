@@ -222,6 +222,14 @@ img.avatar-mini{object-fit:cover;border:1px solid var(--border)}
 .vide .vide-ill{width:92px;height:92px;margin:0 auto 10px;animation:mp-float 3.2s ease-in-out infinite}
 .vide .vide-titre{font-family:var(--titre);font-size:19px;letter-spacing:.4px;color:var(--accent);text-transform:uppercase}
 .vide .vide-txt{color:var(--muted);font-size:14px;margin-top:6px;line-height:1.5}
+/* ===== THÈME NOËL (défi de décembre) ===== */
+.neige{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:inherit;z-index:0}
+.neige i{position:absolute;top:-10px;color:#fff;opacity:.85;font-style:normal;text-shadow:0 0 6px rgba(255,255,255,.6);animation:neige-tombe linear infinite}
+@keyframes neige-tombe{to{transform:translateY(240px) translateX(18px) rotate(180deg)}}
+.bdf>*:not(.neige),#tab-defis .dfs-h>*:not(.neige){position:relative;z-index:1}
+html body #tab-defis .dfs-h{position:relative;overflow:hidden}
+.bonnet{position:absolute;left:50%;top:-11px;width:16px;height:14px;transform:translateX(-30%) rotate(-14deg)}
+.etape-noel{display:inline-block;margin-top:8px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,#dc2626 22%,transparent);border:1px solid color-mix(in srgb,#dc2626 55%,transparent)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -2403,7 +2411,8 @@ function confettis(forme){
   var t0=performance.now();
   (function boucle(t){ctx.clearRect(0,0,W,H);var fini=t-t0>2600;
     ps.forEach(function(p){p.vy+=.32;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalAlpha=Math.max(0,1-(t-t0)/2600);ctx.fillStyle=p.c;
-      if(forme==="moustache"&&p.r>6.5){ctx.fillStyle="#1c1917";ctx.scale(p.r/9,p.r/9);ctx.beginPath();ctx.moveTo(0,-1);ctx.bezierCurveTo(-3,-5,-9,-5,-12,0);ctx.bezierCurveTo(-8,2,-3,2,0,0);ctx.bezierCurveTo(3,2,8,2,12,0);ctx.bezierCurveTo(9,-5,3,-5,0,-1);ctx.fill();}
+      if(forme==="flocon"){ctx.strokeStyle=p.r>7?"#ffffff":"#bfdbfe";ctx.lineWidth=1.6;for(var b=0;b<3;b++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.moveTo(-p.r,0);ctx.lineTo(p.r,0);ctx.stroke();}}
+      else if(forme==="moustache"&&p.r>6.5){ctx.fillStyle="#1c1917";ctx.scale(p.r/9,p.r/9);ctx.beginPath();ctx.moveTo(0,-1);ctx.bezierCurveTo(-3,-5,-9,-5,-12,0);ctx.bezierCurveTo(-8,2,-3,2,0,0);ctx.bezierCurveTo(3,2,8,2,12,0);ctx.bezierCurveTo(9,-5,3,-5,0,-1);ctx.fill();}
       else ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore();});
     if(!fini)requestAnimationFrame(boucle);else c.remove();})(t0);
 }
@@ -2516,7 +2525,7 @@ function renderBandeauDefi(){
   var pod=avenir?[]:dfsPodium(d,0);
   if(pod.length)fil='<span>🏅 Le plus régulier cette semaine : <b>'+dfsEsc(dfsNom(pod[0].pid).split(" ")[0])+'</b> ('+pod[0].jours+' j)</span>'+fil;
   el.innerHTML='<div class="bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'" onclick="if(!event.target.closest(\'.bdf-btn\'))switchTab(\'defis\')" title="Voir le défi">'
-    +'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
+    +(estNoel(d)?neigeHtml():'')+'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
     +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
     +'<span class="bdf-pill">'+(avenir?'J-'+dfsJoursAvant(d)+' avant le départ':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
     +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
@@ -2524,6 +2533,7 @@ function renderBandeauDefi(){
     +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'')+'</div>'
     +'<div class="bdf-bas"><span>'+rythme+'</span>'+(moi&&!avenir?'<span>Ma part : <b>'+dfsNum(maPart?maPart.v:0)+' '+dfsEsc(d.unite)+'</b></span>':'')
     +(moi&&!avenir?'<button class="bdf-btn" onclick="ouvrirAjoutDefi()">➕ J\'ai fait…</button>':'')+'</div>'
+    +(estNoel(d)&&!avenir?'<span class="etape-noel">'+etapeNoel(S.pct)+'</span>':'')
     +(fil?'<div class="bdf-fil">'+fil+'</div>':'')+'</div>';
   feterPalierDefi(d,S);
   majPastilleDefis();
@@ -2539,7 +2549,8 @@ function feterPalierDefi(d,S){
   var palier=[100,75,50,25].filter(function(p){return S.pct>=p})[0]||0;
   if(palier>vu){
     try{localStorage.setItem(cle,String(palier))}catch(e){}
-    if(vu>0||palier===100){confettis(estMovember(d)?"moustache":null);showToast(palier===100?"🎉 Défi réussi ! Bravo à tout le centre !":"🔥 Le centre a passé "+palier+" % du défi !","success");}
+    if(vu>0||palier===100){confettis(estMovember(d)?"moustache":estNoel(d)?"flocon":null);
+      showToast(estNoel(d)?etapeNoel(palier)+" ("+palier+" %)":palier===100?"🎉 Défi réussi ! Bravo à tout le centre !":"🔥 Le centre a passé "+palier+" % du défi !","success");}
   }
 }
 // Rafraîchit le défi toutes les 2 minutes quand l'appli est ouverte
@@ -2576,12 +2587,24 @@ function poserIconesOnglets(){
     el.innerHTML=iconeSvg(t)+'<span>'+escAttr(el.dataset.lib)+'</span>';
   });
 }
+// ===== THÈME NOËL : « Aidons le Père Noël à skier » =====
+function estNoel(d){return /no[eë]l|p[eè]re[ -]no/i.test((d.titre||"")+" "+(d.theme||""))}
+function neigeHtml(){
+  if(MOUVEMENT_REDUIT)return "";
+  var h="";for(var i=0;i<16;i++){var t=(6+Math.random()*7).toFixed(1);
+    h+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;font-size:'+(7+Math.random()*9).toFixed(0)+'px;animation-duration:'+t+'s;animation-delay:-'+(Math.random()*t).toFixed(1)+'s">❄</i>';}
+  return '<span class="neige" aria-hidden="true">'+h+'</span>';
+}
+var BONNET='<svg class="bonnet" viewBox="0 0 20 18" aria-hidden="true"><path d="M2 14C4 6 10 1 17 3l-2 6c-3-1-6 1-7 5Z" fill="#dc2626"/><rect x="1" y="12.5" width="11" height="4" rx="2" fill="#fff"/><circle cx="17" cy="3" r="2.6" fill="#fff"/></svg>';
+function etapeNoel(pct){
+  return pct>=100?"🎁 Le Père Noël est arrivé au Pôle Nord !":pct>=75?"🎄 Le village est en vue !":pct>=50?"🏔️ Passage des montagnes":pct>=25?"🦌 Les rennes sont attelés":"⛷️ Le Père Noël chausse ses skis…";
+}
 // 4 + 5. Bateau sur la jauge et touche Movember
 function estMovember(d){return /movember/i.test((d.titre||"")+" "+(d.theme||""))}
 var MOUSTACHE='<svg class="moustache" viewBox="0 0 64 22" aria-hidden="true"><path d="M32 7c-3-5-9-7-15-5C10 4 6 10 1 9c3 6 10 10 18 8 6-1 10-5 13-8 3 3 7 7 13 8 8 2 15-2 18-8-5 1-9-5-16-7-6-2-12 0-15 5z"/></svg>';
 function bateauHtml(d,pct){
   var ic=(d.icone&&d.icone.length<=4)?d.icone:"🚣";
-  return '<span class="bateau" style="left:'+Math.max(3,Math.min(97,pct))+'%">'+dfsEsc(ic)+'</span>';
+  return '<span class="bateau" style="left:'+Math.max(3,Math.min(97,pct))+'%">'+dfsEsc(ic)+(estNoel(d)?BONNET:'')+'</span>';
 }
 // 7. Photos de profil (table photos_pompiers : lecture par tous les comptes, chacun modifie la sienne)
 var PHOTOS={};
@@ -4513,6 +4536,7 @@ function renderAide(){
 // contribution, création et correction réservées à l'administrateur.
 var DFS_THEMES=[
  {id:"rameur",    ic:"🚣",lib:"Rameur",            unite:"km",      pas:1,    sugg:100},
+ {id:"ski",       ic:"⛷️",lib:"SkiErg",            unite:"km",      pas:1,    sugg:100},
  {id:"velo",      ic:"🚴",lib:"Vélo / Assault",    unite:"km",      pas:1,    sugg:300},
  {id:"course",    ic:"🏃",lib:"Course à pied",     unite:"km",      pas:1,    sugg:150},
  {id:"gainage",   ic:"🛡️",lib:"Gainage",           unite:"minutes", pas:1,    sugg:300},
@@ -4619,7 +4643,7 @@ function dfsVoir(i){dfsSel=i;renderDefis()}
 function dfsCarte(d){
   var S=dfsStats(d),t=dfsTheme(d.theme),moi=dfsMoi();
   var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
-  var h='<div class="pcard dfs-h" style="--c:'+dfsEsc(d.couleur)+'">'
+  var h='<div class="pcard dfs-h" style="--c:'+dfsEsc(d.couleur)+'">'+(estNoel(d)?neigeHtml():'')
     +'<div class="dfs-t"><i>'+dfsEsc(d.icone)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'+(estMovember(d)?MOUSTACHE:'')
     +'<span>'+dfsEsc(DFS_THEMES.some(function(x){return x.id===d.theme})?t.lib:(d.theme||t.lib))+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
     +' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+'</span></div>'
