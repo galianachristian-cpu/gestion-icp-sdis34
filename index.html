@@ -148,6 +148,33 @@ html.vt-theme::view-transition-old(root),html.vt-theme::view-transition-new(root
 .jauge-test .cible{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--text);opacity:.7}
 .jauge-test .cible::after{content:"🎯";position:absolute;top:13px;left:-6px;font-size:11px}
 @keyframes curseur{from{left:0!important}}
+/* ===== BANDEAU DU DÉFI (écran principal de tous) ===== */
+#bandeauDefi:empty{display:none}
+.bdf{position:relative;overflow:hidden;margin:0 0 16px;padding:14px 16px;border-radius:16px;cursor:pointer;
+  border:1px solid color-mix(in srgb,var(--c) 55%,var(--border));
+  background:linear-gradient(120deg,color-mix(in srgb,var(--c) 26%,var(--surface)),var(--surface) 60%,color-mix(in srgb,var(--accent) 10%,var(--surface)));
+  box-shadow:0 8px 24px rgba(0,0,0,.22);animation:monte .5s cubic-bezier(.2,.8,.2,1) both}
+.bdf::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.08) 45%,transparent 60%);transform:translateX(-100%);animation:reflet 6s ease-in-out 1.5s infinite;pointer-events:none}
+.bdf-haut{display:flex;align-items:center;gap:12px}
+.bdf-ic{font-size:30px;animation:mp-float 3s ease-in-out infinite;flex-shrink:0}
+.bdf-titre{font-family:var(--titre);font-size:18px;line-height:1.15;letter-spacing:.3px}
+.bdf-sous{font-size:12.5px;color:var(--muted);margin-top:2px}
+.bdf-pill{margin-left:auto;flex-shrink:0;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:color-mix(in srgb,var(--c) 30%,transparent);border:1px solid color-mix(in srgb,var(--c) 60%,transparent)}
+.bdf-chiffres{display:flex;align-items:baseline;gap:8px;margin:12px 0 6px}
+.bdf-chiffres b{font-family:var(--titre);font-size:30px;line-height:1}
+.bdf-chiffres em{font-style:normal;color:var(--muted);font-size:14px}
+.bdf-chiffres .pct{margin-left:auto;font-weight:800;font-size:18px;color:var(--accent)}
+.bdf-jauge{position:relative;height:14px;border-radius:999px;background:color-mix(in srgb,var(--surface2) 80%,transparent);border:1px solid var(--border);overflow:hidden}
+.bdf-jauge i{position:absolute;inset:0 auto 0 0;border-radius:999px;background:linear-gradient(90deg,var(--c),var(--accent));box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent);animation:bdf-remplit 1.4s cubic-bezier(.2,.8,.2,1) both}
+.bdf-jauge u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.55;text-decoration:none}
+.bdf-jauge s{position:absolute;top:0;width:1px;height:100%;background:rgba(255,255,255,.25)}
+@keyframes bdf-remplit{from{width:0!important}}
+.bdf-bas{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;margin-top:9px;font-size:12.5px;color:var(--muted)}
+.bdf-bas b{color:var(--text)}
+.bdf-rythme.avance{color:var(--success)}.bdf-rythme.retard{color:var(--warning)}
+.bdf-btn{margin-left:auto;padding:7px 14px;border-radius:999px;border:0;font:700 13px Inter,sans-serif;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--c),var(--primary));box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.bdf-fil{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.bdf-fil span{font-size:12px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--surface2) 85%,transparent);border:1px solid var(--border)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -708,6 +735,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="modal"><h3>Tous les onglets</h3><div id="plusContenu"></div>
 <div style="display:flex;justify-content:flex-end"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPlus()">Fermer</button></div></div>
 </div>
+<div id="bandeauDefi"></div>
 <div id="tab-dashboard">
 <div class="card" id="carteSessions"><div class="card-title">📅 Sessions ICP</div><div id="sessionsContenu"><div class="squelette" style="min-height:70px"></div></div></div>
 <div class="card"><div class="card-title">🔥 Condition physique de la caserne</div><div id="dashVisuel"></div></div>
@@ -1317,6 +1345,8 @@ async function loadFromSupabase() {
             chargerHistoriqueDeReference();
             clearDirty();
             await chargerSynthesePubliee();
+            await chargerAnnuaire();
+            if(tabAutorise("defis"))chargerDefis(true);
             if(!isAdmin)supabaseClient.rpc('noter_connexion').then(function(){},function(){});
             renderAll();
             publierSyntheseDiffere();
@@ -1688,7 +1718,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab))}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi()}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -1804,7 +1834,8 @@ function epreuvesPassees(o){return EPREUVES_ICP.filter(function(g){return g.some
 // Les comptes chef ne reçoivent du serveur que leur propre ligne de résultats. Pour la Synthèse, ils
 // lisent la table `synthese_couleurs`, que le compte administrateur met à jour à chaque sauvegarde :
 // noms et couleurs uniquement, aucun résultat chiffré.
-function estChef(){return !isAdmin&&misOnglets.indexOf("synthese")!==-1&&misOnglets.every(function(o){return o==="fiche"||o==="synthese"})}
+var ONGLETS_PERSO=["fiche","programme","defis","aide"]; // ne donnent pas accès aux résultats des autres
+function estChef(){return !isAdmin&&misOnglets.indexOf("synthese")!==-1&&misOnglets.every(function(o){return o==="synthese"||ONGLETS_PERSO.indexOf(o)!==-1})}
 var SYNTHESE_PUBLIEE=null;
 async function chargerSynthesePubliee(){
   SYNTHESE_PUBLIEE=null;
@@ -1990,7 +2021,8 @@ async function basculerVueChef(id){
   var on=aVueChef(c);
   if(!confirm((on?"Retirer":"Donner")+" la vue chef à "+p.prenom+" "+p.nom+" ?\n\n"+(on?"Il ne verra plus que sa propre fiche.":"Il verra la Synthèse en couleurs de toute la caserne (sans chiffres), en plus de sa fiche.")))return;
   try{
-    await appelerGererComptes({action:'enregistrer',email:c.email,password:null,onglets:on?["fiche"]:["fiche","synthese"],pompier_id:id});
+    var ongl=(c.onglets||["fiche"]).filter(function(o){return o!=="synthese"});if(!on)ongl.push("synthese");
+    await appelerGererComptes({action:'enregistrer',email:c.email,password:null,onglets:ongl,pompier_id:id});
     await chargerComptes();renderComptes();
     showToast("✅ Vue chef "+(on?"retirée":"donnée")+" — "+p.prenom+" "+p.nom,"success");
   }catch(e){alert("⚠️ Échec : "+e.message);}
@@ -2400,6 +2432,64 @@ function basculerThemeAnime(e){
   vt.ready.then(function(){document.documentElement.animate({clipPath:["circle(0 at "+x+"px "+y+"px)","circle("+r+"px at "+x+"px "+y+"px)"]},{duration:550,easing:"cubic-bezier(.2,.8,.2,1)",pseudoElement:"::view-transition-new(root)"});}).catch(function(){});
   vt.finished.then(function(){document.documentElement.classList.remove("vt-theme")},function(){document.documentElement.classList.remove("vt-theme")});
 }
+// ===== BANDEAU DU DÉFI SUR L'ÉCRAN PRINCIPAL =====
+// Visible par tous (pompiers, chefs, équipe, admin) en haut de l'appli, sauf dans l'onglet Défis.
+function dfsDefiDuBandeau(){
+  var t=dfsIso(new Date());
+  var L=dfsVisibles().filter(function(d){return d.actif&&d.fin>=t});
+  L.sort(function(a,b){return (dfsAVenir(a)-dfsAVenir(b))||a.fin.localeCompare(b.fin)});
+  return L[0]||null;
+}
+function quandContrib(x){
+  if(!x.cree_le)return new Date(x.date+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"});
+  var m=Math.round((Date.now()-new Date(x.cree_le))/60000);
+  return m<2?"à l'instant":m<60?"il y a "+m+" min":m<1440?"il y a "+Math.round(m/60)+" h":"il y a "+Math.round(m/1440)+" j";
+}
+function renderBandeauDefi(){
+  var el=document.getElementById("bandeauDefi");if(!el)return;
+  var tabDefis=document.getElementById("tab-defis");
+  if(!tabAutorise("defis")||(tabDefis&&!tabDefis.classList.contains("hidden"))){el.innerHTML="";return}
+  var d=dfsDefiDuBandeau();if(!d){el.innerHTML="";return}
+  var S=dfsStats(d),moi=dfsMoi(),avenir=dfsAVenir(d);
+  var deb=new Date(d.debut+"T00:00:00"),fin=new Date(d.fin+"T23:59:59"),now=new Date();
+  var duree=Math.max(1,Math.round((fin-deb)/86400000)),ecoules=Math.min(duree,Math.max(0,(now-deb)/86400000));
+  var attendu=Math.round(100*ecoules/duree),reste=Math.max(0,Number(d.objectif)-S.total);
+  var joursRestants=Math.max(1,Math.ceil((fin-now)/86400000));
+  var rythme=avenir?'⏳ Démarre le '+deb.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})
+    :S.atteint?'🎉 <b>Objectif atteint !</b>'
+    :S.pct>=attendu?'<span class="bdf-rythme avance">🔥 En avance sur le rythme</span>'
+    :'<span class="bdf-rythme retard">⏱️ Il faut <b>'+dfsNum(reste/joursRestants)+' '+dfsEsc(d.unite)+'/jour</b> pour réussir</span>';
+  var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
+  var fil=S.contribs.slice().sort(function(a,b){return String(b.cree_le||b.date).localeCompare(String(a.cree_le||a.date))}).slice(0,3)
+    .map(function(x){return '<span>💪 '+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+' +'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span>'}).join("");
+  el.innerHTML='<div class="bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'" onclick="if(!event.target.closest(\'.bdf-btn\'))switchTab(\'defis\')" title="Voir le défi">'
+    +'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+'</div>'
+    +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
+    +'<span class="bdf-pill">'+(avenir?'à venir':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
+    +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
+    +'<div class="bdf-jauge"><i style="width:'+S.pct+'%"></i>'+[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
+    +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'')+'</div>'
+    +'<div class="bdf-bas"><span>'+rythme+'</span>'+(moi&&!avenir?'<span>Ma part : <b>'+dfsNum(maPart?maPart.v:0)+' '+dfsEsc(d.unite)+'</b></span>':'')
+    +(moi&&!avenir?'<button class="bdf-btn" onclick="ouvrirAjoutDefi()">➕ J\'ai fait…</button>':'')+'</div>'
+    +(fil?'<div class="bdf-fil">'+fil+'</div>':'')+'</div>';
+  feterPalierDefi(d,S);
+}
+function ouvrirAjoutDefi(){
+  switchTab("defis");
+  setTimeout(function(){var i=document.getElementById("dfsVal");if(i){i.focus();i.scrollIntoView({block:"center",behavior:"smooth"})}},350);
+}
+// Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
+function feterPalierDefi(d,S){
+  if(dfsAVenir(d))return;
+  var cle="icp_palier_defi_"+d.id,vu=0;try{vu=parseInt(localStorage.getItem(cle)||"0",10)}catch(e){}
+  var palier=[100,75,50,25].filter(function(p){return S.pct>=p})[0]||0;
+  if(palier>vu){
+    try{localStorage.setItem(cle,String(palier))}catch(e){}
+    if(vu>0||palier===100){confettis();showToast(palier===100?"🎉 Défi réussi ! Bravo à tout le centre !":"🔥 Le centre a passé "+palier+" % du défi !","success");}
+  }
+}
+// Rafraîchit le défi toutes les 2 minutes quand l'appli est ouverte
+setInterval(function(){if(document.visibilityState==="visible"&&typeof supabaseClient!=="undefined"&&donneesChargees&&tabAutorise("defis"))chargerDefis(true)},120000);
 // ===== OBJECTIFS ET ÉVOLUTION PAR TEST =====
 function seuilsRameur(sexe,poids,age){
   var p=parseFloat(poids);if(!p)return null;var tr=getTrancheErgo(age);if(!tr)return null;
@@ -4294,8 +4384,13 @@ function dfsTheme(id){
   for(var i=0;i<DFS_THEMES.length;i++)if(DFS_THEMES[i].id===id)return DFS_THEMES[i];
   return DFS_THEMES[DFS_THEMES.length-1];
 }
+var ANNUAIRE={};
+async function chargerAnnuaire(){
+  if(isAdmin)return;
+  try{var r=await supabaseClient.rpc("annuaire_icp");if(!r.error)(r.data||[]).forEach(function(x){ANNUAIRE[x.id]=x})}catch(e){}
+}
 function dfsNom(pid){
-  var p=(data||[]).filter(function(x){return x.id===pid})[0];
+  var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];
   return p?((p.prenom||"")+" "+(p.nom||"")).trim():"Pompier "+pid;
 }
 function dfsNum(v){var n=Math.round(v*10)/10;return (n%1===0?n.toFixed(0):n.toFixed(1)).replace(".",",")}
@@ -4318,6 +4413,7 @@ async function chargerDefis(force){
     dfsListe=[];dfsContrib=[];
   }
   renderDefis();
+  renderBandeauDefi();
 }
 function dfsStats(d){
   var c=dfsContrib.filter(function(x){return x.defi_id===d.id});

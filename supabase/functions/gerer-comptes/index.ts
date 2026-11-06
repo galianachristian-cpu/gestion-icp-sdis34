@@ -11,7 +11,7 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const ONGLETS = ["dashboard", "synthese", "fiche", "saisie", "terrain", "bilan", "progression", "cardio", "muscu", "seances", "echelles", "ppa", "export"];
+const ONGLETS = ["dashboard", "synthese", "fiche", "saisie", "terrain", "bilan", "progression", "cardio", "muscu", "seances", "programme", "echelles", "ppa", "menage", "defis", "aide", "export"];
 
 function reponse(status: number, body: unknown) {
   return new Response(JSON.stringify(body), {

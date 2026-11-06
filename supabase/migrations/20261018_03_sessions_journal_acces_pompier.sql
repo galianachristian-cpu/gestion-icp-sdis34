@@ -80,3 +80,6 @@ alter table public.connexions_icp enable row level security;
 alter table public.pompiers add column if not exists confidentiel boolean default false;
 -- pompiers_confidentiels() (security definer) ; policies pompiers / carnet_seances : 'equipe' exclut ces fiches ;
 -- l'appli ne les publie pas dans synthese_couleurs.
+
+-- 2026-11-06 : onglets personnels (programme, defis, aide) : un compte pompier / chef qui les a garde
+-- son type (sa seule fiche). annuaire_icp() : prénom, nom, grade de chacun (sans résultat) pour les défis.
