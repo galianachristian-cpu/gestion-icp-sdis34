@@ -2459,7 +2459,7 @@ function renderBandeauDefi(){
   var duree=Math.max(1,Math.round((fin-deb)/86400000)),ecoules=Math.min(duree,Math.max(0,(now-deb)/86400000));
   var attendu=Math.round(100*ecoules/duree),reste=Math.max(0,Number(d.objectif)-S.total);
   var joursRestants=Math.max(1,Math.ceil((fin-now)/86400000));
-  var rythme=avenir?'⏳ Démarre le '+deb.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})
+  var rythme=avenir?dfsEsc(dfsTexteAnnonce(d))
     :S.atteint?'🎉 <b>Objectif atteint !</b>'
     :S.pct>=attendu?'<span class="bdf-rythme avance">🔥 En avance sur le rythme</span>'
     :'<span class="bdf-rythme retard">⏱️ Il faut <b>'+dfsNum(reste/joursRestants)+' '+dfsEsc(d.unite)+'/jour</b> pour réussir</span>';
@@ -2471,7 +2471,7 @@ function renderBandeauDefi(){
   el.innerHTML='<div class="bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'" onclick="if(!event.target.closest(\'.bdf-btn\'))switchTab(\'defis\')" title="Voir le défi">'
     +'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+'</div>'
     +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
-    +'<span class="bdf-pill">'+(avenir?'à venir':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
+    +'<span class="bdf-pill">'+(avenir?'J-'+dfsJoursAvant(d)+' avant le départ':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
     +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
     +'<div class="bdf-jauge"><i style="width:'+S.pct+'%"></i>'+[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
     +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'')+'</div>'
@@ -4437,8 +4437,16 @@ function dfsStats(d){
 // Un défi programmé à l'avance reste invisible pour les pompiers
 // jusqu'à sa date de début ; l'admin le voit, marqué « à venir ».
 function dfsAVenir(d){return !!d&&d.debut>dfsIso(new Date())}
+// Un défi à venir est annoncé à tous (compte à rebours) ; la saisie ne s'ouvre qu'au départ.
 function dfsVisibles(){
-  return isAdmin?dfsListe:dfsListe.filter(function(d){return !dfsAVenir(d)});
+  return dfsListe;
+}
+function dfsJoursAvant(d){var j=new Date(d.debut+"T00:00:00"),t=new Date();t.setHours(0,0,0,0);return Math.round((j-t)/864e5)}
+function dfsTexteAnnonce(d){
+  var n=dfsJoursAvant(d),jour=new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+  var quand=n<=1?"demain":"dans "+n+" jours";
+  var we=new Date().getDay(),avantLundi=new Date(d.debut+"T00:00:00").getDay()===1&&n<=4&&(we===5||we===6||we===0||we===4);
+  return "⏳ Ça commence "+quand+", le "+jour+" !"+(avantLundi?" Vous avez le week-end pour vous préparer psychologiquement 😄":" Préparez-vous 💪");
 }
 function renderDefis(){
   var box=document.getElementById("dfsContent");if(!box)return;
@@ -4484,9 +4492,9 @@ function dfsCarte(d){
     +'</div>';
   // ma contribution
   if(dfsAVenir(d)){
-    h+='<div class="pcard"><p class="psous">⏳ Ce défi démarre le '
-      +new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})
-      +'. Les pompiers ne le voient pas encore : il apparaîtra tout seul dans leur onglet Défis ce jour-là.</p></div>';
+    h+='<div class="pcard"><div class="ptitre"><i>⏳</i> Bientôt le départ</div><p class="psous" style="font-size:14px">'+dfsEsc(dfsTexteAnnonce(d))
+      +'<br>La saisie de tes '+dfsEsc(d.unite)+' s\'ouvrira le jour du départ.</p>'
+      +(isAdmin?'<p class="note">Les pompiers voient cette annonce et le bandeau sur leur écran d\'accueil.</p>':'')+'</div>';
   }
   if(moi&&d.actif&&!dfsAVenir(d)){
     h+='<div class="pcard"><div class="sec">Ma part</div>'
@@ -4498,6 +4506,7 @@ function dfsCarte(d){
   }
   if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
   // classement
+  if(dfsAVenir(d)&&!S.classement.length)return h+(isAdmin?dfsAdminHtml(d):"");
   h+='<div class="pcard"><div class="sec">Qui a fait quoi</div>';
   if(!S.classement.length) h+='<p class="note">Personne n\'a encore contribué. Sois le premier.</p>';
   else{
@@ -4511,7 +4520,12 @@ function dfsCarte(d){
       +' • le défi est collectif : chaque contribution compte, même petite.</p>';
   }
   h+='</div>';
-  if(isAdmin){
+  if(isAdmin)h+=dfsAdminHtml(d);
+  return h;
+}
+function dfsAdminHtml(d){
+  var h="";
+  {
     h+='<div class="pcard"><div class="sec">Administration</div><div class="prow">'
       +'<button class="pbtn" onclick="dfsModifier('+d.id+')">✏️ Modifier</button>'
       +'<button class="pbtn" onclick="dfsBasculer('+d.id+','+(d.actif?'false':'true')+')">'
