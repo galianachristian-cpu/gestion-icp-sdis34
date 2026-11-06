@@ -2145,9 +2145,12 @@ function messageAccesPompier(p,email,pass){
     +"Astuce : ajoutez l'appli à l'écran d'accueil du téléphone (Partager → « Sur l'écran d'accueil »).\n\nChristian",
     "Votre accès à l'application ICP — Cruzy-Quarante",email,{nom:(p.prenom+" "+p.nom).trim(),email:email,pass:pass});
 }
+// Onglets donnés d'office à tout nouveau compte pompier : sa fiche, son sport,
+// les défis, le ménage et l'aide. Sans ça un compte est créé aveugle.
+var ONGLETS_BASE=["fiche","programme","defis","menage","aide"];
 async function creerAccesPompier(p,email){
   var pass=genererMotDePasse();
-  await appelerGererComptes({action:'enregistrer',email:email,password:pass,onglets:["fiche"],pompier_id:p.id});
+  await appelerGererComptes({action:'enregistrer',email:email,password:pass,onglets:ONGLETS_BASE.slice(),pompier_id:p.id});
   return pass;
 }
 async function activerAccesPompier(id){
@@ -2168,7 +2171,7 @@ async function nouveauMdpPompier(id){
   if(!confirm("Créer un nouveau mot de passe pour "+p.prenom+" "+p.nom+" ? L'ancien ne marchera plus."))return;
   try{
     var pass=genererMotDePasse();
-    await appelerGererComptes({action:'enregistrer',email:c.email,password:pass,onglets:c.onglets||["fiche"],pompier_id:id});
+    await appelerGererComptes({action:'enregistrer',email:c.email,password:pass,onglets:c.onglets||ONGLETS_BASE.slice(),pompier_id:id});
     messageAccesPompier(p,c.email,pass);
   }catch(e){alert("⚠️ Échec : "+e.message);}
 }
@@ -4586,7 +4589,7 @@ var AIDE_FAQ=[
 ];
 var AIDE_ADMIN=[
  {q:"Créer un compte pour un nouveau",
-  r:"Onglet Comptes, « Nouveau compte » : son adresse, un mot de passe, et tu le relies à sa fiche pompier dans la liste déroulante. <b>Pense à cocher les onglets qu'il doit voir</b> : ils ne le sont pas par défaut."},
+  r:"Onglet Comptes, « Nouveau compte » : son adresse, un mot de passe, et tu le relies à sa fiche pompier dans la liste déroulante. <b>Il reçoit d'office sa fiche, Mon sport, Défis, Ménage et Aide</b> ; coche en plus ce que tu veux lui ouvrir."},
  {q:"Lancer un défi pour le centre",
   r:"Onglet Défis, « Lancer un défi ». Tu choisis un thème, un titre, un objectif, des dates et une récompense. L'unité et un objectif suggéré se remplissent tout seuls. Tu peux ensuite sortir une affiche PDF pour la salle."},
  {q:"Saisir une campagne de tests",
