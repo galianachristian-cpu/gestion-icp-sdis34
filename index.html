@@ -173,6 +173,9 @@ html.vt-theme::view-transition-old(root),html.vt-theme::view-transition-new(root
 .bdf-bas b{color:var(--text)}
 .bdf-rythme.avance{color:var(--success)}.bdf-rythme.retard{color:var(--warning)}
 .bdf-btn{margin-left:auto;padding:7px 14px;border-radius:999px;border:0;font:700 13px Inter,sans-serif;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--c),var(--primary));box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.dfs-pod+.dfs-pod{margin-top:6px}
+#tab-defis .dfs-pod .dfs-l{grid-template-columns:30px 1fr auto!important}
+#tab-defis .dfs-pod .dfs-l .v{white-space:nowrap;text-align:right}
 .bdf-fil{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .bdf-fil span{font-size:12px;padding:3px 9px;border-radius:999px;background:color-mix(in srgb,var(--surface2) 85%,transparent);border:1px solid var(--border)}
 /* 11. Respect du réglage « réduire les animations » */
@@ -2462,6 +2465,8 @@ function renderBandeauDefi(){
   var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
   var fil=S.contribs.slice().sort(function(a,b){return String(b.cree_le||b.date).localeCompare(String(a.cree_le||a.date))}).slice(0,3)
     .map(function(x){return '<span>💪 '+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+' +'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span>'}).join("");
+  var pod=avenir?[]:dfsPodium(d,0);
+  if(pod.length)fil='<span>🏅 Le plus régulier cette semaine : <b>'+dfsEsc(dfsNom(pod[0].pid).split(" ")[0])+'</b> ('+pod[0].jours+' j)</span>'+fil;
   el.innerHTML='<div class="bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'" onclick="if(!event.target.closest(\'.bdf-btn\'))switchTab(\'defis\')" title="Voir le défi">'
     +'<div class="bdf-haut"><span class="bdf-ic">'+dfsEsc(d.icone||"🏆")+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+'</div>'
     +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
@@ -4490,6 +4495,7 @@ function dfsCarte(d){
       +'<p class="note">Tu ajoutes ce que tu viens de faire : ça s\'additionne à ta part et au total du centre.</p>'
       +dfsMesLignes(d,moi)+'</div>';
   }
+  if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
   // classement
   h+='<div class="pcard"><div class="sec">Qui a fait quoi</div>';
   if(!S.classement.length) h+='<p class="note">Personne n\'a encore contribué. Sois le premier.</p>';
@@ -4510,7 +4516,8 @@ function dfsCarte(d){
       +'<button class="pbtn" onclick="dfsBasculer('+d.id+','+(d.actif?'false':'true')+')">'
       +(d.actif?'⏹️ Clore le défi':'▶️ Rouvrir')+'</button>'
       +'<button class="pbtn" onclick="dfsSupprimer('+d.id+')">🗑️ Supprimer</button>'
-      +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button></div></div>';
+      +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button>'
+      +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button></div></div>';
   }
   return h;
 }
@@ -4662,6 +4669,87 @@ function dfsAffiche(id){
   doc.setFontSize(9);doc.setTextColor(120,113,108);
   doc.text("Chaque contribution compte. On reste sollicitable : au bip, on lache tout.",14,285);
   doc.save("Defi_"+d.titre.replace(/[^a-zA-Z0-9]+/g,"_")+".pdf");
+}
+// ===== PODIUM DE LA SEMAINE (régularité) =====
+// Lundi → dimanche. On récompense la régularité : nombre de jours avec au moins une contribution,
+// puis le total en cas d'égalité.
+function dfsLundi(decalage){var d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+7*(decalage||0));return d}
+function dfsPodium(d,decalage){
+  var l=dfsLundi(decalage),dim=new Date(l);dim.setDate(l.getDate()+6);
+  var a=dfsIso(l),b=dfsIso(dim),par={};
+  dfsContrib.forEach(function(x){
+    if(x.defi_id!==d.id||x.date<a||x.date>b)return;
+    var p=par[x.pompier_id]||(par[x.pompier_id]={pid:x.pompier_id,jours:{},v:0});p.jours[x.date]=1;p.v+=Number(x.valeur||0);
+  });
+  return Object.keys(par).map(function(k){var p=par[k];return {pid:p.pid,jours:Object.keys(p.jours).length,v:p.v}})
+    .sort(function(x,y){return (y.jours-x.jours)||(y.v-x.v)}).slice(0,3);
+}
+function dfsPodiumHtml(d){
+  var cette=dfsPodium(d,0),avant=dfsPodium(d,-1),med=["🥇","🥈","🥉"];
+  var bloc=function(lib,L){return '<div class="dfs-pod"><div class="ss">'+lib+'</div>'+(L.length?L.map(function(c,i){
+    return '<div class="dfs-l"><span class="r">'+med[i]+'</span><span class="n">'+dfsEsc(dfsNom(c.pid))+'</span>'
+      +'<span class="v">'+c.jours+' jour'+(c.jours>1?'s':'')+' · '+dfsNum(c.v)+' '+dfsEsc(d.unite)+'</span></div>'}).join("")
+    :'<p class="note">Personne pour l\'instant.</p>')+'</div>'};
+  return '<div class="pcard"><div class="sec">🏅 Podium de la semaine</div>'
+    +'<p class="note" style="margin-top:0">On récompense la régularité : le nombre de jours où chacun a contribué.</p>'
+    +bloc("Cette semaine",cette)+(avant.length?bloc("Semaine dernière",avant):"")+'</div>';
+}
+// ===== AFFICHE FINALE (PDF, avec photo de groupe facultative) =====
+function dfsAfficheFinale(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  if(confirm("Ajouter une photo de groupe sur l'affiche ?\n\nOK : choisir une photo — Annuler : affiche sans photo")){
+    var inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+    inp.onchange=function(){var f=inp.files&&inp.files[0];if(!f)return;
+      var r=new FileReader();r.onload=function(){var img=new Image();img.onload=function(){
+        // photo réduite à 1600 px de large pour garder un PDF léger
+        var k=Math.min(1,1600/img.width),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);dfsAfficheFinalePdf(d,c.toDataURL("image/jpeg",.85),c.width/c.height);};img.src=r.result;};
+      r.readAsDataURL(f);};
+    inp.click();
+  } else dfsAfficheFinalePdf(d,null,0);
+}
+function dfsTextePdf(x){return String(x||"").replace(/[^\x00-\xFF'’«»—–…·]/g,"").replace(/\s+/g," ").trim()}
+function dfsAfficheFinalePdf(d,photo,ratio){
+  var S=dfsStats(d),jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  var W=210,m=14,y;
+  doc.setFillColor(12,10,9);doc.rect(0,0,W,46,'F');doc.setFillColor(234,88,12);doc.rect(0,46,W,1.6,'F');
+  if(typeof pdfLogo==="function")pdfLogo(doc,m-3,7,32);
+  doc.setFont("helvetica","bold");doc.setFontSize(24);doc.setTextColor(251,191,36);
+  doc.text(S.atteint?"DÉFI RÉUSSI !":"BILAN DU DÉFI",W/2+14,19,{align:"center"});
+  doc.setFontSize(15);doc.setTextColor(255,255,255);doc.text(dfsTextePdf(d.titre),W/2+14,29,{align:"center",maxWidth:150});
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(214,211,209);
+  doc.text("Du "+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")+" au "+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+" — CIS Cruzy-Quarante — SDIS 34",W/2+14,38,{align:"center"});
+  y=60;
+  doc.setFont("helvetica","bold");doc.setFontSize(44);doc.setTextColor(28,25,23);
+  doc.text(dfsNum(S.total),m,y+6);var lt=doc.getTextWidth(dfsNum(S.total));
+  doc.setFontSize(16);doc.setTextColor(120,113,108);doc.text("/ "+dfsNum(d.objectif)+" "+dfsTextePdf(d.unite),m+lt+3,y+6);
+  doc.setFontSize(28);doc.setTextColor(S.atteint?22:234,S.atteint?163:88,S.atteint?74:12);doc.text(S.pct+" %",W-m,y+6,{align:"right"});
+  y+=12;doc.setFillColor(237,233,226);doc.roundedRect(m,y,W-2*m,9,4.5,4.5,'F');
+  doc.setFillColor(S.atteint?22:234,S.atteint?163:88,S.atteint?74:12);doc.roundedRect(m,y,Math.max(9,(W-2*m)*Math.min(100,S.pct)/100),9,4.5,4.5,'F');
+  y+=16;
+  if(photo){var pw=W-2*m,ph=Math.min(95,pw/ratio),px=m+(pw-ph*ratio)/2;if(ph*ratio>pw){ph=pw/ratio;px=m}
+    doc.addImage(photo,"JPEG",px,y,Math.min(pw,ph*ratio),ph,undefined,"FAST");y+=ph+8;}
+  // podium
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(28,25,23);doc.text("Le podium",m,y);y+=4;
+  var top=S.classement.slice(0,3),lib=["1er","2e","3e"],coul=[[234,179,8],[148,163,184],[180,83,9]],cw=(W-2*m-8)/3;
+  top.forEach(function(c,i){var x=m+i*(cw+4);doc.setFillColor(coul[i][0],coul[i][1],coul[i][2]);doc.roundedRect(x,y,cw,22,3,3,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(10);doc.text(lib[i],x+cw/2,y+6,{align:"center"});
+    doc.setFontSize(11.5);doc.text(dfsTextePdf(dfsNom(c.pid)),x+cw/2,y+12.5,{align:"center",maxWidth:cw-4});
+    doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text(dfsNum(c.v)+" "+dfsTextePdf(d.unite),x+cw/2,y+18.5,{align:"center"});doc.setFont("helvetica","bold");});
+  y+=(top.length?30:4);
+  // tous les participants
+  doc.setFontSize(13);doc.setTextColor(28,25,23);doc.text("Merci aux "+S.classement.length+" participant"+(S.classement.length>1?"s":"")+" !",m,y);y+=3;
+  if(S.classement.length){
+    var lignes=[],cols=2,parCol=Math.ceil(S.classement.length/cols);
+    for(var i=0;i<parCol;i++){var r=[];for(var k=0;k<cols;k++){var c=S.classement[i+k*parCol];r.push(c?dfsTextePdf(dfsNom(c.pid)):"",c?dfsNum(c.v)+" "+dfsTextePdf(d.unite):"")}lignes.push(r)}
+    doc.autoTable({startY:y+2,body:lignes,theme:'plain',margin:{left:m,right:m},styles:{fontSize:9.5,cellPadding:1.6},
+      columnStyles:{1:{halign:'right',textColor:[120,113,108]},3:{halign:'right',textColor:[120,113,108]}}});
+    y=doc.lastAutoTable.finalY+6;
+  }
+  if(d.recompense&&y<270){doc.setFont("helvetica","bold");doc.setFontSize(11.5);doc.setTextColor(194,65,12);doc.text("A la clé : "+dfsTextePdf(d.recompense),m,Math.min(y,272));}
+  doc.setFont("helvetica","italic");doc.setFontSize(9);doc.setTextColor(120,113,108);
+  doc.text("Chaque contribution a compté. Bravo à tout le centre !",W/2,288,{align:"center"});
+  doc.save("Defi_bilan_"+d.titre.replace(/[^a-zA-Z0-9]+/g,"_")+".pdf");
 }
 // effets, repris de l'onglet Mon sport
 function dfsEnterFx(){
