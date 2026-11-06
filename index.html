@@ -277,6 +277,10 @@ html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 .decor{position:absolute;bottom:calc(100% + 1px);transform:translateX(-50%);width:26px;height:24px;opacity:.28;filter:grayscale(.7);transition:opacity .4s;pointer-events:none;z-index:1}
 .decor.atteint{opacity:1;filter:none;animation:pop .6s cubic-bezier(.2,1.6,.4,1) both}
 .decor svg{width:100%;height:100%;overflow:visible}
+.decor.decor-illu{width:42px;height:37px}
+.decor.decor-illu img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+.decor.decor-illu.atteint img{animation:rennes-trot .55s ease-in-out infinite}
+@keyframes rennes-trot{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 .decor .fenetre{animation:fenetre 1.8s ease-in-out infinite}
 @keyframes fenetre{50%{fill:#fde68a}}
 /* 11. Respect du réglage « réduire les animations » */
@@ -2670,14 +2674,14 @@ function personnageHtml(d,pct){
 }
 // Décors du voyage du Père Noël le long de la jauge
 var DECORS_NOEL=[
- [25,'<svg viewBox="0 0 28 24"><path d="M6 15 q8 -4 16 0 v4 h-16z" fill="#92400e"/><path d="M8 19 v5 M12 19 v5 M18 19 v5 M21 19 v5" stroke="#78350f" stroke-width="1.6"/><circle cx="23" cy="12" r="3.2" fill="#92400e"/><circle cx="25.6" cy="12.6" r="1.2" fill="#dc2626"/><path d="M21 9 l-2 -5 M21 7 l-3 -1 M23 9 l1 -5 M24 6 l2 -1" stroke="#a16207" stroke-width="1.2" fill="none"/></svg>'],
+ [25,'<img src="img/defis/rennes.webp" alt="" draggable="false">','illu'],
  [50,'<svg viewBox="0 0 28 24"><path d="M1 24 L10 8 L19 24Z" fill="#64748b"/><path d="M10 8 L13 13 L10 12 L7 13Z" fill="#fff"/><path d="M12 24 L20 12 L28 24Z" fill="#94a3b8"/><path d="M20 12 L22.4 15.5 L20 15 L17.6 15.5Z" fill="#fff"/></svg>'],
  [75,'<svg viewBox="0 0 28 24"><path d="M4 22 L9 10 L14 22Z" fill="#15803d"/><path d="M14 22 L19 8 L24 22Z" fill="#16a34a"/><circle cx="19" cy="7.5" r="1.4" fill="#fbbf24"/><rect x="8" y="22" width="2" height="2" fill="#78350f"/><rect x="18" y="22" width="2" height="2" fill="#78350f"/></svg>'],
  [100,'<svg viewBox="0 0 28 24"><path d="M3 12 L14 3 L25 12Z" fill="#b91c1c"/><path d="M3 12 Q14 9 25 12" stroke="#fff" stroke-width="2" fill="none"/><rect x="6" y="12" width="16" height="12" fill="#92400e"/><rect class="fenetre" x="9" y="15" width="4" height="4" fill="#fbbf24"/><rect x="15" y="16" width="4" height="8" fill="#451a03"/></svg>']
 ];
 function decorsHtml(d,pct){
   if(!estNoel(d))return "";
-  return DECORS_NOEL.map(function(x){return '<span class="decor'+(pct>=x[0]?' atteint':'')+'" style="left:'+Math.min(96,x[0])+'%">'+x[1]+'</span>'}).join("");
+  return DECORS_NOEL.map(function(x){return '<span class="decor'+(x[2]?' decor-illu':'')+(pct>=x[0]?' atteint':'')+'" style="left:'+Math.min(96,x[0])+'%">'+x[1]+'</span>'}).join("");
 }
 // ===== HUMOUR DES DÉFIS (Noël, Movember) =====
 // On rigole AVEC les gars : les titres valorisent tout le monde, personne n'est pointé du doigt.
