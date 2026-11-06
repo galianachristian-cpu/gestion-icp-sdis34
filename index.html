@@ -4767,8 +4767,11 @@ function dfsStats(d){
 // jusqu'à sa date de début ; l'admin le voit, marqué « à venir ».
 function dfsAVenir(d){return !!d&&d.debut>dfsIso(new Date())}
 // Un défi à venir est annoncé à tous (compte à rebours) ; la saisie ne s'ouvre qu'au départ.
+// Annoncé aux pompiers 7 jours avant le départ ; l'admin le voit dès sa création.
 function dfsVisibles(){
-  return dfsListe;
+  var t=dfsIso(new Date()),rang=function(d){return dfsAVenir(d)?1:(d.actif&&d.fin>=t)?0:2};
+  return (isAdmin?dfsListe:dfsListe.filter(function(d){return !dfsAVenir(d)||dfsJoursAvant(d)<=7}))
+    .slice().sort(function(a,b){return (rang(a)-rang(b))||(rang(a)===2?b.fin.localeCompare(a.fin):a.debut.localeCompare(b.debut))});
 }
 function dfsJoursAvant(d){var j=new Date(d.debut+"T00:00:00"),t=new Date();t.setHours(0,0,0,0);return Math.round((j-t)/864e5)}
 function dfsTexteAnnonce(d){
@@ -4823,7 +4826,7 @@ function dfsCarte(d){
   if(dfsAVenir(d)){
     h+='<div class="pcard"><div class="ptitre"><i>⏳</i> Bientôt le départ</div><p class="psous" style="font-size:14px">'+dfsEsc(dfsTexteAnnonce(d))
       +'<br>La saisie de tes '+dfsEsc(d.unite)+' s\'ouvrira le jour du départ.</p>'
-      +(isAdmin?'<p class="note">Les pompiers voient cette annonce et le bandeau sur leur écran d\'accueil.</p>':'')+'</div>';
+      +(isAdmin?'<p class="note">'+(dfsJoursAvant(d)<=7?'Les pompiers voient cette annonce et le compte à rebours.':'Les pompiers verront l\'annonce à partir du '+new Date(new Date(d.debut+"T00:00:00").getTime()-7*864e5).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+' (7 jours avant le départ).')+'</p>':'')+'</div>';
   }
   if(moi&&d.actif&&!dfsAVenir(d)){
     h+='<div class="pcard"><div class="sec">Ma part</div>'
