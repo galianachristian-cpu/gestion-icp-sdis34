@@ -588,6 +588,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-defis .dfs-t span{display:block;font-size:12px;color:var(--pmuted);margin-top:2px}
 #tab-defis .dfs-pill{margin-left:auto;background:var(--c);color:#0b0f19;border-radius:99px;padding:5px 12px;font-size:11.5px;font-weight:800}
 #tab-defis .dfs-pill.fin{background:var(--pline);color:var(--pmuted)}
+#tab-defis .dfs-t .dfs-pill{color:#0b0f19}#tab-defis .dfs-t .dfs-pill.fin{color:var(--pmuted)}
 #tab-defis .dfs-chiffres{display:flex;align-items:baseline;gap:9px;margin:16px 0 8px}
 #tab-defis .dfs-chiffres b{font-size:42px;font-weight:800;letter-spacing:-1.5px;color:var(--c)}
 #tab-defis .dfs-chiffres em{font-style:normal;font-size:15px;color:var(--pmuted);font-weight:700}
@@ -4467,7 +4468,7 @@ function dfsCarte(d){
   var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
   var h='<div class="pcard dfs-h" style="--c:'+dfsEsc(d.couleur)+'">'
     +'<div class="dfs-t"><i>'+dfsEsc(d.icone)+'</i><div><b>'+dfsEsc(d.titre)+'</b>'
-    +'<span>'+dfsEsc(t.lib)+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
+    +'<span>'+dfsEsc(DFS_THEMES.some(function(x){return x.id===d.theme})?t.lib:(d.theme||t.lib))+' • du '+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
     +' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+'</span></div>'
     +(dfsAVenir(d)?'<span class="dfs-pill fin">à venir</span>'
       :d.actif?(S.reste>=0?'<span class="dfs-pill">'+(S.reste===0?"dernier jour":S.reste+" jour"+(S.reste>1?"s":""))+'</span>'
@@ -4655,7 +4656,7 @@ function dfsAffiche(id){
   doc.setFillColor(220,38,38);doc.rect(0,0,210,10,'F');
   doc.setFontSize(26);doc.setTextColor(28,25,23);doc.text(d.icone+" "+d.titre,14,30);
   doc.setFontSize(11);doc.setTextColor(120,113,108);
-  doc.text(t.lib+" • du "+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
+  doc.text((DFS_THEMES.some(function(x){return x.id===d.theme})?t.lib:(d.theme||t.lib))+" • du "+new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR")
     +" au "+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR")+" • CIS Cruzy-Quarante",14,38);
   doc.setFontSize(40);doc.setTextColor(28,25,23);
   doc.text(dfsNum(S.total)+" / "+dfsNum(d.objectif)+" "+d.unite,14,58);
