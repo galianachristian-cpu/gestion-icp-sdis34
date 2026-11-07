@@ -94,3 +94,7 @@ alter table public.pompiers add column if not exists confidentiel boolean defaul
 -- (Avant ce changement, un tel compte aurait été classé 'equipe' et aurait lu tous les résultats.)
 --   ... when exists (... c.pompier_id is null and onglets ? 'defis'
 --                    and onglets <@ '["defis","aide"]') then 'ecran'   -- inséré avant 'equipe'
+
+-- 2026-11-07 : notifications des défis (fonction envoyer-rappels v7)
+alter table public.defis add column if not exists palier_notifie integer not null default -1;
+-- -1 rien envoyé, 0 départ annoncé, 25/50/75/100 dernier palier annoncé à tous les abonnés push.

@@ -4742,7 +4742,7 @@ function pushCarte(){
     +'<span class="pill'+(pushAbo?' grad':'')+'">🔔 Rappels de séance</span>'
     +'<span class="pill">'+(pushAbo?'activés sur cet appareil':'non activés ici')+'</span></div>';
   if(!pushAbo){
-    h+='<p class="psous">Reçois un rappel même quand l\'appli est fermée, les jours où tu t\'entraînes.</p>'
+    h+='<p class="psous">Reçois un rappel même quand l\'appli est fermée, les jours où tu t\'entraînes, et les grandes étapes des défis du centre.</p>'
       +'<div class="prow"><button class="pbtn pri" onclick="pushActiver()">🔔 Activer sur cet appareil</button></div>';
   }else{
     h+='<div class="ss">Les jours</div><div class="chips">'
@@ -4752,7 +4752,7 @@ function pushCarte(){
       +'<div class="ss">À quelle heure</div>'
       +'<input type="time" value="'+sptEsc(pushAbo.heure||"18:00")+'" onchange="pushRegler(\'heure\',this.value)">'
       +'<div class="prow"><button class="pbtn" onclick="pushCouper()">Couper sur cet appareil</button></div>'
-      +'<p class="note">Un rappel par jour au maximum. Chaque téléphone se règle séparément.</p>';
+      +'<p class="note">Un rappel par jour au maximum. Chaque téléphone se règle séparément. Tu es aussi prévenu au départ de chaque défi du centre et quand il passe 25, 50, 75 et 100 %.</p>';
   }
   return h+'</div>';
 }
