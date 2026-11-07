@@ -47,3 +47,11 @@ du tee-shirt, le bon nombre de doigts, le matériel cohérent (nombre de cordes,
 | Rameur, Luc Léger, souplesse, pompes, tractions | `img/icp/*.webp` |
 | Vélo, course, gainage, escaliers, SkiErg, séances | `img/themes/*.webp` |
 | Match des gardes (tir à la corde) | `img/defis/gardes.webp` |
+
+## Dans l'appli : « Le mot du Sergent-Chef »
+
+Sous le bandeau du défi, sur l'accueil, la fiche, la synthèse et le programme. Une phrase par jour,
+choisie selon le jour (lundi, vendredi, week-end), l'heure (tôt le matin, tard le soir) et l'état du défi
+(en avance, en retard, réussi). On le touche : il en sort une autre. La croix le fait taire jusqu'au lendemain.
+Les phrases sont dans `SERGENT` (index.html) : on peut en ajouter autant qu'on veut.
+Buste : `img/mascotte/sergent-chef-buste.webp`.

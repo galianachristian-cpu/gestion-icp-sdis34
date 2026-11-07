@@ -387,6 +387,17 @@ body.tv-on{overflow:hidden}
 .gardes-l>div{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .chip-garde{min-width:34px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:700 13px Inter,sans-serif;cursor:pointer}
 .chip-garde.on{background:var(--g,#78716c);border-color:var(--g,#78716c);color:#fff}
+/* ===== LE MOT DU SERGENT-CHEF ===== */
+#motSergent:empty{display:none}
+.sergent{position:relative;display:flex;align-items:center;gap:12px;margin:0 0 16px;padding:10px 40px 10px 10px;border-radius:16px;cursor:pointer;
+  background:linear-gradient(120deg,rgba(220,38,38,.16),var(--surface) 55%);border:1px solid rgba(251,191,36,.35);box-shadow:0 6px 18px rgba(0,0,0,.2);animation:monte .5s cubic-bezier(.2,.8,.2,1) both}
+.sergent img{width:64px;height:64px;flex-shrink:0;border-radius:50%;object-fit:cover;object-position:50% 20%;background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);border:2px solid rgba(251,191,36,.6);box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.sergent img.parle{animation:sergent-parle .45s ease}
+@keyframes sergent-parle{30%{transform:rotate(-8deg) scale(1.08)}60%{transform:rotate(6deg) scale(1.04)}}
+.sergent-bulle{display:flex;flex-direction:column;gap:2px;min-width:0}
+.sergent-bulle b{font-family:var(--titre);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.sergent-bulle span{font-size:14px;line-height:1.4;font-style:italic}
+.sergent-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -952,6 +963,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div style="display:flex;justify-content:flex-end"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPlus()">Fermer</button></div></div>
 </div>
 <div id="bandeauDefi"></div>
+<div id="motSergent"></div>
 <div id="tab-dashboard">
 <div class="card" id="carteSessions"><div class="card-title">📅 Sessions ICP</div><div id="sessionsContenu"><div class="squelette" style="min-height:70px"></div></div></div>
 <div class="card"><div class="card-title">🔥 Condition physique de la caserne</div><div id="dashVisuel"></div></div>
@@ -1942,7 +1954,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi()}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi();renderMotSergent(tab)}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -2808,6 +2820,7 @@ function renderTV(){
 }
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
+  renderMotSergent();
   if(document.body.classList.contains("tv-on")){renderTV();return}
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
   if(!ajoutTraite&&/[?&]ajout\b/.test(location.search)){
@@ -2930,6 +2943,69 @@ function renderGardes(){
     +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerGardes()">Fermer</button>'
     +'<button class="btn btn-success" onclick="saveAll();fermerGardes()">💾 Enregistrer</button></div></div>';
 }
+// ===== LE MOT DU SERGENT-CHEF (mascotte du centre) =====
+// Une phrase par jour, choisie selon le jour, l'heure et l'état du défi. On le touche : il en sort une autre.
+// La croix le fait taire jusqu'au lendemain (sur cet appareil).
+var SERGENT={
+ toujours:[
+  "Une séance ratée, ça arrive. Deux, c'est une habitude. Trois, c'est un dossier.",
+  "Le canapé n'a jamais sauvé personne. Le rameur, si.",
+  "La moustache, ça se mérite. Le cardio aussi.",
+  "Au bip, on lâche tout. Avant le bip, on s'entraîne.",
+  "Je ne crie pas. Je motive à voix haute.",
+  "Les excuses ne brûlent pas de calories. J'ai vérifié.",
+  "Un pompier fatigué, c'est un pompier qui a bien travaillé. Un pompier qui n'a rien fait, c'est un pompier qui est fatigué quand même.",
+  "Le gainage, c'est comme une intervention : ça paraît long, et après on est fier.",
+  "J'ai vu mieux… mais j'ai vu pire. Allez, on y retourne.",
+  "Bois de l'eau. Non, le café ne compte pas.",
+  "Étire-toi. Ton dos te le rendra dans vingt ans.",
+  "Pas besoin d'être le meilleur. Il faut juste être meilleur qu'hier.",
+  "La sueur, c'est le gras qui pleure. Laisse-le pleurer.",
+  "Si c'était facile, on l'appellerait la sieste.",
+  "Le Luc Léger ne se prépare pas la veille. Ni l'avant-veille.",
+  "Dix minutes, c'est toujours mieux que zéro minute. Même en maths.",
+  "On ne lâche rien. Sauf la télécommande.",
+  "La meilleure séance, c'est celle qu'on fait.",
+  "Ton matelas t'aime. Ton rameur aussi. Choisis bien.",
+  "Je ne vieillis pas. Je prends de l'expérience en salle."
+ ],
+ lundi:["Lundi. Le week-end est fini, les excuses aussi.","Lundi matin : le meilleur jour pour recommencer à zéro. Enfin, à un."],
+ vendredi:["Vendredi : séance courte, mais séance quand même.","C'est vendredi. Le barbecue du week-end, ça se prépare au rameur."],
+ weekend:["Week-end ? Le rameur ne sait pas lire un calendrier.","Repos ce week-end ? Accordé. Une petite marche quand même, c'est un ordre."],
+ matin:["Debout là-dedans ! L'échauffement, ce n'est pas le café.","Il est tôt. Les meilleurs sont déjà réveillés. Les autres aussi, mais ils râlent."],
+ soir:["Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
+ avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
+ retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
+ atteint:["Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
+};
+// phrases du moment (jour, heure, défi) d'abord, puis les phrases de tous les jours
+function phrasesSergent(){
+  var now=new Date(),j=now.getDay(),h=now.getHours(),C=[];
+  if(j===1)C=C.concat(SERGENT.lundi);
+  if(j===5)C=C.concat(SERGENT.vendredi);
+  if(j===0||j===6)C=C.concat(SERGENT.weekend);
+  if(h<10)C=C.concat(SERGENT.matin);
+  if(h>=20)C=C.concat(SERGENT.soir);
+  try{var d=dfsDefiDuBandeau();if(d&&!dfsAVenir(d)){var e=humeurDefi(d);if(e!=="normal"&&SERGENT[e])C=C.concat(SERGENT[e]);}}catch(e){}
+  return {moment:C,tous:C.concat(SERGENT.toujours)};
+}
+var sergentDecalage=0;
+function cleJourSergent(){return "icp_sergent_"+dfsIso(new Date())}
+function renderMotSergent(tab){
+  var el=document.getElementById("motSergent");if(!el)return;
+  tab=tab||ongletCourant;
+  var ok=["dashboard","fiche","synthese","programme"].indexOf(tab)!==-1&&!document.body.classList.contains("tv-on");
+  var cache=false;try{cache=localStorage.getItem(cleJourSergent())==="1"}catch(e){}
+  if(!ok||cache){el.innerHTML="";return}
+  var P=phrasesSergent(),jour=Math.floor(Date.now()/864e5),depart=P.moment.length?jour%P.moment.length:P.moment.length+jour%SERGENT.toujours.length;
+  var phrase=P.tous[(depart+sergentDecalage)%P.tous.length];
+  el.innerHTML='<div class="sergent" onclick="sergentSuivant(event)" title="Touche-le, il a de la réserve">'
+    +'<img src="img/mascotte/sergent-chef-buste.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">'
+    +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span></div>'
+    +'<button class="sergent-x" onclick="event.stopPropagation();taireSergent()" title="Le faire taire jusqu\'à demain">✕</button></div>';
+}
+function sergentSuivant(e){sergentDecalage++;renderMotSergent();var s=document.querySelector("#motSergent .sergent img");if(s){s.classList.remove("parle");void s.offsetWidth;s.classList.add("parle")}vibrer()}
+function taireSergent(){try{localStorage.setItem(cleJourSergent(),"1")}catch(e){}showToast("🎖️ « Repos ! On se revoit demain. »","info");renderMotSergent()}
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
   if(dfsAVenir(d))return;
