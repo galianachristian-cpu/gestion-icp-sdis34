@@ -55,3 +55,15 @@ choisie selon le jour (lundi, vendredi, week-end), l'heure (tôt le matin, tard 
 (en avance, en retard, réussi). On le touche : il en sort une autre. La croix le fait taire jusqu'au lendemain.
 Les phrases sont dans `SERGENT` (index.html) : on peut en ajouter autant qu'on veut.
 Buste : `img/mascotte/sergent-chef-buste.webp`.
+
+## Ses humeurs (mot du jour)
+
+| Humeur | Quand | Fichier |
+|---|---|---|
+| Fâché (fumée des oreilles, doigt pointé) | défi en retard | `img/mascotte/sergent-fache.webp` |
+| Fier (clin d'œil, pouce levé) | défi en avance | `img/mascotte/sergent-fier.webp` |
+| La fête (chapeau, confettis) | défi réussi | `img/mascotte/sergent-fete.webp` |
+| Fatigué (bâille, tisane) | après 21 h | `img/mascotte/sergent-dodo.webp` |
+| Neutre (bras croisés) | le reste du temps | `img/mascotte/sergent-chef-buste.webp` |
+
+Versions grandes (512 px, fond transparent) dans `img/mascotte/grand/`.
