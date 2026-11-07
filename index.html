@@ -2044,7 +2044,7 @@ var TESTS_SYNTHESE=[{key:"rameur",label:"Rameur",field:"rameur_temps"},{key:"luc
 var COULEURS_NIVEAU={"1":{hex:"#dc2626",rgb:[220,38,38],txt:"Vigilance"},"2":{hex:"#f59e0b",rgb:[245,158,11],txt:"Engagement opérationnel"},
   "3":{hex:"#16a34a",rgb:[22,163,74],txt:"Condition optimale"},"?":{hex:"#94a3b8",rgb:[148,163,184],txt:"Passé, non coté"}};
 // Illustrations des épreuves (img/icp/*.webp) ; une épreuve sans image garde son affichage texte
-var ICONES_TEST={rameur:1,luc:1,souplesse:1};
+var ICONES_TEST={rameur:1,luc:1,souplesse:1,pompes:1};
 function iconeTest(k){return ICONES_TEST[k]?'<img class="ic-test" src="img/icp/'+k+'.webp" alt="" width="64" height="64" loading="lazy" draggable="false">':''}
 // Une ICP complète = 3 épreuves : cardio (rameur OU Luc Léger), souplesse, force (pompes OU tractions)
 var EPREUVES_ICP=[["rameur_temps","luc_perf"],["souplesse"],["pompes","tractions"]];
