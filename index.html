@@ -2047,7 +2047,7 @@ var COULEURS_NIVEAU={"1":{hex:"#dc2626",rgb:[220,38,38],txt:"Vigilance"},"2":{he
 // Illustrations des épreuves (img/icp/*.webp) ; une épreuve sans image garde son affichage texte
 var ICONES_TEST={rameur:1,luc:1,souplesse:1,pompes:1,tractions:1};
 // Badges de la fiche : l'émoji de tête est remplacé par son illustration quand elle existe
-var IMAGES_BADGES={"💯":"badge-complete","📈":"badge-progres","🎖️":"badge-fidele"};
+var IMAGES_BADGES={"💯":"badge-complete","🏆":"badge-toutvert","📈":"badge-progres","🎖️":"badge-fidele"};
 function badgeHtml(x){
   for(var e in IMAGES_BADGES)if(x.indexOf(e)===0)return '<span class="badge-trophee"><img class="ic-badge" src="img/icp/'+IMAGES_BADGES[e]+'.webp" alt="" width="26" height="26" draggable="false">'+escAttr(x.slice(e.length).trim())+'</span>';
   return '<span class="badge-trophee">'+escAttr(x)+'</span>';
