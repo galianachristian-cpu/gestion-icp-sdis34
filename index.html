@@ -2985,7 +2985,7 @@ var BULLES={
  movember:{normal:["Rame, moussaillon !","Ma moustache pousse !","Allez le centre !"],avance:["Moustache au vent !","On file !"],retard:["Je rame dans le vide…","À l'aide, je coule !"],atteint:["Moustaches de légende !"]}
 };
 // Illustrations des thèmes de défi (le pompier moustachu) ; sinon l'émoji du thème
-var THEME_IMG={seances:"themes/seances",libre:"themes/libre",rameur:"icp/rameur",velo:"themes/velo",course:"themes/course",gainage:"themes/gainage",escaliers:"themes/escaliers",pompes:"icp/pompes",tractions:"icp/tractions"};
+var THEME_IMG={ski:"themes/ski",seances:"themes/seances",libre:"themes/libre",rameur:"icp/rameur",velo:"themes/velo",course:"themes/course",gainage:"themes/gainage",escaliers:"themes/escaliers",pompes:"icp/pompes",tractions:"icp/tractions"};
 function themeIc(id,emoji,cls){return THEME_IMG[id]?'<img class="'+(cls||'ic-theme')+'" src="img/'+THEME_IMG[id]+'.webp" alt="" draggable="false">':dfsEsc(emoji||"")}
 function iconeDefi(d){
   var th=themeHumour(d);
