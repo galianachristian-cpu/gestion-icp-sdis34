@@ -286,15 +286,15 @@ html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 .decor.decor-illu{opacity:.35;filter:grayscale(.85) brightness(.9)}
 .decor.decor-illu.atteint{opacity:1;filter:none}
 .decor.d-rennes{width:44px;height:39px}.decor.d-montagnes{width:56px;height:28px}.decor.d-sapins{width:38px;height:39px}.decor.d-maison{width:58px;height:40px}
-.decor.d-bouee{width:30px;height:25px}.decor.d-arrivee{width:24px;height:28px}
+.decor.d-bouee{width:30px;height:25px}.decor.d-phare{width:36px;height:36px}
 .decor.d-bouee img{animation:bouee-flotte 2.2s ease-in-out infinite}.decor.d-bouee:nth-of-type(odd) img{animation-delay:-1.1s}
 @keyframes bouee-flotte{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-3px) rotate(6deg)}}
 .decor.d-maison.atteint img{animation:maison-lueur 1.8s ease-in-out infinite}
 @keyframes maison-lueur{50%{filter:drop-shadow(0 0 7px rgba(251,191,36,.9)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}}
 .decor.d-sapins.atteint img{animation:sapin-balance 3s ease-in-out infinite;transform-origin:50% 100%}
 @keyframes sapin-balance{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-.decor.d-arrivee svg g{transform-box:fill-box;transform-origin:0 50%;animation:drapeau .8s ease-in-out infinite alternate}
-@keyframes drapeau{to{transform:translate(5.4px,2px) skewY(-6deg) scaleX(.94)}}
+.decor.d-phare.atteint img{animation:phare-eclat 1.6s ease-in-out infinite}
+@keyframes phare-eclat{50%{filter:drop-shadow(0 0 8px rgba(253,224,71,.95)) drop-shadow(0 2px 3px rgba(0,0,0,.45))}}
 /* scène d'arrivée */
 .perso.perso-arrivee{width:110px;height:110px}
 .perso.perso-arrivee img{animation:none}
@@ -2688,7 +2688,8 @@ function personnageHtml(d,pct){
   // Illustrations : img/defis/perenoel.webp et rameur.webp (fond transparent), animées en CSS ;
   // à l'arrivée du défi de Noël, la scène de victoire (arrivee.webp) prend la place du skieur
   var img=th==="noel"?(h==="atteint"?"img/defis/arrivee.webp":"img/defis/perenoel.webp"):"img/defis/rameur.webp";
-  var gauche=th==="noel"&&h==="atteint"?Math.min(74,pct):Math.max(6,Math.min(94,pct));
+  // à l'arrivée, le personnage s'arrête avant le dernier décor (maison ou phare) pour le laisser voir
+  var gauche=h==="atteint"?Math.min(th==="noel"?74:80,pct):Math.max(6,Math.min(94,pct));
   return '<span class="perso-zone" style="left:'+gauche+'%" onclick="oeufDePaques(event)" title="Psst…">'
     +'<span class="bulle'+(pct>55?' gauche':'')+'">'+dfsEsc(phrase)+'</span>'
     +'<span class="perso perso-'+th+' humeur-'+h+(th==="noel"&&h==="atteint"?' perso-arrivee':'')+'">'
@@ -2702,9 +2703,7 @@ function personnageHtml(d,pct){
 var IMG_D=function(f){return '<img src="img/defis/'+f+'.webp" alt="" draggable="false">'};
 // [palier %, image, classe de taille]
 var DECORS_NOEL=[[25,IMG_D("rennes"),"d-rennes"],[50,IMG_D("montagnes"),"d-montagnes"],[75,IMG_D("sapins"),"d-sapins"],[100,IMG_D("maison"),"d-maison"]];
-var DRAPEAU_ARRIVEE='<svg viewBox="0 0 28 30"><rect x="3" y="2" width="2.4" height="28" rx="1" fill="#d6d3d1"/><g transform="translate(5.4 2)"><rect width="20" height="13" fill="#fff"/>'
-  +'<path d="M0 0h4v3.25H0zM8 0h4v3.25H8zM16 0h4v3.25h-4zM4 3.25h4V6.5H4zM12 3.25h4V6.5h-4zM0 6.5h4v3.25H0zM8 6.5h4v3.25H8zM16 6.5h4v3.25h-4zM4 9.75h4V13H4zM12 9.75h4V13h-4z" fill="#111"/></g></svg>';
-var DECORS_MOVEMBER=[[25,IMG_D("bouee"),"d-bouee"],[50,IMG_D("bouee"),"d-bouee"],[75,IMG_D("bouee"),"d-bouee"],[100,DRAPEAU_ARRIVEE,"d-arrivee"]];
+var DECORS_MOVEMBER=[[25,IMG_D("bouee"),"d-bouee"],[50,IMG_D("bouee"),"d-bouee"],[75,IMG_D("bouee"),"d-bouee"],[100,IMG_D("phare"),"d-phare"]];
 function decorsHtml(d,pct){
   var L=estNoel(d)?DECORS_NOEL:estMovember(d)?DECORS_MOVEMBER:null;if(!L)return "";
   return L.map(function(x){return '<span class="decor decor-illu '+x[2]+(pct>=x[0]?' atteint':'')+'" style="left:'+Math.min(96,x[0])+'%">'+x[1]+'</span>'}).join("");
