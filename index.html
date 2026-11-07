@@ -318,21 +318,21 @@ body.tv-on{overflow:hidden}
 .tv-x:hover{opacity:1}
 .tv-corps{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:2vw}
 .tv-g,.tv-d{min-height:0;display:flex;flex-direction:column;gap:2vh}
-.tv-defi.bdf{flex:1;margin:0;cursor:default;padding:3.2vh 2.4vw;display:flex;flex-direction:column;justify-content:center;border-radius:2.4vh}
+.tv-defi.bdf{flex:1;min-height:0;margin:0;cursor:default;padding:2.6vh 2.4vw;display:flex;flex-direction:column;justify-content:center;border-radius:2.4vh}
 .tv-titre{display:flex;align-items:center;gap:1.4vw;font-family:var(--titre);font-size:5.4vh;line-height:1.05}
 .tv-titre small{display:block;font-family:Inter,sans-serif;font-size:2.1vh;color:var(--muted);margin-top:.6vh}
 .tv-ic .ic-illu{width:10vh;height:10vh}
 .tv-titre img.moustache{width:9vh;height:3vh}
 .tv-pill{margin-left:auto;align-self:flex-start;white-space:nowrap;font-family:Inter,sans-serif;font-size:2.6vh;font-weight:800;padding:.8vh 1.6vw;border-radius:999px;background:color-mix(in srgb,var(--c) 32%,transparent);border:1px solid color-mix(in srgb,var(--c) 65%,transparent)}
-.tv-chiffres{display:flex;align-items:baseline;gap:1vw;margin:3vh 0 0}
-.tv-chiffres b{font-family:var(--titre);font-size:15vh;line-height:.9;text-shadow:0 0 30px color-mix(in srgb,var(--c) 50%,transparent)}
+.tv-chiffres{display:flex;align-items:baseline;gap:1vw;margin:2vh 0 0}
+.tv-chiffres b{font-family:var(--titre);font-size:13vh;line-height:.9;text-shadow:0 0 30px color-mix(in srgb,var(--c) 50%,transparent)}
 .tv-chiffres em{font-style:normal;color:var(--muted);font-size:3.6vh}
 .tv-chiffres .pct{margin-left:auto;font-family:var(--titre);font-size:9vh;font-weight:800;color:var(--accent)}
 .tv-jauge{zoom:2.1;margin:0 0 1vh}
 .tv-jauge .bdf-jauge{height:16px}
-.tv-rythme{font-size:3.2vh;font-weight:700;margin-top:2vh}.tv-rythme .ok{color:var(--success)}.tv-rythme .ko{color:var(--warning)}
+.tv-rythme{font-size:3vh;font-weight:700;margin-top:1.4vh}.tv-rythme .ok{color:var(--success)}.tv-rythme .ko{color:var(--warning)}
 .tv-defi .etape-noel{font-size:2.4vh;padding:.6vh 1.2vw;margin-top:1.4vh}
-.tv-humour{font-size:2.8vh;font-style:italic;margin-top:1.8vh;opacity:.92}
+.tv-humour{font-size:2.6vh;font-style:italic;margin-top:1.4vh;opacity:.92}
 .tv-reco{font-size:2.4vh;margin-top:1.4vh;color:var(--accent)}
 .tv-carte{background:var(--surface);border:1px solid var(--border);border-radius:2vh;padding:2vh 1.4vw}
 .tv-sec{font-family:var(--titre);font-size:2.8vh;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2vh}
@@ -354,6 +354,32 @@ body.tv-on{overflow:hidden}
 .tv-rythme{font-size:3.6vw}.tv-humour{font-size:3.2vw}.tv-defi .etape-noel{font-size:3vw}
 .tv-d{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start}.tv-qr{grid-column:1/-1;margin-top:0;order:-1}
 .tv-sec{font-size:3vw}.tv-l{font-size:2.8vw}.tv-l .avatar-mini{width:5vw;height:5vw;font-size:2vw}.tv-qr .qr{width:24vw;height:24vw}.tv-qr b{font-size:5vw}.tv-qr span{font-size:3.2vw}}
+/* ===== GARDES ===== */
+.garde-pastille{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:color-mix(in srgb,var(--g,#78716c) 75%,#000);border:1px solid var(--g,#78716c);vertical-align:middle;margin-left:4px}
+.garde-pastille.sans{--g:#78716c}
+.gardes{display:flex;flex-direction:column;gap:12px}
+.garde-l{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--g) 10%,transparent);border:1px solid color-mix(in srgb,var(--g) 45%,transparent)}
+.garde-l.moi{box-shadow:0 0 0 2px color-mix(in srgb,var(--g) 70%,transparent)}
+.garde-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:15px}.garde-t em{font-style:normal;font-weight:500;font-size:12px;opacity:.8}
+.garde-t span b{font-family:var(--titre);font-size:22px}
+.garde-b{height:10px;border-radius:999px;background:var(--surface2);overflow:hidden;margin:6px 0 4px}
+.garde-b i{display:block;height:100%;border-radius:inherit;background:var(--g);box-shadow:0 0 10px var(--g);animation:bdf-remplit 1.2s cubic-bezier(.2,.8,.2,1) both}
+.garde-s{font-size:12px;color:var(--muted)}
+.gardes-ligne{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-top:9px;font-size:13px;font-weight:600}
+.gardes-ligne span{padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--g) 25%,transparent);border:1px solid var(--g)}
+.gardes-ligne em{font-style:normal;font-size:11px;color:var(--muted);font-weight:800}
+.tv-gardes .gardes-ligne{font-size:2.8vh;gap:1vh 1vw;margin-top:1.4vh}.tv-gardes .gardes-ligne em{font-size:2vh}
+.dfs-garde-opt{display:flex;gap:8px;align-items:flex-start;margin:14px 0 4px;font-size:13.5px;cursor:pointer}
+.dfs-garde-opt input{margin-top:3px;width:auto}
+.modal-gardes{max-width:560px;width:100%}
+.gardes-resume{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
+.gardes-resume .garde-pastille{font-size:12.5px;padding:3px 10px;margin:0}
+.gardes-liste{max-height:55vh;overflow:auto;border:1px solid var(--border);border-radius:10px}
+.gardes-l{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 10px;border-top:1px solid var(--border);font-size:14px}
+.gardes-l:first-child{border-top:0}
+.gardes-l>div{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.chip-garde{min-width:34px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:700 13px Inter,sans-serif;cursor:pointer}
+.chip-garde.on{background:var(--g,#78716c);border-color:var(--g,#78716c);color:#fff}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -991,6 +1017,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div style="margin-top:16px;display:flex;gap:8px">
 <button class="btn btn-success" onclick="saveAll()" id="btnSaveAll">💾 Enregistrer</button>
 <button class="btn btn-primary" onclick="showAddPompier()" id="btnAddPompier">➕ Ajouter</button>
+<button class="btn" onclick="ouvrirGardes()" id="btnGardes" style="background:var(--surface2);color:var(--text)">🛡️ Gardes</button>
 </div>
 </div>
 </div>
@@ -1345,6 +1372,8 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="form-row"><label>Grade (facultatif)</label><input type="text" id="editGrade" list="listeGrades" placeholder="ex. SAP 1CL, SGT, CNE…" maxlength="12"></div>
 <datalist id="listeGrades"><option value="SAP 2CL"><option value="SAP 1CL"><option value="CPL"><option value="CCH"><option value="SGT"><option value="SCH"><option value="ADJ"><option value="ADC"><option value="LTN"><option value="CNE"><option value="CDT"><option value="LCL"><option value="COL"></datalist>
 <label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0 10px;font-size:13px;cursor:pointer"><input type="checkbox" id="editConfidentiel" style="margin-top:2px;min-width:16px"><span>🔒 <b>Résultats confidentiels</b> : visibles seulement par la personne et par vous (cachés aux comptes d'équipe et aux autres chefs)</span></label>
+<div class="form-row"><label>Garde (pour les défis par garde)</label><input type="text" id="editGarde" list="listeGardes" placeholder="ex. A, B…" maxlength="20"></div>
+<datalist id="listeGardes"></datalist>
 <div class="form-row"><label>Fonction (facultatif)</label><input type="text" id="editFonction" placeholder="ex. Chef de centre" maxlength="40"></div>
 <div class="form-row"><label>Nom</label><input type="text" id="editNom"></div>
 <div class="form-row"><label>Prénom</label><input type="text" id="editPrenom"></div>
@@ -1946,7 +1975,7 @@ function renderDashboardVisuel(){
 }
 function parNomPrenom(a,b){return a.nom.localeCompare(b.nom,'fr')||a.prenom.localeCompare(b.prenom,'fr');}
 function renderSaisie(){
-    if(!isAdmin){var b=document.getElementById("saisieBody");if(b)b.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px">Accès réservé à l\'administrateur (compte en lecture seule).</td></tr>';return;}var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});filtered=filtered.slice().sort(parNomPrenom);var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td>'+(p.grade?'<small style="color:var(--accent);font-weight:700;margin-right:4px">'+escAttr(p.grade)+'</small>':'')+'<b style="cursor:pointer" title="Modifier" onclick="ouvrirModifPompier('+p.id+')">'+escAttr(p.nom)+'</b>'+(p.confidentiel?' <span title="Résultats confidentiels">🔒</span>':'')+'</td><td>'+escAttr(p.prenom)+'</td><td>'+(isNaN(age)?'<span class="age-tag" style="background:var(--warning);color:#111;cursor:pointer" title="Renseigner l\'année de naissance" onclick="ouvrirModifPompier('+p.id+')">année ?</span>':'<span class="age-tag">'+age+' ans</span>')+'<br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+escAttr(p.poids)+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+escAttr(p.rameur_temps)+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.luc_perf)+'" placeholder="9,5" onchange="updateField('+p.id+",'luc_perf',this.value)\" "+dis+' style="width:60px"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.souplesse)+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.pompes)+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.tractions)+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td>"+'<td><input type="number" min="30" max="120" value="'+escAttr(p.fc_repos)+'" onchange="updateField('+p.id+",'fc_repos',this.value)\" "+dis+' style="width:55px"></td>'+'<td><input type="number" min="120" max="220" value="'+escAttr(p.fc_max)+'" onchange="updateField('+p.id+",'fc_max',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(p.fc_max||isNaN(age)?"":"est. "+(220-age))+'</small></td>'+"<td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-sm" title="Modifier nom, naissance, sexe…" onclick="ouvrirModifPompier('+p.id+')" style="background:var(--surface2);color:var(--text)">✏️</button><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
+    if(!isAdmin){var b=document.getElementById("saisieBody");if(b)b.innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px">Accès réservé à l\'administrateur (compte en lecture seule).</td></tr>';return;}var search=document.getElementById("searchSaisie").value.toLowerCase();var sf=document.getElementById("filterSexe").value;var mf=document.getElementById("filterMissing").value;var filtered=data.filter(function(p){if(search&&!(p.nom+" "+p.prenom).toLowerCase().includes(search))return false;if(sf&&p.sexe!==sf)return false;if(mf==="missing"&&participationRate(p)>=50)return false;var nivG=getNiveauGlobal(p);if(mf==="n1"&&nivG!=="1")return false;if(mf==="n2"&&nivG!=="2")return false;if(mf==="n3"&&nivG!=="3")return false;return true});filtered=filtered.slice().sort(parNomPrenom);var dis=isAdmin?"":"disabled";var sa=isAdmin?"":"hidden";document.getElementById("thActions").className=sa;document.getElementById("btnSaveAll").style.display=isAdmin?"inline-block":"none";document.getElementById("btnAddPompier").style.display=isAdmin?"inline-block":"none";var bg=document.getElementById("btnGardes");if(bg)bg.style.display=isAdmin?"inline-block":"none";var html="";filtered.forEach(function(p){var age=getAge(p.annee);var rate=participationRate(p);var mc=rate<50?"missing":"";var ageTr=getTranche(age);var rameurNiv=evalRameur(p.sexe,p.poids,age,p.rameur_temps);var lucNiv=evalTest("luc",p.sexe,age,p.luc_perf);var souplNiv=evalTest("souplesse",p.sexe,age,p.souplesse);var pompNiv=evalTest("pompes",p.sexe,age,p.pompes);var tractNiv=evalTest("tractions",p.sexe,age,p.tractions);html+='<tr class="'+mc+'" data-id="'+p.id+'"><td>'+(p.grade?'<small style="color:var(--accent);font-weight:700;margin-right:4px">'+escAttr(p.grade)+'</small>':'')+'<b style="cursor:pointer" title="Modifier" onclick="ouvrirModifPompier('+p.id+')">'+escAttr(p.nom)+'</b>'+(p.confidentiel?' <span title="Résultats confidentiels">🔒</span>':'')+(p.garde?' <span class="garde-pastille" style="--g:'+couleurGarde(p.garde)+'">'+escAttr(p.garde)+'</span>':'')+'</td><td>'+escAttr(p.prenom)+'</td><td>'+(isNaN(age)?'<span class="age-tag" style="background:var(--warning);color:#111;cursor:pointer" title="Renseigner l\'année de naissance" onclick="ouvrirModifPompier('+p.id+')">année ?</span>':'<span class="age-tag">'+age+' ans</span>')+'<br><small style="color:var(--muted)">'+ageTr+'</small></td><td>'+p.sexe+'</td><td><input type="number" step="0.1" value="'+escAttr(p.poids)+'" onchange="updateField('+p.id+",'poids',this.value)\" "+dis+' style="width:60px"></td><td><input type="text" value="'+escAttr(p.rameur_temps)+'" placeholder="mm\'ss\\\"" onchange="updateField('+p.id+",'rameur_temps',this.value)\" "+dis+' style="width:70px"><br><small style="color:var(--muted)">'+(rameurNiv?getLevelBadge(rameurNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.luc_perf)+'" placeholder="9,5" onchange="updateField('+p.id+",'luc_perf',this.value)\" "+dis+' style="width:60px"><br><small style="color:var(--muted)">'+(lucNiv?getLevelBadge(lucNiv):"")+"</small></td><td><input type=\"text\" value=\""+escAttr(p.souplesse)+'" onchange="updateField('+p.id+",'souplesse',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(souplNiv?getLevelBadge(souplNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.pompes)+'" onchange="updateField('+p.id+",'pompes',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(pompNiv?getLevelBadge(pompNiv):"")+"</small></td><td><input type=\"number\" value=\""+escAttr(p.tractions)+'" onchange="updateField('+p.id+",'tractions',this.value)\" "+dis+' style="width:50px"><br><small style="color:var(--muted)">'+(tractNiv?getLevelBadge(tractNiv):"")+"</small></td>"+'<td><input type="number" min="30" max="120" value="'+escAttr(p.fc_repos)+'" onchange="updateField('+p.id+",'fc_repos',this.value)\" "+dis+' style="width:55px"></td>'+'<td><input type="number" min="120" max="220" value="'+escAttr(p.fc_max)+'" onchange="updateField('+p.id+",'fc_max',this.value)\" "+dis+' style="width:55px"><br><small style="color:var(--muted)">'+(p.fc_max||isNaN(age)?"":"est. "+(220-age))+'</small></td>'+"<td class=\""+sa+'"><div style="display:flex;gap:4px;align-items:center"><div class="part-ring '+getPartClass(rate)+'" title="'+rate+'%">'+rate+'%</div><button class="btn btn-sm" title="Modifier nom, naissance, sexe…" onclick="ouvrirModifPompier('+p.id+')" style="background:var(--surface2);color:var(--text)">✏️</button><button class="btn btn-danger btn-sm" onclick="deletePompier('+p.id+')">🗑️</button></div></td></tr>'});document.getElementById("saisieBody").innerHTML=html}
 function updateField(id,field,value){var p=data.find(function(x){return x.id===id});if(p)p[field]=value;if(field==="luc_perf"){var age=getAge(p.annee);p.luc_niv=evalTest("luc",p.sexe,age,value)}markDirty();renderSaisie()}
 function saveAll(){
     saveToSupabase().then(function(ok){
@@ -1962,7 +1991,7 @@ function deletePompier(id){if(!confirm("Supprimer ce pompier ?"))return;data=dat
 function showAddPompier(){document.getElementById("modalAdd").classList.remove("hidden")}
 function ouvrirModifPompier(id){
   if(!isAdmin)return;var p=data.find(function(x){return x.id===id});if(!p)return;
-  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editFonction").value=p.fonction||"";document.getElementById("editConfidentiel").checked=!!p.confidentiel;document.getElementById("editNom").value=p.nom||"";
+  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editFonction").value=p.fonction||"";document.getElementById("editGarde").value=p.garde||"";remplirListeGardes();document.getElementById("editConfidentiel").checked=!!p.confidentiel;document.getElementById("editNom").value=p.nom||"";
   document.getElementById("editPrenom").value=p.prenom||"";document.getElementById("editAnnee").value=p.annee||"";
   document.getElementById("editSexe").value=p.sexe==="F"?"F":"M";document.getElementById("editPoids").value=p.poids||"";
   document.getElementById("modalEdit").classList.remove("hidden");
@@ -1974,7 +2003,7 @@ function validerModifPompier(){
   var annee=parseInt(document.getElementById("editAnnee").value);
   if(!nom||!prenom){alert("Renseignez le nom et le prénom");return}
   if(!annee||annee<1940||annee>ANNEE_COURANTE-15){alert("Année de naissance invalide");return}
-  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.confidentiel=document.getElementById("editConfidentiel").checked;p.sexe=document.getElementById("editSexe").value;
+  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.garde=normGarde(document.getElementById("editGarde").value);p.confidentiel=document.getElementById("editConfidentiel").checked;p.sexe=document.getElementById("editSexe").value;
   p.poids=document.getElementById("editPoids").value;
   p.luc_niv=p.luc_perf?evalTest("luc",p.sexe,getAge(p.annee),p.luc_perf):"";
   markDirty();fermerModifPompier();renderSaisie();renderDashboard();
@@ -2667,6 +2696,7 @@ function renderBandeauDefi(){
     +(estNoel(d)&&!avenir?'<span class="etape-noel">'+etapeNoel(S.pct)+'</span>':'')
     +(function(){var hu=HUMOUR[themeHumour(d)];if(!hu)return "";var etat=avenir?"avenir":S.atteint?"atteint":S.pct>=attendu?"avance":"retard";
       return '<div class="bdf-humour">'+dfsEsc(phraseDuJour(hu[etat],d.id))+'</div>';})()
+    +(d.par_garde&&!avenir?gardesLigneHtml(d):'')
     +(fil?'<div class="bdf-fil">'+fil+'</div>':'')+'</div>';
   feterPalierDefi(d,S);
   majPastilleDefis();
@@ -2741,6 +2771,7 @@ function renderTV(){
     +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%"></u>':'')+'</div></div>'
     +'<div class="tv-rythme">'+rythme+'</div>'
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
+    +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
     +(hu?'<div class="tv-humour">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
     +(d.recompense?'<div class="tv-reco">🎁 À la clé : '+dfsEsc(d.recompense)+'</div>':'')+'</div>';
   var pod=avenir?[]:dfsPodium(d,0),sem=dfsSemaine(d,0);
@@ -2807,6 +2838,78 @@ async function dfsAffichetteQR(){
   }
   doc.save("Affichettes_QR_rameur_SkiErg.pdf");
   showToast("✅ Affichettes enregistrées : à imprimer et coller sur les machines","success");
+}
+
+// ===== GARDES (défi garde contre garde) =====
+// La garde est notée sur la fiche (pompiers.garde) ; les autres comptes la lisent par annuaire_icp().
+var COULEURS_GARDES=["#ef4444","#3b82f6","#22c55e","#a855f7","#eab308","#14b8a6"];
+function normGarde(v){v=cleanName(String(v||"")).trim();return v?(v.length<=2?v.toUpperCase():v):null}
+function gardeDe(pid){var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];return p&&p.garde?p.garde:null}
+function listeGardes(){
+  var v={};(data||[]).forEach(function(p){if(p.garde)v[p.garde]=1});Object.keys(ANNUAIRE).forEach(function(k){if(ANNUAIRE[k].garde)v[ANNUAIRE[k].garde]=1});
+  return Object.keys(v).sort(function(a,b){return a.localeCompare(b,"fr",{numeric:true})});
+}
+function nomGarde(g){return g.length<=2?"Garde "+g:g}
+function couleurGarde(g){var L=listeGardes(),i=L.indexOf(g);return COULEURS_GARDES[(i<0?0:i)%COULEURS_GARDES.length]}
+function remplirListeGardes(){var dl=document.getElementById("listeGardes");if(dl)dl.innerHTML=listeGardes().concat(["A","B"]).filter(function(x,i,a){return a.indexOf(x)===i}).map(function(g){return '<option value="'+escAttr(g)+'">'}).join("")}
+function dfsGardesStats(d){
+  var par={},effectif={};
+  (data&&data.length>1?data:Object.keys(ANNUAIRE).map(function(k){return ANNUAIRE[k]})).forEach(function(p){if(p.garde)effectif[p.garde]=(effectif[p.garde]||0)+1});
+  listeGardes().forEach(function(g){par[g]={g:g,v:0,qui:{}}});
+  var sans=0;
+  dfsContrib.forEach(function(x){if(x.defi_id!==d.id)return;var g=gardeDe(x.pompier_id);
+    if(!g){sans+=Number(x.valeur||0);return}
+    var o=par[g]||(par[g]={g:g,v:0,qui:{}});o.v+=Number(x.valeur||0);o.qui[x.pompier_id]=1});
+  var L=Object.keys(par).map(function(k){var o=par[k];return {g:o.g,v:o.v,n:Object.keys(o.qui).length,eff:effectif[o.g]||0}})
+    .sort(function(a,b){return b.v-a.v||a.g.localeCompare(b.g)});
+  return {liste:L,sans:sans};
+}
+function dfsGardesHtml(d){
+  var G=dfsGardesStats(d),L=G.liste;
+  if(!L.length)return '<div class="pcard"><div class="sec">⚔️ Le match des gardes</div><p class="note">'+(isAdmin?'Personne n\'a encore de garde : range chaque pompier avec le bouton 🛡️ Gardes de l\'onglet Saisie.':'Les gardes ne sont pas encore constituées.')+'</p></div>';
+  var max=Math.max(1,L[0].v),egalite=L.length>1&&L[0].v===L[1].v;
+  var moi=dfsMoi(),mg=moi?gardeDe(moi.id):null;
+  return '<div class="pcard"><div class="sec">⚔️ Le match des gardes</div><div class="gardes">'
+    +L.map(function(o,i){return '<div class="garde-l'+(o.g===mg?' moi':'')+'" style="--g:'+couleurGarde(o.g)+'">'
+      +'<div class="garde-t"><b>'+(i===0&&o.v>0&&!egalite?'👑 ':'')+dfsEsc(nomGarde(o.g))+(o.g===mg?' <em>(ta garde)</em>':'')+'</b>'
+      +'<span><b>'+dfsNum(o.v)+'</b> '+dfsEsc(d.unite)+'</span></div>'
+      +'<div class="garde-b"><i style="width:'+Math.round(100*o.v/max)+'%"></i></div>'
+      +'<div class="garde-s">'+o.n+' participant'+(o.n>1?'s':'')+(o.eff?' sur '+o.eff:'')+(o.n?' · '+dfsNum(o.v/o.n)+' '+dfsEsc(d.unite)+' par participant':'')+'</div></div>'}).join("")
+    +'</div>'+(egalite&&L[0].v>0?'<p class="note">🤝 Égalité parfaite en tête : à vous de faire la différence !</p>':'')
+    +(G.sans>0&&isAdmin?'<p class="note">'+dfsNum(G.sans)+' '+dfsEsc(d.unite)+' ajoutés par des pompiers sans garde : ils comptent pour le centre, pas pour une garde.</p>':'')+'</div>';
+}
+function gardesLigneHtml(d){
+  var L=dfsGardesStats(d).liste;if(!L.length)return "";
+  var max=Math.max(1,L[0].v);
+  return '<div class="gardes-ligne">⚔️ '+L.map(function(o,i){return '<span style="--g:'+couleurGarde(o.g)+'">'+(i===0&&o.v>0&&(L.length<2||o.v>L[1].v)?'👑 ':'')+dfsEsc(nomGarde(o.g))+' <b>'+dfsNum(o.v)+'</b></span>'}).join('<em>vs</em>')+'</div>';
+}
+// Fenêtre « Gardes » (onglet Saisie) : ranger tout le monde d'un coup
+var gardesNoms=null;
+function ouvrirGardes(){
+  if(!isAdmin)return;
+  gardesNoms=listeGardes();if(!gardesNoms.length)gardesNoms=["A","B"];
+  var m=document.getElementById("modalGardes");
+  if(!m){m=document.createElement("div");m.id="modalGardes";m.className="modal-overlay";m.onclick=function(e){if(e.target===m)fermerGardes()};document.body.appendChild(m)}
+  m.classList.remove("hidden");renderGardes();
+}
+function fermerGardes(){var m=document.getElementById("modalGardes");if(m)m.classList.add("hidden");renderSaisie();if(dfsCharge){renderDefis();renderBandeauDefi()}}
+function ajouterNomGarde(){var v=normGarde(prompt("Nom de la nouvelle garde (ex. C, ou « Garde de nuit »)")||"");if(v&&gardesNoms.indexOf(v)===-1){gardesNoms.push(v);renderGardes()}}
+function choisirGarde(pid,g){var p=data.find(function(x){return x.id===pid});if(!p)return;p.garde=g||null;markDirty();renderGardes()}
+function renderGardes(){
+  var m=document.getElementById("modalGardes");if(!m)return;
+  var cpt={};data.forEach(function(p){if(p.garde)cpt[p.garde]=(cpt[p.garde]||0)+1});
+  var sans=data.filter(function(p){return !p.garde}).length;
+  var tri=data.slice().sort(parNomPrenom);
+  m.innerHTML='<div class="modal modal-gardes"><h3>🛡️ Les gardes</h3>'
+    +'<p style="color:var(--muted);font-size:13px;margin:0 0 10px">Touche la garde de chacun. Elle sert aux défis « par garde » ; elle n\'apparaît nulle part ailleurs.</p>'
+    +'<div class="gardes-resume">'+gardesNoms.map(function(g){return '<span class="garde-pastille" style="--g:'+couleurGarde(g)+'">'+escAttr(nomGarde(g))+' · '+(cpt[g]||0)+'</span>'}).join("")
+    +'<span class="garde-pastille sans">Sans garde · '+sans+'</span><button class="btn btn-sm" style="background:var(--surface2);color:var(--text)" onclick="ajouterNomGarde()">➕ Une garde</button></div>'
+    +'<div class="gardes-liste">'+tri.map(function(p){
+      return '<div class="gardes-l"><span>'+escAttr(p.nom)+' '+escAttr(p.prenom)+'</span><div>'
+        +gardesNoms.map(function(g){return '<button type="button" class="chip-garde'+(p.garde===g?' on':'')+'" style="--g:'+couleurGarde(g)+'" onclick="choisirGarde('+p.id+',\''+escAttr(g).replace(/'/g,"\\'")+'\')">'+escAttr(g)+'</button>'}).join("")
+        +'<button type="button" class="chip-garde'+(!p.garde?' on':'')+'" onclick="choisirGarde('+p.id+',null)" title="Sans garde">—</button></div></div>'}).join("")+'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerGardes()">Fermer</button>'
+    +'<button class="btn btn-success" onclick="saveAll();fermerGardes()">💾 Enregistrer</button></div></div>';
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
@@ -5012,7 +5115,7 @@ function dfsCarte(d){
       +(isAdmin?'<p class="note">'+(dfsJoursAvant(d)<=7?'Les pompiers voient cette annonce et le compte à rebours.':'Les pompiers verront l\'annonce à partir du '+new Date(new Date(d.debut+"T00:00:00").getTime()-7*864e5).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+' (7 jours avant le départ).')+'</p>':'')+'</div>';
   }
   if(moi&&d.actif&&!dfsAVenir(d)){
-    h+='<div class="pcard"><div class="sec">Ma part</div>'
+    h+='<div class="pcard"><div class="sec">Ma part'+(d.par_garde&&gardeDe(moi.id)?' · <span class="garde-pastille" style="--g:'+couleurGarde(gardeDe(moi.id))+'">'+dfsEsc(nomGarde(gardeDe(moi.id)))+'</span>':'')+'</div>'
       +(titreHumour(d,maPart?maPart.v:0)?'<div class="titre-moi">Ton grade : <b>'+titreHumour(d,maPart?maPart.v:0)+'</b></div>':'')
       +'<div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(maPart?maPart.v:0)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
@@ -5020,6 +5123,7 @@ function dfsCarte(d){
       +'<p class="note">Tu ajoutes ce que tu viens de faire : ça s\'additionne à ta part et au total du centre.</p>'
       +dfsMesLignes(d,moi)+'</div>';
   }
+  if(d.par_garde)h+=dfsGardesHtml(d);
   if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
   // classement
   if(dfsAVenir(d)&&!S.classement.length)return h+(isAdmin?dfsAdminHtml(d):"");
@@ -5093,13 +5197,13 @@ async function dfsRetirer(cid){
 function dfsNouveau(){
   var f=new Date(),fin=new Date(f.getFullYear(),f.getMonth()+1,0);
   dfsForm={id:null,titre:"",theme:"rameur",unite:"km",objectif:100,
-    debut:dfsIso(f),fin:dfsIso(fin),recompense:"",icone:"🚣",couleur:DFS_COULEURS[0]};
+    debut:dfsIso(f),fin:dfsIso(fin),recompense:"",icone:"🚣",couleur:DFS_COULEURS[0],par_garde:false};
   renderDefis();
 }
 function dfsModifier(id){
   var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
   dfsForm={id:d.id,titre:d.titre,theme:d.theme,unite:d.unite,objectif:Number(d.objectif),
-    debut:d.debut,fin:d.fin,recompense:d.recompense||"",icone:d.icone,couleur:d.couleur};
+    debut:d.debut,fin:d.fin,recompense:d.recompense||"",icone:d.icone,couleur:d.couleur,par_garde:!!d.par_garde};
   renderDefis();
 }
 function dfsAnnuler(){dfsForm=null;renderDefis()}
@@ -5116,6 +5220,7 @@ function dfsLireForm(){
   });
   var o=document.getElementById("dfs_objectif");
   if(o)dfsForm.objectif=parseFloat(String(o.value).replace(",","."))||0;
+  var pg=document.getElementById("dfs_par_garde");if(pg)dfsForm.par_garde=pg.checked;
 }
 function dfsFormulaire(){
   var f=dfsForm;
@@ -5139,6 +5244,8 @@ function dfsFormulaire(){
     +'<div class="ss">La couleur</div><div class="dfs-pal">'
     +DFS_COULEURS.map(function(c){return '<button type="button" class="dfs-c'+(f.couleur===c?" sel":"")
       +'" style="background:'+c+'" onclick="dfsSetCouleur(\''+c+'\')"></button>'}).join("")+'</div>'
+    +'<label class="dfs-garde-opt"><input type="checkbox" id="dfs_par_garde"'+(f.par_garde?' checked':'')+'> <span>⚔️ <b>Défi par garde</b> : en plus du total du centre, les gardes s\'affrontent (chacun compte pour la garde indiquée sur sa fiche).</span></label>'
+    +(f.par_garde&&!listeGardes().length?'<p class="note" style="color:var(--warning)">⚠️ Aucun pompier n\'a encore de garde : range-les avec le bouton 🛡️ Gardes de l\'onglet Saisie.</p>':'')
     +'<p class="note">Tout le monde voit le défi et peut y contribuer. Toi seul peux le modifier, le clore ou le supprimer.</p>'
     +'<div class="nav"><button class="pbtn" onclick="dfsAnnuler()">Annuler</button>'
     +'<button class="pbtn pri" onclick="dfsEnregistrer()">'+(f.id?"Enregistrer":"🚀 Lancer le défi")+'</button></div></div>';
@@ -5153,7 +5260,7 @@ async function dfsEnregistrer(){
   if(f.fin<f.debut){showToast("La fin ne peut pas précéder le début","error");return}
   dfsOccupe=true;
   var ligne={titre:f.titre.trim(),theme:f.theme,unite:f.unite.trim()||"points",objectif:f.objectif,
-    debut:f.debut,fin:f.fin,recompense:f.recompense.trim()||null,icone:f.icone,couleur:f.couleur};
+    debut:f.debut,fin:f.fin,recompense:f.recompense.trim()||null,icone:f.icone,couleur:f.couleur,par_garde:!!f.par_garde};
   try{
     var r=f.id ? await supabaseClient.from("defis").update(ligne).eq("id",f.id)
                : await supabaseClient.from("defis").insert(ligne);

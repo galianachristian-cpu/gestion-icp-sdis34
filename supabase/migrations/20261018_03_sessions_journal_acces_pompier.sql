@@ -105,3 +105,8 @@ alter table public.secrets_internes enable row level security;
 revoke all on public.secrets_internes from anon, authenticated;
 insert into public.secrets_internes(nom, valeur) values ('cron_rappels', encode(extensions.gen_random_bytes(32), 'hex')) on conflict (nom) do nothing;
 -- tâche pg_cron « rappels-seances » : en-tête x-cron-secret = (select valeur from public.secrets_internes where nom='cron_rappels')
+
+-- 2026-11-07 : défis par garde
+alter table public.pompiers add column if not exists garde text;
+alter table public.defis add column if not exists par_garde boolean not null default false;
+-- annuaire_icp() renvoie maintenant (id, prenom, nom, grade, garde) ; exécution réservée à authenticated.
