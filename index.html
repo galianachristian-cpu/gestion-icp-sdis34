@@ -2967,13 +2967,17 @@ var SERGENT={
   "On ne lâche rien. Sauf la télécommande.",
   "La meilleure séance, c'est celle qu'on fait.",
   "Ton matelas t'aime. Ton rameur aussi. Choisis bien.",
-  "Je ne vieillis pas. Je prends de l'expérience en salle."
+  "Je ne vieillis pas. Je prends de l'expérience en salle.",
+  "Parle plus fort, je suis artilleur !",
+  "Gentil, ce n'est pas un métier.",
+  "Le jour où les cons voleront, tu seras chef d'escadrille. En attendant, tu rames."
  ],
+ hiver:["Le froid, c'est une maladie de civils.","Il fait froid ? Parfait, l'échauffement sera plus long. Et plus utile."],
  lundi:["Lundi. Le week-end est fini, les excuses aussi.","Lundi matin : le meilleur jour pour recommencer à zéro. Enfin, à un."],
  vendredi:["Vendredi : séance courte, mais séance quand même.","C'est vendredi. Le barbecue du week-end, ça se prépare au rameur."],
  weekend:["Week-end ? Le rameur ne sait pas lire un calendrier.","Repos ce week-end ? Accordé. Une petite marche quand même, c'est un ordre."],
  matin:["Debout là-dedans ! L'échauffement, ce n'est pas le café.","Il est tôt. Les meilleurs sont déjà réveillés. Les autres aussi, mais ils râlent."],
- soir:["Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
+ soir:["À demain, de bonne heure, de bonne humeur, de préférence !","Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
  avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
  retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
  atteint:["Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
@@ -2986,6 +2990,7 @@ function phrasesSergent(){
   if(j===0||j===6)C=C.concat(SERGENT.weekend);
   if(h<10)C=C.concat(SERGENT.matin);
   if(h>=20)C=C.concat(SERGENT.soir);
+  if([10,11,0,1].indexOf(now.getMonth())!==-1&&h<12)C=C.concat(SERGENT.hiver);
   try{var d=dfsDefiDuBandeau();if(d&&!dfsAVenir(d)){var e=humeurDefi(d);if(e!=="normal"&&SERGENT[e])C=C.concat(SERGENT[e]);}}catch(e){}
   return {moment:C,tous:C.concat(SERGENT.toujours)};
 }
