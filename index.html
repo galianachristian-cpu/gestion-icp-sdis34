@@ -362,6 +362,8 @@ body.tv-on{overflow:hidden}
 /* ===== GARDES ===== */
 .garde-pastille{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:color-mix(in srgb,var(--g,#78716c) 75%,#000);border:1px solid var(--g,#78716c);vertical-align:middle;margin-left:4px}
 .garde-pastille.sans{--g:#78716c}
+.gardes-illu{display:block;width:100%;max-width:420px;margin:-4px auto 12px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4));animation:gardes-tire 2.4s ease-in-out infinite}
+@keyframes gardes-tire{0%,100%{transform:translateX(-6px)}50%{transform:translateX(6px)}}
 .gardes{display:flex;flex-direction:column;gap:12px}
 .garde-l{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--g) 10%,transparent);border:1px solid color-mix(in srgb,var(--g) 45%,transparent)}
 .garde-l.moi{box-shadow:0 0 0 2px color-mix(in srgb,var(--g) 70%,transparent)}
@@ -2886,7 +2888,7 @@ function dfsGardesHtml(d){
   if(!L.length)return '<div class="pcard"><div class="sec">⚔️ Le match des gardes</div><p class="note">'+(isAdmin?'Personne n\'a encore de garde : range chaque pompier avec le bouton 🛡️ Gardes de l\'onglet Saisie.':'Les gardes ne sont pas encore constituées.')+'</p></div>';
   var max=Math.max(1,L[0].v),egalite=L.length>1&&L[0].v===L[1].v;
   var moi=dfsMoi(),mg=moi?gardeDe(moi.id):null;
-  return '<div class="pcard"><div class="sec">⚔️ Le match des gardes</div><div class="gardes">'
+  return '<div class="pcard"><div class="sec">⚔️ Le match des gardes</div><img class="gardes-illu" src="img/defis/gardes.webp" alt="" draggable="false"><div class="gardes">'
     +L.map(function(o,i){return '<div class="garde-l'+(o.g===mg?' moi':'')+'" style="--g:'+couleurGarde(o.g)+'">'
       +'<div class="garde-t"><b>'+(i===0&&o.v>0&&!egalite?'👑 ':'')+dfsEsc(nomGarde(o.g))+(o.g===mg?' <em>(ta garde)</em>':'')+'</b>'
       +'<span><b>'+dfsNum(o.v)+'</b> '+dfsEsc(d.unite)+'</span></div>'
