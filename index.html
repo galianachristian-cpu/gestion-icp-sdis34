@@ -304,6 +304,56 @@ html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 img.moustache{width:54px;height:18px;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
 img.medaille{width:22px;height:30px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 #tab-defis .dfs-l .r img.medaille{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+/* ===== MODE TV (salle de sport) ===== */
+#modeTV{position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% -10%,rgba(234,88,12,.28),transparent 60%),var(--bg);color:var(--text);overflow:hidden;cursor:default}
+#modeTV.hidden{display:none}
+body.tv-on{overflow:hidden}
+.tv{height:100vh;display:flex;flex-direction:column;padding:2.2vh 2.4vw;gap:2vh;box-sizing:border-box}
+.tv-haut{display:flex;align-items:center;gap:1.4vw}
+.tv-logo{width:6.5vh;height:6.5vh;object-fit:contain}
+.tv-centre{font-family:var(--titre);font-size:3.4vh;letter-spacing:.1em}.tv-centre b{color:var(--accent)}
+.tv-jour{color:var(--muted);font-size:2.1vh;text-transform:capitalize}
+.tv-heure{margin-left:auto;font-family:var(--titre);font-size:6vh;font-weight:700;font-variant-numeric:tabular-nums}
+.tv-x{background:none;border:1px solid var(--border);color:var(--muted);border-radius:50%;width:4.4vh;height:4.4vh;font-size:2vh;cursor:pointer;opacity:.35}
+.tv-x:hover{opacity:1}
+.tv-corps{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:2vw}
+.tv-g,.tv-d{min-height:0;display:flex;flex-direction:column;gap:2vh}
+.tv-defi.bdf{flex:1;margin:0;cursor:default;padding:3.2vh 2.4vw;display:flex;flex-direction:column;justify-content:center;border-radius:2.4vh}
+.tv-titre{display:flex;align-items:center;gap:1.4vw;font-family:var(--titre);font-size:5.4vh;line-height:1.05}
+.tv-titre small{display:block;font-family:Inter,sans-serif;font-size:2.1vh;color:var(--muted);margin-top:.6vh}
+.tv-ic .ic-illu{width:10vh;height:10vh}
+.tv-titre img.moustache{width:9vh;height:3vh}
+.tv-pill{margin-left:auto;align-self:flex-start;white-space:nowrap;font-family:Inter,sans-serif;font-size:2.6vh;font-weight:800;padding:.8vh 1.6vw;border-radius:999px;background:color-mix(in srgb,var(--c) 32%,transparent);border:1px solid color-mix(in srgb,var(--c) 65%,transparent)}
+.tv-chiffres{display:flex;align-items:baseline;gap:1vw;margin:3vh 0 0}
+.tv-chiffres b{font-family:var(--titre);font-size:15vh;line-height:.9;text-shadow:0 0 30px color-mix(in srgb,var(--c) 50%,transparent)}
+.tv-chiffres em{font-style:normal;color:var(--muted);font-size:3.6vh}
+.tv-chiffres .pct{margin-left:auto;font-family:var(--titre);font-size:9vh;font-weight:800;color:var(--accent)}
+.tv-jauge{zoom:2.1;margin:0 0 1vh}
+.tv-jauge .bdf-jauge{height:16px}
+.tv-rythme{font-size:3.2vh;font-weight:700;margin-top:2vh}.tv-rythme .ok{color:var(--success)}.tv-rythme .ko{color:var(--warning)}
+.tv-defi .etape-noel{font-size:2.4vh;padding:.6vh 1.2vw;margin-top:1.4vh}
+.tv-humour{font-size:2.8vh;font-style:italic;margin-top:1.8vh;opacity:.92}
+.tv-reco{font-size:2.4vh;margin-top:1.4vh;color:var(--accent)}
+.tv-carte{background:var(--surface);border:1px solid var(--border);border-radius:2vh;padding:2vh 1.4vw}
+.tv-sec{font-family:var(--titre);font-size:2.8vh;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-bottom:1.2vh}
+.tv-l{display:flex;align-items:center;gap:.9vw;font-size:2.5vh;padding:.7vh 0;border-top:1px solid color-mix(in srgb,var(--border) 60%,transparent);animation:monte .5s both}
+.tv-l:first-of-type{border-top:0}
+.tv-l .r img.medaille{width:3vh;height:4vh}
+.tv-l .avatar-mini{width:4.2vh;height:4.2vh;font-size:1.6vh}
+.tv-l .n{flex:1;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tv-l .v{color:var(--muted);white-space:nowrap}.tv-l .v b{color:var(--success)}
+.tv-note{color:var(--muted);font-size:2.2vh;margin:0}
+.tv-qr{margin-top:auto;display:flex;align-items:center;gap:1.4vw;background:linear-gradient(135deg,rgba(234,88,12,.22),rgba(251,191,36,.10));border:1px solid rgba(251,191,36,.4);border-radius:2vh;padding:1.8vh 1.4vw}
+.tv-qr .qr{width:19vh;height:19vh;flex-shrink:0;border-radius:1vh}
+.tv-qr b{display:block;font-family:var(--titre);font-size:3.6vh;color:var(--accent)}
+.tv-qr span{font-size:2.3vh;color:var(--text);line-height:1.35}
+.tv-vide{flex:1;display:flex;align-items:center;justify-content:center;zoom:1.8}
+@media (orientation:portrait){.tv-corps{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);gap:2vh}
+.tv-centre{font-size:4.2vw}.tv-jour{font-size:2.8vw}.tv-heure{font-size:9vw}.tv-titre{font-size:6vw}.tv-titre small{font-size:2.6vw}.tv-ic .ic-illu{width:12vw;height:12vw}
+.tv-pill{font-size:3vw}.tv-chiffres b{font-size:16vw}.tv-chiffres em{font-size:4vw}.tv-chiffres .pct{font-size:10vw}.tv-jauge{zoom:1.5}
+.tv-rythme{font-size:3.6vw}.tv-humour{font-size:3.2vw}.tv-defi .etape-noel{font-size:3vw}
+.tv-d{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-content:start}.tv-qr{grid-column:1/-1;margin-top:0;order:-1}
+.tv-sec{font-size:3vw}.tv-l{font-size:2.8vw}.tv-l .avatar-mini{width:5vw;height:5vw;font-size:2vw}.tv-qr .qr{width:24vw;height:24vw}.tv-qr b{font-size:5vw}.tv-qr span{font-size:3.2vw}}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -1227,6 +1277,8 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div style="font-size:12px;color:var(--muted);margin-top:4px">Si vous choisissez un pompier, ce compte ne verra <b>que sa propre fiche</b> (ses résultats, ses couleurs, ses conseils).</div></div>
 <div class="form-row" id="compteOngletsBlock"><label>Onglets visibles pour ce compte</label>
 <div id="compteOngletsBox" style="display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:6px"></div>
+<button type="button" class="btn btn-sm" style="margin-top:10px;background:var(--surface2);color:var(--text)" onclick="preparerCompteEcran()">📺 Compte « écran de la salle » (mode TV)</button>
+<div style="font-size:12px;color:var(--muted);margin-top:4px">Ne coche que l'onglet Défis : l'écran affiche le défi en plein écran et ne peut lire aucun résultat.</div>
 </div>
 <button class="btn btn-success" onclick="ajouterOuMajCompte()">💾 Créer / enregistrer ce compte</button>
 <div id="compteMsg" style="margin-top:8px;font-size:13px;min-height:18px"></div>
@@ -1487,6 +1539,8 @@ async function loadFromSupabase() {
         } else {
             updateSupabaseStatus(true, "Connecté — Aucune donnée distante");
             chargerHistoriqueDeReference();
+            // Compte « écran de salle » : aucun pompier lisible, mais le défi, les prénoms et les photos oui
+            if(!isAdmin){await chargerAnnuaire();await chargerPhotos();if(tabAutorise("defis"))chargerDefis(true);supabaseClient.rpc('noter_connexion').then(function(){},function(){});}
             renderAll();
             return false;
         }
@@ -2620,6 +2674,139 @@ function renderBandeauDefi(){
 function ouvrirAjoutDefi(){
   switchTab("defis");
   setTimeout(function(){var i=document.getElementById("dfsVal");if(i){i.focus();i.scrollIntoView({block:"center",behavior:"smooth"})}},350);
+}
+// ===== MODE TV (télé ou tablette de la salle de sport) =====
+// Plein écran : le défi en grand, le personnage, le podium, les dernières séances et le QR « J'ai fait… ».
+// Un compte « écran » (seulement l'onglet Défis, aucun pompier relié) s'y ouvre directement : la base
+// lui donne le type « ecran » et il ne peut lire aucun résultat ICP, seulement le défi et les prénoms.
+function estEcran(){return !isAdmin&&!monPompierId&&misOnglets.indexOf("defis")!==-1&&misOnglets.every(function(o){return o==="defis"||o==="aide"})}
+function preparerCompteEcran(){
+  var s=document.getElementById("comptePompier");if(s){s.value="";document.getElementById("compteOngletsBlock").style.display="";}
+  TABS_INFO.forEach(function(t){var c=document.getElementById("nc-"+t.id);if(c)c.checked=t.id==="defis"});
+  var e=document.getElementById("compteEmail");if(e&&!e.value){e.focus();}
+  var p=document.getElementById("comptePass");if(p&&!p.value)p.value=genererMotDePasse();
+  showToast("📺 Onglet Défis seul coché : saisis l'email du compte écran puis enregistre","info");
+}
+function lienAjout(){return lienAppli()+"?ajout"}
+function qrSvg(t,cls){
+  var q=qrcode(0,"M");q.addData(t);q.make();var n=q.getModuleCount(),p="";
+  for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+="M"+c+" "+r+"h1v1h-1z";
+  return '<svg class="'+(cls||"qr")+'" viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges" aria-label="QR code"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" rx="2" fill="#fff"/><path d="'+p+'" fill="#000"/></svg>';
+}
+var tvTimer=null,tvHorloge=null,tvVerrou=null,tvAuto=false,ajoutTraite=false;
+function ouvrirModeTV(){
+  var el=document.getElementById("modeTV");
+  if(!el){el=document.createElement("div");el.id="modeTV";el.addEventListener("click",function(e){if(!e.target.closest(".tv-x"))tvPleinEcran()});document.body.appendChild(el);}
+  el.classList.remove("hidden");document.body.classList.add("tv-on");
+  tvPleinEcran();tvGarderAllume();renderTV();
+  clearInterval(tvTimer);clearInterval(tvHorloge);
+  tvTimer=setInterval(function(){Promise.resolve(chargerDefis(true)).then(renderTV,renderTV)},60000);
+  tvHorloge=setInterval(function(){var h=document.querySelector("#modeTV .tv-heure");if(h)h.textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})},15000);
+}
+function fermerModeTV(){
+  clearInterval(tvTimer);clearInterval(tvHorloge);
+  var el=document.getElementById("modeTV");if(el){el.classList.add("hidden");el.innerHTML="";}
+  document.body.classList.remove("tv-on");
+  try{if(document.fullscreenElement)document.exitFullscreen()}catch(e){}
+  try{if(tvVerrou){tvVerrou.release();tvVerrou=null}}catch(e){}
+}
+function tvPleinEcran(){try{if(!document.fullscreenElement&&document.documentElement.requestFullscreen){var r=document.documentElement.requestFullscreen();if(r&&r.catch)r.catch(function(){})}}catch(e){}}
+// L'écran ne se met pas en veille tant que le mode TV est ouvert (si l'appareil le permet)
+async function tvGarderAllume(){try{if("wakeLock" in navigator&&!tvVerrou){tvVerrou=await navigator.wakeLock.request("screen");tvVerrou.addEventListener("release",function(){tvVerrou=null})}}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&document.body.classList.contains("tv-on")){tvGarderAllume();Promise.resolve(chargerDefis(true)).then(renderTV,renderTV)}});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&document.body.classList.contains("tv-on")&&!estEcran())fermerModeTV()});
+function renderTV(){
+  var el=document.getElementById("modeTV");if(!el||el.classList.contains("hidden"))return;
+  var now=new Date(),d=dfsDefiDuBandeau();
+  var haut='<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
+    +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'
+    +'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
+    +'<button class="tv-x" onclick="fermerModeTV()" title="Quitter le mode TV">✕</button></div>';
+  if(!d){el.innerHTML='<div class="tv">'+haut+'<div class="tv-vide">'+etatVide("trophee","Pas de défi en cours","Le prochain défi du centre arrive bientôt. En attendant : on garde la forme 💪")+'</div></div>';return;}
+  var S=dfsStats(d),avenir=dfsAVenir(d),th=themeHumour(d);
+  var deb=new Date(d.debut+"T00:00:00"),fin=new Date(d.fin+"T23:59:59");
+  var duree=Math.max(1,(fin-deb)/864e5),attendu=Math.round(100*Math.min(1,Math.max(0,(now-deb)/864e5/duree)));
+  var reste=Math.max(0,Number(d.objectif)-S.total),jr=Math.max(1,Math.ceil((fin-now)/864e5));
+  var hu=HUMOUR[th],etat=avenir?"avenir":S.atteint?"atteint":S.pct>=attendu?"avance":"retard";
+  var rythme=avenir?dfsEsc(dfsTexteAnnonce(d)):S.atteint?'🎉 Objectif atteint ! Bravo à tout le centre !'
+    :S.pct>=attendu?'<span class="ok">🔥 En avance sur le rythme</span>'
+    :'<span class="ko">⏱️ Il faut '+dfsNum(reste/jr)+' '+dfsEsc(d.unite)+' par jour pour réussir</span>';
+  var gauche='<div class="tv-defi bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'">'+(estNoel(d)?neigeHtml():'')
+    +'<div class="tv-titre"><span class="tv-ic">'+iconeDefi(d)+'</span><div><div>'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
+    +'<small>Défi collectif du centre · du '+deb.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</small></div>'
+    +'<span class="tv-pill">'+(avenir?'J-'+dfsJoursAvant(d):S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
+    +'<div class="tv-chiffres"><b data-n="'+S.total+'">'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
+    +'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+'"><i style="width:'+S.pct+'%"></i>'+(avenir?'':bateauHtml(d,S.pct))
+    +[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
+    +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%"></u>':'')+'</div></div>'
+    +'<div class="tv-rythme">'+rythme+'</div>'
+    +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
+    +(hu?'<div class="tv-humour">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
+    +(d.recompense?'<div class="tv-reco">🎁 À la clé : '+dfsEsc(d.recompense)+'</div>':'')+'</div>';
+  var pod=avenir?[]:dfsPodium(d,0),sem=dfsSemaine(d,0);
+  var podium='<div class="tv-carte"><div class="tv-sec">🏅 Les plus réguliers'+(sem?' · semaine '+sem.num:'')+'</div>'
+    +(pod.length?pod.map(function(c,i){return '<div class="tv-l"><span class="r">'+MEDAILLES[i]+'</span>'+avatarMini(c.pid,initialesDe(c.pid))
+      +'<span class="n">'+dfsEsc(dfsNom(c.pid))+'</span><span class="v">'+c.jours+' j · '+dfsNum(c.v)+' '+dfsEsc(d.unite)+'</span></div>'}).join("")
+      :'<p class="tv-note">'+(avenir?'Le podium s\'ouvre au départ du défi.':'Personne cette semaine… pour l\'instant. La place est chaude !')+'</p>')+'</div>';
+  var fil=S.contribs.slice().sort(function(a,b){return String(b.cree_le||b.date).localeCompare(String(a.cree_le||a.date))}).slice(0,5);
+  var dernieres='<div class="tv-carte"><div class="tv-sec">💪 Dernières séances</div>'
+    +(fil.length?fil.map(function(x){return '<div class="tv-l">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))+'<span class="n">'+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+'</span>'
+      +'<span class="v"><b>+'+dfsNum(x.valeur)+'</b> '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span></div>'}).join("")
+      :'<p class="tv-note">Aucune séance notée. Qui ouvre le bal ?</p>')+'</div>';
+  var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
+  el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+podium+dernieres+qr+'</div></div></div>';
+}
+// Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
+function apresChargementDefis(){
+  if(document.body.classList.contains("tv-on")){renderTV();return}
+  if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
+  if(!ajoutTraite&&/[?&]ajout\b/.test(location.search)){
+    ajoutTraite=true;
+    try{history.replaceState(null,"",location.pathname+location.hash)}catch(e){}
+    var d=dfsDefiDuBandeau();
+    if(!dfsMoi()){showToast("Ce compte n'est relié à aucun pompier : impossible d'ajouter une séance","info");return}
+    if(!d||dfsAVenir(d)){showToast(d?"⏳ Le défi n'a pas encore commencé : reviens le jour du départ !":"Pas de défi en cours pour l'instant","info");return}
+    dfsSel=Math.max(0,dfsVisibles().indexOf(d));
+    ouvrirAjoutDefi();showToast("💪 Bien joué ! Note ce que tu viens de faire","success");
+  }
+}
+// Message sur l'écran de connexion quand on arrive par le QR code de la machine
+document.addEventListener("DOMContentLoaded",function(){
+  if(!/[?&]ajout\b/.test(location.search))return;
+  var er=document.getElementById("loginError");if(er&&!er.textContent){er.style.color="var(--success)";er.textContent="💪 Connecte-toi : tu arriveras directement sur « J'ai fait… ».";}
+});
+// Affichettes A4 à coller sur le rameur et le SkiErg (une page chacune)
+async function dfsAffichetteQR(){
+  showToast("Création des affichettes…","info");
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  var q=qrcode(0,"M");q.addData(lienAjout());q.make();var n=q.getModuleCount();
+  var pages=[
+    {machine:"RAMEUR",img:"img/defis/rameur.webp",quoi:"tes mètres ou tes km",blague:"Pas de scan, pas de km. Pas de km, pas de moustache."},
+    {machine:"SKIERG",img:"img/defis/perenoel.webp",quoi:"tes km",blague:"Le Père Noël compte sur toi. Et il note tout."}
+  ];
+  for(var i=0;i<pages.length;i++){
+    var P=pages[i];if(i)doc.addPage();
+    pdfEntete(doc,"DÉFI DU CENTRE","CIS Cruzy-Quarante — SDIS 34");
+    doc.setFont("helvetica","bold");doc.setTextColor(28,25,23);doc.setFontSize(30);
+    doc.text("TU VIENS DE FINIR",105,50,{align:"center"});
+    doc.setTextColor(234,88,12);doc.text("TA SÉANCE DE "+P.machine+" ?",105,63,{align:"center"});
+    var il=await illuPourPdf(P.img);
+    if(il){var h=52,w=h*il.r;if(w>90){w=90;h=w/il.r}doc.addImage(il.url,"PNG",105-w/2,70,w,h);}
+    var T=96,x0=105-T/2,y0=128,m=T/(n+4);
+    doc.setDrawColor(234,88,12);doc.setLineWidth(1.2);doc.roundedRect(x0-4,y0-4,T+8,T+8,6,6,"S");
+    doc.setFillColor(0,0,0);
+    for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))doc.rect(x0+(c+2)*m,y0+(r+2)*m,m+0.05,m+0.05,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(28,25,23);
+    doc.text("Scanne et ajoute "+P.quoi+" au défi",105,y0+T+16,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(13);doc.setTextColor(87,83,78);
+    doc.text("1. Ouvre l'appareil photo du téléphone   2. Vise le QR code   3. Note, c'est ajouté !",105,y0+T+26,{align:"center"});
+    doc.setFont("helvetica","italic");doc.setFontSize(12);doc.setTextColor(194,65,12);
+    doc.text(P.blague,105,y0+T+38,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(120,113,108);
+    doc.text(lienAjout().replace(/^https?:\/\//,""),105,288,{align:"center"});
+  }
+  doc.save("Affichettes_QR_rameur_SkiErg.pdf");
+  showToast("✅ Affichettes enregistrées : à imprimer et coller sur les machines","success");
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
@@ -4744,6 +4931,7 @@ async function chargerDefis(force){
   }
   renderDefis();
   renderBandeauDefi();
+  apresChargementDefis();
 }
 function dfsStats(d){
   var c=dfsContrib.filter(function(x){return x.defi_id===d.id});
@@ -4861,7 +5049,10 @@ function dfsAdminHtml(d){
       +(d.actif?'⏹️ Clore le défi':'▶️ Rouvrir')+'</button>'
       +'<button class="pbtn" onclick="dfsSupprimer('+d.id+')">🗑️ Supprimer</button>'
       +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button>'
-      +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button></div></div>';
+      +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button>'
+      +'<button class="pbtn" onclick="ouvrirModeTV()">📺 Mode TV (salle)</button>'
+      +'<button class="pbtn" onclick="dfsAffichetteQR()">🖨️ Affichettes QR rameur / SkiErg</button></div>'
+      +'<p class="note">📺 Pour la télé ou la tablette de la salle : crée dans Comptes un compte avec <b>seulement l\'onglet Défis</b> et sans pompier relié. Il s\'ouvre directement en mode TV et ne voit aucun résultat ICP.</p></div>';
   }
   return h;
 }

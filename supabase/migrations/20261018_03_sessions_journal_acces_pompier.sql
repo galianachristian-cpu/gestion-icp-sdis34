@@ -86,3 +86,11 @@ alter table public.pompiers add column if not exists confidentiel boolean defaul
 
 -- 2026-11-06 : photos de profil (photos_pompiers : image JPEG 240 px en data URL, < 150 ko)
 -- lecture : tout compte connu ; écriture : admin ou la personne elle-même (mon_pompier_id())
+
+-- 2026-11-07 : type de compte « ecran » (télé / tablette de la salle, mode TV).
+-- Compte sans pompier relié, onglets ⊆ {defis, aide} (dont defis) : type_compte_icp() = 'ecran'.
+-- Il lit le défi, l'annuaire (prénoms) et les photos ; aucune ligne de pompiers, carnet_seances,
+-- synthese_couleurs ni historique_reference (ces politiques n'acceptent pas 'ecran').
+-- (Avant ce changement, un tel compte aurait été classé 'equipe' et aurait lu tous les résultats.)
+--   ... when exists (... c.pompier_id is null and onglets ? 'defis'
+--                    and onglets <@ '["defis","aide"]') then 'ecran'   -- inséré avant 'equipe'
