@@ -18,7 +18,15 @@ const SECRET_CRON = (Deno.env.get("CRON_SECRET") ?? "").trim();
 
 Deno.serve(async (req: Request) => {
   try {
-    if (SECRET_CRON && (req.headers.get("x-cron-secret") ?? "") !== SECRET_CRON) {
+    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    // Seul pg_cron peut déclencher l'envoi : il joint la clé gardée dans secrets_internes
+    // (table illisible par l'appli). Repli sur la variable CRON_SECRET si elle est définie.
+    let attendu = SECRET_CRON;
+    if (!attendu) {
+      const { data: s } = await sb.from("secrets_internes").select("valeur").eq("nom", "cron_rappels").maybeSingle();
+      attendu = (s?.valeur ?? "").trim();
+    }
+    if (!attendu || (req.headers.get("x-cron-secret") ?? "") !== attendu) {
       return new Response("non autorisé", { status: 401 });
     }
     if (PUB.length !== 87 || PRIV.length !== 43) {
@@ -29,7 +37,6 @@ Deno.serve(async (req: Request) => {
       }, { status: 500 });
     }
     webpush.setVapidDetails(SUJET, PUB, PRIV);
-    const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
     // heure de Paris, quel que soit le fuseau du serveur
     const fmt = new Intl.DateTimeFormat("fr-FR", {

@@ -16,3 +16,11 @@ Secrets (Edge Functions → Secrets) :
 
 Les clés sont nettoyées à la lecture (espaces, retours à la ligne, `=` final) :
 une valeur collée avec un caractère en trop ne casse plus l'envoi.
+
+## Sécurité (07/11/2026)
+
+La fonction refuse tout appel (401) qui ne porte pas l'en-tête `x-cron-secret`.
+La clé est tirée au hasard et rangée dans la table `secrets_internes` (RLS sans politique,
+droits retirés à `anon` et `authenticated` : illisible depuis l'appli). La tâche pg_cron
+`rappels-seances` la lit et l'envoie à chaque appel. Pour un test manuel :
+`select net.http_post(url := '.../envoyer-rappels?test=<pompier_id>', headers := jsonb_build_object('x-cron-secret',(select valeur from public.secrets_internes where nom='cron_rappels')));`

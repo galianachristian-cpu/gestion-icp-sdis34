@@ -98,3 +98,10 @@ alter table public.pompiers add column if not exists confidentiel boolean defaul
 -- 2026-11-07 : notifications des défis (fonction envoyer-rappels v7)
 alter table public.defis add column if not exists palier_notifie integer not null default -1;
 -- -1 rien envoyé, 0 départ annoncé, 25/50/75/100 dernier palier annoncé à tous les abonnés push.
+
+-- 2026-11-07 : envoyer-rappels n'accepte plus que pg_cron (clé aléatoire, illisible par l'appli)
+create table if not exists public.secrets_internes (nom text primary key, valeur text not null);
+alter table public.secrets_internes enable row level security;
+revoke all on public.secrets_internes from anon, authenticated;
+insert into public.secrets_internes(nom, valeur) values ('cron_rappels', encode(extensions.gen_random_bytes(32), 'hex')) on conflict (nom) do nothing;
+-- tâche pg_cron « rappels-seances » : en-tête x-cron-secret = (select valeur from public.secrets_internes where nom='cron_rappels')
