@@ -441,6 +441,21 @@ div.acc-case{cursor:default}
 .login-sergent span{position:relative;padding:8px 12px;border-radius:14px;background:#fff;color:#1c1917;font-weight:700;font-size:13.5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .login-sergent span::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right-color:#fff}
 #demarrage .dem-sergent{position:absolute;width:84px;height:84px;border-radius:50%;object-fit:cover;width:64px;height:64px;margin:20px 0 0 170px;border:3px solid rgba(251,191,36,.7);background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);animation:pop .6s cubic-bezier(.2,1.6,.4,1) .3s both}
+/* ===== FLAMME, BRAVOS, SERGENT SUR LE NIVEAU ===== */
+.flamme{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;font-style:normal;white-space:nowrap;color:#fff;background:linear-gradient(135deg,#dc2626,#f59e0b);box-shadow:0 0 8px rgba(245,158,11,.5)}
+.dfs-seances{display:flex;flex-direction:column}
+.dfs-se{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid color-mix(in srgb,var(--border) 60%,transparent);font-size:14px}
+.dfs-se:first-child{border-top:0}
+.dfs-se .n{flex:1;min-width:0}.dfs-se .n small{display:block;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bravo{flex-shrink:0;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:700 14px Inter,sans-serif;cursor:pointer;transition:transform .15s}
+.bravo:active{transform:scale(1.25)}
+.bravo.on{background:linear-gradient(135deg,#ea580c,#fbbf24);border-color:#fbbf24;color:#fff}
+span.bravo.vu{cursor:default;opacity:.85}
+.sergent-niv{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px 12px 8px 8px;border-radius:14px;background:rgba(0,0,0,.22);border:1px solid rgba(251,191,36,.3);font-size:13px;font-style:italic;line-height:1.4;text-align:left}
+.sergent-niv img{width:48px;height:48px;flex-shrink:0;border-radius:50%;object-fit:cover;background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);border:2px solid rgba(251,191,36,.6)}
+.vide .vide-sergent{display:block;width:120px;height:120px;margin:0 auto 10px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4));animation:mp-float 3.2s ease-in-out infinite}
+.tv-humour{display:flex;align-items:center;gap:1.2vw}
+.tv-humour img{width:8vh;height:8vh;flex-shrink:0;border-radius:50%;object-fit:cover;background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);border:2px solid rgba(251,191,36,.6)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -2849,7 +2864,7 @@ function renderTV(){
     +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
     +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
-    +(hu?'<div class="tv-humour">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
+    +(hu?'<div class="tv-humour"><img src="img/mascotte/'+(function(){var x=humeurSergent();return x==="buste"?"sergent-chef-buste":"sergent-"+x})()+'.webp" alt="">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
     +(d.recompense?'<div class="tv-reco">🎁 À la clé : '+dfsEsc(d.recompense)+'</div>':'')+'</div>';
   var pod=avenir?[]:dfsPodium(d,0),sem=dfsSemaine(d,0);
   var podium='<div class="tv-carte"><div class="tv-sec">🏅 Les plus réguliers'+(sem?' · semaine '+sem.num:'')+'</div>'
@@ -3190,10 +3205,60 @@ function renderAccueilPerso(tab){
   cases.push('<button class="acc-case" onclick="switchTab(\'fiche\')"><i style="background:'+(c?c.hex:"var(--border)")+'"></i><span><small>Mon niveau ICP</small><b>'+(c?c.txt:"À évaluer")+'</b></span></button>');
   try{var d=tabAutorise("defis")&&dfsCharge?dfsDefiDuBandeau():null;
     if(d&&!dfsAVenir(d)){var M=dfsMonBilan(d,p.id);
-      cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">'+(M.seances?"🔥":"💤")+'</i><span><small>Ma part du défi</small><b>'+(M.seances?dfsNum(M.v)+" "+dfsEsc(d.unite)+" · "+M.seances+" séance"+(M.seances>1?"s":""):"Pas encore de séance")+'</b></span></button>');}
+      cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">'+(M.seances?"🔥":"💤")+'</i><span><small>Ma part du défi</small><b>'+(M.seances?dfsNum(M.v)+" "+dfsEsc(d.unite)+" · "+M.seances+" séance"+(M.seances>1?"s":""):"Pas encore de séance")+flammeHtml(p.id)+'</b></span></button>');}
     else if(d){cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">⏳</i><span><small>Prochain défi</small><b>J-'+dfsJoursAvant(d)+' · '+dfsEsc(d.titre)+'</b></span></button>');}}catch(e){}
   try{var s=prochaineSession();if(s)cases.push('<div class="acc-case"><i class="em">📅</i><span><small>Prochaine session ICP</small><b>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+'</b></span></div>');}catch(e){}
   el.innerHTML='<div class="accueil"><div class="acc-salut">'+avatarMini(p.id,initialesDe(p.id))+'<span>'+salut+' <b>'+escAttr(qui)+'</b> 👋</span></div><div class="acc-cases">'+cases.join("")+'</div></div>';
+}
+// ===== FLAMME DE RÉGULARITÉ, BRAVOS, MOT DU SERGENT SUR LE NIVEAU =====
+// Flamme : nombre de semaines (lundi-dimanche) de suite avec au moins une séance notée, tous défis confondus.
+// La semaine en cours compte si elle a déjà une séance ; sinon la série tient jusqu'à dimanche.
+function flammeDe(pid){
+  var sem={};dfsContrib.forEach(function(x){if(x.pompier_id!==pid)return;var d=new Date(x.date+"T12:00:00");d.setDate(d.getDate()-((d.getDay()+6)%7));sem[dfsIso(d)]=1});
+  var l=dfsLundi(0),n=0;if(!sem[dfsIso(l)])l.setDate(l.getDate()-7);
+  while(sem[dfsIso(l)]){n++;l.setDate(l.getDate()-7)}
+  return n;
+}
+function flammeHtml(pid){var n=flammeDe(pid);return n>=2?' <span class="flamme" title="'+n+' semaines de suite avec au moins une séance">🔥 '+n+' sem.</span>':''}
+// Bravos : un 👏 par collègue sur chaque séance (table defis_bravos)
+var dfsBravos=[],bravoOccupe=false;
+async function chargerBravos(){
+  try{var r=await supabaseClient.from("defis_bravos").select("contrib_id,pompier_id");if(!r.error)dfsBravos=r.data||[]}catch(e){}
+}
+async function dfsBravo(cid){
+  var moi=dfsMoi();if(!moi||bravoOccupe)return;bravoOccupe=true;
+  var deja=dfsBravos.some(function(b){return b.contrib_id===cid&&b.pompier_id===moi.id});
+  try{
+    var r=deja?await supabaseClient.from("defis_bravos").delete().eq("contrib_id",cid).eq("pompier_id",moi.id)
+              :await supabaseClient.from("defis_bravos").insert({contrib_id:cid,pompier_id:moi.id});
+    if(r.error)throw r.error;
+    if(deja)dfsBravos=dfsBravos.filter(function(b){return !(b.contrib_id===cid&&b.pompier_id===moi.id)});
+    else{dfsBravos.push({contrib_id:cid,pompier_id:moi.id});vibrer();}
+    renderDefis();
+  }catch(e){showToast("Bravo non envoyé : "+(e.message||e),"error")}
+  finally{bravoOccupe=false}
+}
+function dfsSeancesHtml(d,S){
+  var L=S.contribs.slice().sort(function(a,b){return String(b.cree_le||b.date).localeCompare(String(a.cree_le||a.date))}).slice(0,8);
+  if(!L.length)return "";
+  var moi=dfsMoi();
+  return '<div class="pcard"><div class="sec">💪 Dernières séances</div><div class="dfs-seances">'+L.map(function(x){
+    var qui=dfsBravos.filter(function(b){return b.contrib_id===x.id}),n=qui.length,mien=moi&&qui.some(function(b){return b.pompier_id===moi.id}),aMoi=moi&&x.pompier_id===moi.id;
+    var noms=qui.map(function(b){return dfsNom(b.pompier_id).split(" ")[0]}).join(", ");
+    return '<div class="dfs-se">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))
+      +'<span class="n"><b>'+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+'</b> +'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+'<small>'+quandContrib(x)+(n?' · 👏 '+dfsEsc(noms):'')+'</small></span>'
+      +(aMoi||!moi?(n?'<span class="bravo vu">👏 '+n+'</span>':''):'<button class="bravo'+(mien?' on':'')+'" onclick="dfsBravo('+x.id+')" title="'+(mien?'Retirer mon bravo':'Bravo !')+'">👏'+(n?' '+n:'')+'</button>')+'</div>'}).join("")
+    +'</div><p class="note">Touche 👏 pour encourager un collègue.</p></div>';
+}
+// Le mot du Sergent-Chef sous le niveau global de la fiche
+var SERGENT_NIVEAU={
+ "3":["fier","Condition optimale. Je ne dis rien… mais je suis fier. Maintenant, on entretient."],
+ "2":["chef-buste","C'est solide. Encore un effort et tu passes au vert : je t'ai à l'œil, et c'est pour ton bien."],
+ "1":["chef-buste","On ne juge pas, on progresse. Un pas après l'autre : ton programme est fait pour ça, et je suis là."]
+};
+function sergentNiveauHtml(g){
+  var S=SERGENT_NIVEAU[g];if(!S)return "";
+  return '<div class="sergent-niv"><img src="img/mascotte/sergent-'+S[0]+'.webp" alt="" width="48" height="48" draggable="false"><span>'+S[1]+'</span></div>';
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
@@ -3384,7 +3449,7 @@ var ILLUS={
  trophee:'<svg class="vide-ill" viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="gv1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#ea580c"/></linearGradient></defs><circle cx="48" cy="48" r="44" fill="#ea580c" opacity=".12"/><path d="M30 20h36v14a18 18 0 0 1-36 0Z" fill="url(#gv1)"/><path d="M30 24h-8a8 8 0 0 0 8 12M66 24h8a8 8 0 0 1-8 12" fill="none" stroke="#fbbf24" stroke-width="4"/><rect x="44" y="50" width="8" height="12" fill="#ea580c"/><rect x="34" y="62" width="28" height="8" rx="3" fill="#fbbf24"/><path d="M48 26l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8Z" fill="#fff" opacity=".9"/></svg>',
  calendrier:'<svg class="vide-ill" viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" fill="#ea580c" opacity=".12"/><rect x="22" y="26" width="52" height="46" rx="8" fill="var(--surface2)" stroke="#ea580c" stroke-width="3"/><rect x="22" y="26" width="52" height="13" rx="6" fill="#ea580c"/><rect x="32" y="20" width="5" height="12" rx="2.5" fill="#fbbf24"/><rect x="59" y="20" width="5" height="12" rx="2.5" fill="#fbbf24"/><circle cx="36" cy="52" r="3.5" fill="#fbbf24"/><circle cx="48" cy="52" r="3.5" fill="var(--muted)"/><circle cx="60" cy="52" r="3.5" fill="var(--muted)"/><circle cx="36" cy="63" r="3.5" fill="var(--muted)"/><circle cx="48" cy="63" r="3.5" fill="var(--muted)"/></svg>'
 };
-function etatVide(ill,titre,txt){return '<div class="vide">'+(ILLUS[ill]||"")+'<div class="vide-titre">'+titre+'</div><div class="vide-txt">'+txt+'</div></div>'}
+function etatVide(ill,titre,txt){return '<div class="vide"><img class="vide-sergent" src="img/mascotte/grand/sergent-dodo.webp" alt="" width="120" height="120" draggable="false">'+'<div class="vide-titre">'+titre+'</div><div class="vide-txt">'+txt+'</div></div>'}
 // 3. Entête commun des PDF : bandeau noir, filet orange, logo
 function pdfEntete(doc,titre,sous){
   var W=doc.internal.pageSize.getWidth();
@@ -3600,6 +3665,7 @@ function renderFiche(){
     +(PHOTOS[p.id]?'<button class="btn btn-sm" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border)" onclick="retirerPhoto('+p.id+')">Retirer</button>':'')+'</div>';
   var bgs=badgesFiche(p,age,pts);
   if(bgs.length)html+='<div class="badges-fiche">'+bgs.map(badgeHtml).join("")+'</div>';
+  html+=sergentNiveauHtml(g);
   html+=vitrineDefisHtml(p);
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
@@ -5316,6 +5382,7 @@ async function chargerDefis(force){
     var b=await supabaseClient.from("defis_contrib").select("*").order("date",{ascending:false});
     if(b.error)throw b.error;
     dfsContrib=b.data||[];
+    await chargerBravos();
   }catch(e){
     dfsErreur=/defis/i.test(e.message||"")
       ? "Les tables « defis » n'existent pas encore dans Supabase."
@@ -5430,13 +5497,14 @@ function dfsCarte(d){
     h+='<div class="dfs-cl">'+S.classement.map(function(c,i){
       return '<div class="dfs-l"><span class="r">'+(medals[i]||(i+1))+'</span>'
         +'<span class="n">'+avatarMini(c.pid,initialesDe(c.pid))+dfsEsc(dfsNom(c.pid))
-        +(titreHumour(d,c.v)?'<small class="titre-fun">'+titreHumour(d,c.v)+'</small>':'')+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+'</span>'
+        +(titreHumour(d,c.v)?'<small class="titre-fun">'+titreHumour(d,c.v)+'</small>':'')+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+flammeHtml(c.pid)+'</span>'
         +'<span class="b"><i style="width:'+Math.round(100*c.v/max)+'%"></i></span>'
         +'<span class="v">'+dfsNum(c.v)+'</span></div>'}).join("")+'</div>';
     h+='<p class="note">'+S.classement.length+' participant'+(S.classement.length>1?'s':'')
       +' • le défi est collectif : chaque contribution compte, même petite.</p>';
   }
   h+='</div>';
+  h+=dfsSeancesHtml(d,S);
   if(isAdmin)h+=dfsAdminHtml(d);
   return h;
 }

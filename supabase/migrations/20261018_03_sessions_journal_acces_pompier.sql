@@ -110,3 +110,13 @@ insert into public.secrets_internes(nom, valeur) values ('cron_rappels', encode(
 alter table public.pompiers add column if not exists garde text;
 alter table public.defis add column if not exists par_garde boolean not null default false;
 -- annuaire_icp() renvoie maintenant (id, prenom, nom, grade, garde) ; exécution réservée à authenticated.
+
+-- 2026-11-11 : bravos entre collègues sur les séances d'un défi
+create table if not exists public.defis_bravos (
+  contrib_id bigint not null references public.defis_contrib(id) on delete cascade,
+  pompier_id integer not null references public.pompiers(id) on delete cascade,
+  cree_le timestamptz not null default now(),
+  primary key (contrib_id, pompier_id)
+);
+alter table public.defis_bravos enable row level security;
+-- lecture : tout compte connecté ; ajout / retrait : son propre bravo (pompier_id = mon_pompier_id_icp()) ou l'admin.
