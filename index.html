@@ -3067,7 +3067,7 @@ var SERGENT={
   "Douleur passagère, fierté éternelle.",
   "Tu n'es pas fatigué. Tu es en rodage.",
   "Faut pas pleurer, faut ramer.",
-  "Un pompier averti en vaut deux. Un pompier entraîné en vaut trois.",
+  "Un pompier averti en vaut deux. Une équipe entraînée en vaut dix.",
   "On ne naît pas pompier, on le devient. À la salle.",
   "Au feu, on ne choisit pas son jour. À la salle non plus.",
   "Le premier arrivé ouvre la salle. Le dernier range les haltères.",
@@ -3088,6 +3088,7 @@ var SERGENT={
  soir:["À demain, de bonne heure, de bonne humeur, de préférence !","Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
  avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
  retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
+ revenantF:["Tiens, une revenante ! Le rameur demandait de tes nouvelles.","Regardez qui voilà ! On t'avait portée disparue. Allez, une petite séance pour fêter ça.","Ça fait un bail, dis donc. Le défi continue, et il reste de la place pour toi.","Te revoilà ! Je ne dis rien. Mais dix minutes de rameur, ça dirait beaucoup."],
  revenant:["Tiens, un revenant ! Le rameur demandait de tes nouvelles.","Regardez qui voilà ! On t'avait porté disparu. Allez, une petite séance pour fêter ça.","Ça fait un bail, dis donc. Le défi continue, et il reste de la place pour toi.","Te revoilà ! Je ne dis rien. Mais dix minutes de rameur, ça dirait beaucoup."],
  atteint:["Vous pensiez avoir fini ? Objectif bonus ! Le rameur n'est pas fatigué, lui.","Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
 };
@@ -3133,7 +3134,7 @@ function renderMotSergent(tab){
   if(sergentDecalage===0&&gr&&SERGENT[gr])phrase=SERGENT[gr][jour%SERGENT[gr].length];
   // « Tiens, un revenant ! » : rien noté depuis 7 jours alors qu'un défi tourne
   var rev=sergentDecalage===0&&joursSansSeance()>=7;
-  if(rev)phrase=SERGENT.revenant[jour%SERGENT.revenant.length];
+  if(rev){var LR=(dfsMoi()||{}).sexe==="F"?SERGENT.revenantF:SERGENT.revenant;phrase=LR[jour%LR.length];}
   el.innerHTML='<div class="sergent" onclick="sergentSuivant(event)" title="Touche-le, il a de la réserve">'
     +(function(){var hu=rev?"fier":humeurSergent();return '<img class="h-'+hu+'" src="img/mascotte/'+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+'.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">';})()
     +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span>'+(dfsMoi()&&!isAdmin?defiDuJourHtml():'')+'</div>'
@@ -3189,7 +3190,7 @@ async function dfsCarteBilan(id){
   if(img){var T=430;g.drawImage(img,W/2-T/2,y0-10,T,T);}
   var y=y0+440;
   g.fillStyle=TX;g.font="700 58px Oswald, sans-serif";g.fillText((moi.prenom+" "+moi.nom).toUpperCase(),W/2,y);
-  var th=themeHumour(d),titre=titreHumour(d,M.v);
+  var th=themeHumour(d),titre=titreHumour(d,M.v,moi.id);
   if(titre){g.fillStyle=AC;g.font="600 30px Inter, sans-serif";g.fillText(titre.replace(/<[^>]+>/g,""),W/2,y+46);}
   y+=96;
   // le gros chiffre
@@ -3229,7 +3230,7 @@ function vitrineDefisHtml(p){
       +'<span><b>'+escAttr(o.d.titre)+'</b><small>'+dfsNum(o.v)+' '+escAttr(o.d.unite)+' · '+etat+'</small></span></span>'}).join("")+'</div></div>';
 }
 document.addEventListener("DOMContentLoaded",function(){var m=document.getElementById("loginSergentMot");if(!m||/[?&]ajout\b/.test(location.search))return;
-  var h=new Date().getHours(),L=h<9?["Déjà debout ? Ça, c'est un pompier.","Identifie-toi. Le café, c'est après."]:h>=20?["Encore là à cette heure ? Respect.","Identifie-toi, et après : au lit."]:["Identifie-toi, et que ça saute !","Halte ! Qui va là ?","Papiers du véhicule… non, juste ton mot de passe."];
+  var h=new Date().getHours(),L=h<9?["Déjà debout ? Ça, c'est du sérieux.","Identifie-toi. Le café, c'est après."]:h>=20?["Encore là à cette heure ? Respect.","Identifie-toi, et après : au lit."]:["Identifie-toi, et que ça saute !","Halte ! Qui va là ?","Papiers du véhicule… non, juste ton mot de passe."];
   m.textContent=L[Math.floor(Date.now()/864e5)%L.length];});
 // ===== ACCUEIL PERSONNALISÉ (comptes reliés à un pompier) =====
 // « Bonjour Hugo » + son niveau, sa part du défi et la prochaine session ICP, en haut de la fiche.
@@ -3323,7 +3324,7 @@ function cocherDefiJour(){
   try{var fait=localStorage.getItem(k)==="1",n=parseInt(localStorage.getItem(kt)||"0",10);
     if(fait){localStorage.removeItem(k);localStorage.setItem(kt,String(Math.max(0,n-1)))}
     else{localStorage.setItem(k,"1");localStorage.setItem(kt,String(n+1));vibrer();
-      showToast("🎖️ « "+["C'est noté. Je suis presque impressionné.","Bien. Demain, on recommence.","Voilà. Ça, c'est un pompier.","Fait ? Je te crois. Cette fois."][n%4]+" »","success");}
+      showToast("🎖️ « "+["C'est noté. Je suis presque impressionné.","Bien. Demain, on recommence.","Voilà. Ça, c'est du sérieux.","Fait ? Je te crois. Cette fois."][n%4]+" »","success");}
   }catch(e){}
   renderMotSergent();
 }
@@ -3465,22 +3466,28 @@ var HUMOUR={
   atteint:["🎁 Mission accomplie : le Père Noël est au Pôle Nord, les rennes font la sieste.","🎅 Ho ho ho ! Le centre est officiellement sur la liste des gentils."],
   ajout:["🎅 Ho ho ho ! +{v} km, tu passes sur la liste des gentils.","🦌 +{v} km : Rudolph te fait un clin d'œil rouge.","🧝 +{v} km : un lutin vient de t'ajouter au calendrier de l'Avent.","❄️ +{v} km de neige avalés. Le Père Noël dit merci (et reprend son souffle).","🍪 +{v} km : tu as gagné un biscuit virtuel. Il ne fait pas grossir."],
   titres:[[0,"🍪 Goûteur de biscuits"],[3,"🧝 Lutin stagiaire"],[8,"🦌 Renne en formation"],[15,"🛷 Pilote de traîneau"],[25,"🎅 Bras droit du Père Noël"]],
+  titresF:[[0,"🍪 Goûteuse de biscuits"],[3,"🧝 Lutine stagiaire"],[8,"🦌 Renne en formation"],[15,"🛷 Pilote de traîneau"],[25,"🎅 Bras droit du Père Noël"]],
   oeuf:["Ho ho ho ! Arrête de chatouiller le Père Noël, il skie !","🎅 « Je ne suis pas en retard, je suis en avance pour l'année prochaine. »","🦌 Rudolph : « Pourquoi c'est moi qui tire, déjà ? »"]
  },
  movember:{
-  avenir:["🥸 Rasez-vous une dernière fois, après c'est trop tard.","🥸 Le rameur vous attend. Lui, il n'a pas besoin de moustache."],
+  avenir:["🥸 Messieurs, rasez-vous une dernière fois. Mesdames, échauffez les encouragements.","🥸 Le rameur vous attend. Lui, il n'a pas besoin de moustache."],
   avance:["🥸 À ce rythme, les moustaches poussent à vue d'œil.","🚣 Le rameur demande grâce. Continuez.","🥸 Tom Selleck serait fier de vous."],
   retard:["🥸 Les moustaches poussent plus vite que le compteur… on rame !","🚣 Le rameur s'ennuie. Allez lui rendre visite.","🥸 Même un duvet d'ado avance plus vite. Allez !"],
-  atteint:["🥸 100 km ! Les moustaches du centre entrent dans la légende.","🏆 Mission Movember accomplie. Vous pouvez (peut-être) vous raser."],
+  atteint:["🥸 100 km ! Les moustaches du centre entrent dans la légende.","🏆 Mission Movember accomplie. Messieurs, vous pouvez (peut-être) vous raser."],
   ajout:["🥸 +{v} km : ta moustache vient de gagner 1 mm.","🚣 +{v} km : le rameur te salue bien bas.","🥸 +{v} km : Movember te remercie, ta prostate aussi.","💪 +{v} km : moustache validée par le centre."],
   titres:[[0,"🥸 Duvet naissant"],[5,"🥸 Moustache de gendarme"],[12,"🥸 Moustache de mousquetaire"],[20,"🥸 Moustache de légende"]],
+  // les femmes qui soutiennent Movember sont les « Mo Sisters »
+  titresF:[[0,"💪 Mo Sister débutante"],[5,"💪 Mo Sister confirmée"],[12,"💪 Mo Sister d'élite"],[20,"👑 Mo Sister de légende"]],
+  ajoutF:["💪 +{v} km pour la santé des hommes : ils te disent merci.","🚣 +{v} km : le rameur te salue bien bas.","👑 +{v} km : les Mo Sisters montrent l'exemple.","🥸 +{v} km : moustache d'honneur validée par le centre."],
   oeuf:["🥸 Touche pas à ma moustache !","🚣 « Plus vite, moussaillon ! »"]
  }
 };
 // Phrase du jour : stable dans la journée, change chaque jour
 function phraseDuJour(liste,graine){if(!liste||!liste.length)return "";var j=Math.floor(Date.now()/864e5)+(graine||0);return liste[j%liste.length]}
 function phraseAuHasard(liste){return liste&&liste.length?liste[Math.floor(Math.random()*liste.length)]:""}
-function titreHumour(d,total){var h=HUMOUR[themeHumour(d)];if(!h)return "";var t="";h.titres.forEach(function(x){if(total>=x[0])t=x[1]});return t}
+// Homme ou femme ? (fiche complète pour l'admin et soi-même, annuaire pour les collègues ; null si inconnu)
+function sexeDe(pid){var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];return p&&p.sexe?p.sexe:null}
+function titreHumour(d,total,pid){var h=HUMOUR[themeHumour(d)];if(!h)return "";var t="",L=pid&&sexeDe(pid)==="F"&&h.titresF?h.titresF:h.titres;L.forEach(function(x){if(total>=x[0])t=x[1]});return t}
 function oeufDePaques(e){
   if(e)e.stopPropagation();var d=dfsDefiDuBandeau()||dfsListe[0];var h=d&&HUMOUR[themeHumour(d)];
   showToast(h?phraseAuHasard(h.oeuf):"🎉","info");if(d)confettis(estNoel(d)?"flocon":estMovember(d)?"moustache":null);
@@ -5578,7 +5585,7 @@ function dfsCarte(d){
   }
   if(moi&&d.actif&&!dfsAVenir(d)){
     h+='<div class="pcard"><div class="sec">Ma part'+(d.par_garde&&gardeDe(moi.id)?' · <span class="garde-pastille" style="--g:'+couleurGarde(gardeDe(moi.id))+'">'+dfsEsc(nomGarde(gardeDe(moi.id)))+'</span>':'')+'</div>'
-      +(titreHumour(d,maPart?maPart.v:0)?'<div class="titre-moi">Ton grade : <b>'+titreHumour(d,maPart?maPart.v:0)+'</b></div>':'')
+      +(titreHumour(d,maPart?maPart.v:0,moi.id)?'<div class="titre-moi">Ton grade : <b>'+titreHumour(d,maPart?maPart.v:0,moi.id)+'</b></div>':'')
       +'<div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(maPart?maPart.v:0)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
       +'<button class="pbtn pri" onclick="dfsAjouter('+d.id+')">Ajouter</button></div></div>'
@@ -5601,7 +5608,7 @@ function dfsCarte(d){
     h+='<div class="dfs-cl">'+S.classement.map(function(c,i){
       return '<div class="dfs-l"><span class="r">'+(medals[i]||(i+1))+'</span>'
         +'<span class="n">'+avatarMini(c.pid,initialesDe(c.pid))+dfsEsc(dfsNom(c.pid))
-        +(titreHumour(d,c.v)?'<small class="titre-fun">'+titreHumour(d,c.v)+'</small>':'')+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+flammeHtml(c.pid)+'</span>'
+        +(titreHumour(d,c.v,c.pid)?'<small class="titre-fun">'+titreHumour(d,c.v,c.pid)+'</small>':'')+(moi&&c.pid===moi.id?' <em>(toi)</em>':'')+flammeHtml(c.pid)+'</span>'
         +'<span class="b"><i style="width:'+Math.round(100*c.v/max)+'%"></i></span>'
         +'<span class="v">'+dfsNum(c.v)+'</span></div>'}).join("")+'</div>';
     h+='<p class="note">'+S.classement.length+' participant'+(S.classement.length>1?'s':'')
@@ -5680,7 +5687,7 @@ async function dfsAjouter(id){
     if(r.error)throw r.error;
     if(ancien&&v>Number(ancien.valeur))setTimeout(function(){confettis();showToast("🏆 Nouveau record personnel : "+dfsNum(v)+" "+dRec.unite+" ! (ancien : "+dfsNum(ancien.valeur)+")","success")},900);
     var dAj=dfsListe.filter(function(x){return x.id===id})[0],huA=dAj&&HUMOUR[themeHumour(dAj)];
-    showToast(huA?phraseAuHasard(huA.ajout).replace("{v}",dfsNum(v)):"💪 +"+dfsNum(v)+" pour le centre","success");
+    showToast(huA?phraseAuHasard(moi.sexe==="F"&&huA.ajoutF?huA.ajoutF:huA.ajout).replace("{v}",dfsNum(v)):"💪 +"+dfsNum(v)+" pour le centre","success");
     await chargerDefis(true);
   }catch(e){showToast("Impossible : "+(e.message||e),"error")}
   finally{dfsOccupe=false}
