@@ -462,6 +462,26 @@ span.bravo.vu{cursor:default;opacity:.85}
 .vide .vide-sergent{display:block;width:120px;height:120px;margin:0 auto 10px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4));animation:mp-float 3.2s ease-in-out infinite}
 .tv-humour{display:flex;align-items:center;gap:1.2vw}
 .tv-humour img{width:8vh;height:8vh;flex-shrink:0;border-radius:50%;object-fit:cover;background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);border:2px solid rgba(251,191,36,.6)}
+/* ===== RECORD, DÉFI DU JOUR, COMPTE À REBOURS, SIMULATEUR ===== */
+.dfs-record{margin:10px 0 2px;padding:7px 12px;border-radius:10px;font-size:13.5px;background:linear-gradient(120deg,rgba(251,191,36,.14),transparent);border:1px solid rgba(251,191,36,.35)}
+.dfs-record small{color:var(--muted)}
+.ddj{display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);cursor:default}
+.ddj span{flex:1;font-size:13px!important;font-style:normal!important;font-weight:600;line-height:1.3}
+.ddj small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.ddj button{flex-shrink:0;padding:6px 11px;border-radius:999px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font:700 12px Inter,sans-serif;cursor:pointer}
+.ddj.fait span{text-decoration:line-through;opacity:.6}.ddj.fait small{text-decoration:none}
+.ddj.fait button{background:#16a34a;border-color:#16a34a;color:#fff}
+.rebours{display:flex;gap:14px;align-items:stretch;margin:12px 0 14px;padding:12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border)}
+.rebours-j{display:flex;flex-direction:column;justify-content:center;align-items:center;width:96px;flex-shrink:0;padding:8px;border-radius:12px;background:linear-gradient(135deg,var(--rouge),var(--primary));color:#fff;text-align:center}
+.rebours-j b{font-family:var(--titre);font-size:28px;line-height:1}.rebours-j small{font-size:10.5px;margin-top:4px;text-transform:capitalize;line-height:1.25}
+.rebours-p{flex:1;min-width:0}.rebours-t{font-family:var(--titre);font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.rebours-l{display:flex;gap:8px;align-items:baseline;font-size:13px;line-height:1.35;margin-top:4px}
+.rebours-l i{width:10px;height:10px;border-radius:50%;flex-shrink:0;transform:translateY(1px)}
+.simu{margin:0 0 14px;padding:10px 12px;border-radius:14px;background:var(--surface2);border:1px solid var(--border)}
+.simu summary{cursor:pointer;font-weight:600;font-size:14px}
+.simu-c{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.simu-c select,.simu-c input{width:auto;flex:1;min-width:110px}
+.simu-res{flex:1 1 100%;text-align:center;padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;color:#fff;background:var(--border)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -3116,7 +3136,7 @@ function renderMotSergent(tab){
   if(rev)phrase=SERGENT.revenant[jour%SERGENT.revenant.length];
   el.innerHTML='<div class="sergent" onclick="sergentSuivant(event)" title="Touche-le, il a de la réserve">'
     +(function(){var hu=rev?"fier":humeurSergent();return '<img class="h-'+hu+'" src="img/mascotte/'+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+'.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">';})()
-    +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span></div>'
+    +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span>'+(dfsMoi()&&!isAdmin?defiDuJourHtml():'')+'</div>'
     +'<button class="sergent-x" onclick="event.stopPropagation();taireSergent()" title="Le faire taire jusqu\'à demain">✕</button></div>';
 }
 function sergentSuivant(e){sergentDecalage++;renderMotSergent();var s=document.querySelector("#motSergent .sergent img");if(s){s.classList.remove("parle");void s.offsetWidth;s.classList.add("parle")}vibrer()}
@@ -3278,6 +3298,69 @@ var SERGENT_NIVEAU={
 function sergentNiveauHtml(g){
   var S=SERGENT_NIVEAU[g];if(!S)return "";
   return '<div class="sergent-niv"><img src="img/mascotte/sergent-'+S[0]+'.webp" alt="" width="48" height="48" draggable="false"><span>'+S[1]+'</span></div>';
+}
+// ===== RECORDS, DÉFI DU JOUR, COMPTE À REBOURS ICP, SIMULATEUR =====
+// Record personnel : ma meilleure séance sur un défi
+function dfsRecord(d,pid){
+  var best=null;dfsContrib.forEach(function(x){if(x.defi_id===d.id&&x.pompier_id===pid&&(!best||Number(x.valeur)>Number(best.valeur)))best=x});
+  return best;
+}
+function dfsRecordHtml(d,pid){
+  var r=dfsRecord(d,pid);if(!r)return "";
+  return '<div class="dfs-record">🏆 Mon record : <b>'+dfsNum(r.valeur)+' '+dfsEsc(d.unite)+'</b> en une séance <small>('+new Date(r.date+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"short"})+')</small></div>';
+}
+// Défi du jour du Sergent-Chef : facultatif, juste pour le sourire, noté sur cet appareil seulement
+var DEFIS_DU_JOUR=["20 pompes avant le café","1 minute de gainage, sans regarder la montre","30 squats pendant que l'eau chauffe","Monte les escaliers deux fois au lieu d'une","10 minutes d'étirements ce soir","15 fentes de chaque jambe","Bois un grand verre d'eau à chaque heure pile","40 jumping jacks pour réveiller la machine","La chaise contre le mur : 45 secondes","10 burpees. Oui, dix. Non, pas neuf.","Marche 15 minutes après le repas","25 abdos avant la douche","Touche tes pieds jambes tendues, 5 fois 20 secondes","2 minutes de corde à sauter (ou sans corde, personne ne regarde)","12 pompes lentes : 3 secondes pour descendre","Gainage latéral : 30 secondes de chaque côté","50 montées de genoux sur place","Tiens en équilibre sur un pied en te brossant les dents","20 squats sautés","5 minutes de respiration calme avant de dormir","Porte tes courses sans poser les sacs","30 secondes de planche, 3 fois dans la journée"];
+function cleDefiJour(){return "icp_ddj_"+(emailConnecte||"x")+"_"+dfsIso(new Date())}
+function defiDuJourHtml(){
+  var jour=Math.floor(Date.now()/864e5),txt=DEFIS_DU_JOUR[jour%DEFIS_DU_JOUR.length],fait=false,n=0;
+  try{fait=localStorage.getItem(cleDefiJour())==="1";n=parseInt(localStorage.getItem("icp_ddj_total_"+(emailConnecte||"x"))||"0",10)}catch(e){}
+  return '<div class="ddj'+(fait?' fait':'')+'" onclick="event.stopPropagation()"><span><small>Défi du jour'+(n?' · '+n+' relevé'+(n>1?'s':''):'')+'</small>'+dfsEsc(txt)+'</span>'
+    +'<button onclick="cocherDefiJour()">'+(fait?'✔ Fait':'Je l\'ai fait')+'</button></div>';
+}
+function cocherDefiJour(){
+  var k=cleDefiJour(),kt="icp_ddj_total_"+(emailConnecte||"x");
+  try{var fait=localStorage.getItem(k)==="1",n=parseInt(localStorage.getItem(kt)||"0",10);
+    if(fait){localStorage.removeItem(k);localStorage.setItem(kt,String(Math.max(0,n-1)))}
+    else{localStorage.setItem(k,"1");localStorage.setItem(kt,String(n+1));vibrer();
+      showToast("🎖️ « "+["C'est noté. Je suis presque impressionné.","Bien. Demain, on recommence.","Voilà. Ça, c'est un pompier.","Fait ? Je te crois. Cette fois."][n%4]+" »","success");}
+  }catch(e){}
+  renderMotSergent();
+}
+// Compte à rebours avant la prochaine session ICP, avec ce qu'il faut travailler en priorité
+function compteReboursIcpHtml(p,age){
+  var s=prochaineSession();if(!s)return "";
+  var t=new Date();t.setHours(12,0,0,0);var n=Math.round((new Date(s.date+"T12:00:00")-t)/864e5);if(n<0)return "";
+  var L=TESTS_SYNTHESE.map(function(te){var v=p[te.field],niv=niveauTest(te,p.sexe,p.poids,age,v),o=objectifTest(te,p,age);
+    return {t:te,niv:niv,o:o,rang:!v||String(v).trim()===""?1.5:niv==="1"?0:niv==="2"?1:niv==="3"?3:2}}).filter(function(x){return x.rang<3}).sort(function(a,b){return a.rang-b.rang}).slice(0,3);
+  return '<div class="rebours"><div class="rebours-j"><b>'+(n===0?"Jour J":"J-"+n)+'</b><small>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+'</small></div>'
+    +'<div class="rebours-p"><div class="rebours-t">Prochaine session ICP'+(L.length?' : à travailler en priorité':'')+'</div>'
+    +(L.length?L.map(function(x){var c=COULEURS_NIVEAU[x.niv];return '<div class="rebours-l"><i style="background:'+(c?c.hex:"var(--border)")+'"></i><span><b>'+x.t.label+'</b> '+(x.o?x.o.txt.replace(/^🎯 /,""):"pas encore passé")+'</span></div>'}).join("")
+      :'<div class="rebours-l"><span>Tout est au vert : on entretient jusqu\'au jour J 💪</span></div>')+'</div></div>';
+}
+// Simulateur : « si je fais tant, je passe à quel niveau ? » (barèmes de l'âge, du sexe et du poids de la fiche)
+var ficheSimulee=null;
+function simulateurHtml(p){
+  ficheSimulee=p.id;
+  return '<details class="simu"><summary>🧮 Simulateur : et si je faisais…</summary><div class="simu-c">'
+    +'<select id="simuTest" onchange="majSimulateur()">'+TESTS_SYNTHESE.map(function(t){return '<option value="'+t.key+'">'+t.label+'</option>'}).join("")+'</select>'
+    +'<input id="simuVal" type="text" inputmode="decimal" placeholder="7\'45&quot;" oninput="majSimulateur()">'
+    +'<span id="simuRes" class="simu-res">Saisis une valeur</span></div><p class="note" id="simuAide">Rameur 2000 m : temps au format 7\'45".</p></details>';
+}
+function majSimulateur(){
+  var p=data.find(function(x){return x.id===ficheSimulee}),sel=document.getElementById("simuTest"),inp=document.getElementById("simuVal"),res=document.getElementById("simuRes"),aide=document.getElementById("simuAide");
+  if(!p||!sel||!inp||!res)return;
+  var t=TESTS_SYNTHESE.filter(function(x){return x.key===sel.value})[0],age=getAge(p.annee);
+  var aides={rameur:["7'45\"","Rameur 2000 m : temps au format 7'45\"."],luc:["9,5","Luc Léger : numéro du palier atteint."],souplesse:["30","Souplesse : distance en cm."],pompes:["25","Pompes : nombre de répétitions."],tractions:["8","Tractions : nombre de répétitions."]};
+  inp.placeholder=aides[t.key][0];if(aide)aide.textContent=aides[t.key][1]+(t.key==="rameur"&&!p.poids?" Renseigne d'abord le poids sur la fiche : le barème en dépend.":"");
+  var v=inp.value.trim();if(!v){res.textContent="Saisis une valeur";res.style.background="";return}
+  if(t.key==="rameur"&&/^\d+[.,: ]\d{1,2}$/.test(v))v=v.replace(/[.,: ]/,"'")+'"';
+  var valide=t.key==="rameur"?!!timeToSec(v):/^\d+([.,]\d+)?$/.test(v);
+  if(!valide){res.textContent=t.key==="rameur"?"Écris le temps comme 7'45\"":"Écris un nombre";res.style.background="";return}
+  var n=niveauTest(t,p.sexe,p.poids,age,v),c=COULEURS_NIVEAU[n];
+  if(isNaN(age)){res.textContent="Année de naissance manquante";res.style.background="";return}
+  if(!c||n==="?"){res.textContent="Valeur non reconnue";res.style.background="";return}
+  res.textContent=c.txt;res.style.background=c.hex;
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
@@ -3685,6 +3768,7 @@ function renderFiche(){
   var bgs=badgesFiche(p,age,pts);
   if(bgs.length)html+='<div class="badges-fiche">'+bgs.map(badgeHtml).join("")+'</div>';
   html+=sergentNiveauHtml(g);
+  html+=compteReboursIcpHtml(p,age);
   html+=vitrineDefisHtml(p);
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
@@ -3694,6 +3778,7 @@ function renderFiche(){
       +(c?'<span class="fiche-niv" style="background:'+c.hex+'">'+TEXTE_NIVEAU[n]+'</span>':'<span style="color:var(--muted);font-size:12px">à passer</span>')
       +jaugeHtml(jaugeTest(t,p,age))+(function(){var o=objectifTest(t,p,age),e=evolutionTest(t,p,age);return (o?'<div class="fiche-obj" style="color:'+o.c+'">'+o.txt+'</div>':'')+(e?'<div class="fiche-evol">'+e+'</div>':'');})()+'</div>';
   }).join("")+'</div>';
+  html+=simulateurHtml(p);
   var hist=getHistorique(p).slice().sort(function(a,b){return (a.campagne||"").localeCompare(b.campagne||"")});
   if(hist.length){
     html+='<div style="font-size:13px;color:var(--muted);margin:8px 0">Évolution d\'une campagne à l\'autre</div><div style="display:flex;flex-wrap:wrap;gap:8px">'
@@ -5498,7 +5583,7 @@ function dfsCarte(d){
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
       +'<button class="pbtn pri" onclick="dfsAjouter('+d.id+')">Ajouter</button></div></div>'
       +'<p class="note">Tu ajoutes ce que tu viens de faire : ça s\'additionne à ta part et au total du centre.</p>'
-      +dfsMesLignes(d,moi)
+      +dfsRecordHtml(d,moi.id)+dfsMesLignes(d,moi)
       +'<div class="prow" style="margin-top:10px"><button class="pbtn" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button></div></div>';
   }
   if(moi&&!dfsAVenir(d)&&!(d.actif&&d.fin>=dfsIso(new Date()))){var MB=dfsMonBilan(d,moi.id);
@@ -5589,9 +5674,11 @@ async function dfsAjouter(id){
   if(!(v>0)){showToast("Saisis une valeur","error");return}
   dfsOccupe=true;
   try{
+    var dRec=dfsListe.filter(function(x){return x.id===id})[0],ancien=dRec?dfsRecord(dRec,moi.id):null;
     var r=await supabaseClient.from("defis_contrib")
       .insert({defi_id:id,pompier_id:moi.id,valeur:v,date:dfsIso(new Date())});
     if(r.error)throw r.error;
+    if(ancien&&v>Number(ancien.valeur))setTimeout(function(){confettis();showToast("🏆 Nouveau record personnel : "+dfsNum(v)+" "+dRec.unite+" ! (ancien : "+dfsNum(ancien.valeur)+")","success")},900);
     var dAj=dfsListe.filter(function(x){return x.id===id})[0],huA=dAj&&HUMOUR[themeHumour(dAj)];
     showToast(huA?phraseAuHasard(huA.ajout).replace("{v}",dfsNum(v)):"💪 +"+dfsNum(v)+" pour le centre","success");
     await chargerDefis(true);
