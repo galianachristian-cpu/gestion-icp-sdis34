@@ -404,6 +404,25 @@ body.tv-on{overflow:hidden}
 .sergent-bulle b{font-family:var(--titre);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
 .sergent-bulle span{font-size:14px;line-height:1.4;font-style:italic}
 .sergent-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer}
+/* ===== OBJECTIF BONUS, VITRINE DES DÉFIS ===== */
+.dfs-bonus{position:relative;z-index:1;margin-top:12px;padding:10px 12px;border-radius:12px;background:linear-gradient(120deg,rgba(251,191,36,.16),rgba(251,191,36,.04));border:1px solid rgba(251,191,36,.5)}
+.dfs-bonus-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13.5px;font-weight:700;color:var(--accent)}
+.dfs-bonus-t b{color:var(--text);font-family:var(--titre);font-size:17px}
+.dfs-bonus-j{height:10px;border-radius:999px;background:var(--surface2);overflow:hidden;margin:7px 0 0}
+.dfs-bonus-j i{display:block;height:100%;border-radius:inherit;background:repeating-linear-gradient(115deg,#fbbf24 0 10px,#fde68a 10px 14px);background-size:28px 100%;box-shadow:0 0 12px rgba(251,191,36,.7);animation:bdf-remplit 1.4s cubic-bezier(.2,.8,.2,1) both,sillage 1.1s linear infinite}
+.dfs-bonus-s{font-size:12.5px;color:var(--muted);margin-top:6px;font-style:italic}
+.dfs-bonus.compact .dfs-bonus-s{display:none}
+.dfs-bonus.tv{margin-top:2vh;padding:1.4vh 1.2vw}.dfs-bonus.tv .dfs-bonus-t{font-size:2.6vh}.dfs-bonus.tv .dfs-bonus-t b{font-size:3.2vh}.dfs-bonus.tv .dfs-bonus-j{height:1.6vh}.dfs-bonus.tv .dfs-bonus-s{font-size:2.2vh}
+.vitrine{margin:0 0 14px}
+.vitrine-t{font-family:var(--titre);font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.vitrine-l{display:flex;flex-wrap:wrap;gap:8px}
+.medaille-defi{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;background:var(--surface2);border:1px solid var(--border);animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+.medaille-defi i{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font-style:normal;font-size:18px;background:radial-gradient(circle at 35% 30%,#a8a29e,#57534e);border:2px solid #d6d3d1;flex-shrink:0}
+.medaille-defi i .ic-theme{width:28px;height:28px;vertical-align:0;margin:0}
+.medaille-defi.or{border-color:rgba(251,191,36,.6);background:linear-gradient(120deg,rgba(251,191,36,.18),var(--surface2))}
+.medaille-defi.or i{background:radial-gradient(circle at 35% 30%,#fde68a,#b45309);border-color:#fbbf24;box-shadow:0 0 10px rgba(251,191,36,.5)}
+.medaille-defi.encours{border-style:dashed;opacity:.85}
+.medaille-defi b{display:block;font-size:13px;line-height:1.2}.medaille-defi small{display:block;font-size:11.5px;color:var(--muted)}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -2730,6 +2749,7 @@ function renderBandeauDefi(){
     +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'')+'</div>'
     +'<div class="bdf-bas"><span>'+rythme+'</span>'+(moi&&!avenir?'<span>Ma part : <b>'+dfsNum(maPart?maPart.v:0)+' '+dfsEsc(d.unite)+'</b></span>':'')
     +(moi&&!avenir?'<button class="bdf-btn" onclick="ouvrirAjoutDefi()">➕ J\'ai fait…</button>':'')+'</div>'
+    +dfsBonusHtml(d,S,"compact")
     +(estNoel(d)&&!avenir?'<span class="etape-noel">'+etapeNoel(S.pct)+'</span>':'')
     +(function(){var hu=HUMOUR[themeHumour(d)];if(!hu)return "";var etat=avenir?"avenir":S.atteint?"atteint":S.pct>=attendu?"avance":"retard";
       return '<div class="bdf-humour">'+dfsEsc(phraseDuJour(hu[etat],d.id))+'</div>';})()
@@ -2806,7 +2826,7 @@ function renderTV(){
     +'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+'"><i style="width:'+S.pct+'%"></i>'+(avenir?'':bateauHtml(d,S.pct))
     +[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
     +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%"></u>':'')+'</div></div>'
-    +'<div class="tv-rythme">'+rythme+'</div>'
+    +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
     +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
     +(hu?'<div class="tv-humour">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
@@ -2827,6 +2847,7 @@ function renderTV(){
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
   renderMotSergent();
+  try{var tf=document.getElementById('tab-fiche');if(tf&&!tf.classList.contains('hidden')&&!document.querySelector('#tab-fiche .vitrine'))renderFiche()}catch(e){}
   if(document.body.classList.contains("tv-on")){renderTV();return}
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
   if(!ajoutTraite&&/[?&]ajout\b/.test(location.search)){
@@ -3006,7 +3027,7 @@ var SERGENT={
  soir:["À demain, de bonne heure, de bonne humeur, de préférence !","Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
  avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
  retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
- atteint:["Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
+ atteint:["Vous pensiez avoir fini ? Objectif bonus ! Le rameur n'est pas fatigué, lui.","Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
 };
 // phrases du moment (jour, heure, défi) d'abord, puis les phrases de tous les jours
 function phrasesSergent(){
@@ -3046,6 +3067,93 @@ function renderMotSergent(tab){
 }
 function sergentSuivant(e){sergentDecalage++;renderMotSergent();var s=document.querySelector("#motSergent .sergent img");if(s){s.classList.remove("parle");void s.offsetWidth;s.classList.add("parle")}vibrer()}
 function taireSergent(){try{localStorage.setItem(cleJourSergent(),"1")}catch(e){}showToast("🎖️ « Repos ! On se revoit demain. »","info");renderMotSergent()}
+// ===== OBJECTIF BONUS, CARTE « MON DÉFI » ET VITRINE DES MÉDAILLES =====
+// Objectif atteint avant la fin ? La jauge continue vers un palier bonus : 150 %, 200 %, 250 %… de l'objectif.
+function dfsBonus(d,S){
+  S=S||dfsStats(d);var obj=Number(d.objectif);
+  if(!S.atteint||!(obj>0))return null;
+  var n=Math.max(3,Math.floor(S.total/(obj/2))+1),cible=n*obj/2,depart=cible-obj/2;
+  return {cible:cible,depart:depart,pct:Math.max(0,Math.min(100,Math.round(100*(S.total-depart)/(obj/2)))),rang:n-2,fini:d.fin<dfsIso(new Date())};
+}
+function dfsBonusHtml(d,S,cls){
+  var B=dfsBonus(d,S);if(!B)return "";
+  return '<div class="dfs-bonus '+(cls||"")+'"><div class="dfs-bonus-t"><span>🏅 '+(B.fini?"Bonus atteint":"Objectif bonus"+(B.rang>1?" n° "+B.rang:""))+'</span>'
+    +'<b>'+dfsNum(S.total)+' / '+dfsNum(B.cible)+' '+dfsEsc(d.unite)+'</b></div>'
+    +'<div class="dfs-bonus-j"><i style="width:'+B.pct+'%"></i></div>'
+    +(B.fini?'':'<div class="dfs-bonus-s">Vous pensiez avoir fini ? Encore '+dfsNum(B.cible-S.total)+' '+dfsEsc(d.unite)+' pour le palier suivant.</div>')+'</div>';
+}
+// Mes chiffres sur un défi : total, séances, jours actifs, rang, part du centre
+function dfsMonBilan(d,pid){
+  var S=dfsStats(d),mes=S.contribs.filter(function(x){return x.pompier_id===pid});
+  var v=mes.reduce(function(a,x){return a+Number(x.valeur||0)},0),jours={};mes.forEach(function(x){jours[x.date]=1});
+  var rang=0;S.classement.forEach(function(c,i){if(c.pid===pid)rang=i+1});
+  // rang de régularité : nombre de jours distincts, puis total
+  var reg={};S.contribs.forEach(function(x){var o=reg[x.pompier_id]||(reg[x.pompier_id]={j:{},v:0});o.j[x.date]=1;o.v+=Number(x.valeur||0)});
+  var Lr=Object.keys(reg).map(function(k){return {pid:+k,j:Object.keys(reg[k].j).length,v:reg[k].v}}).sort(function(a,b){return (b.j-a.j)||(b.v-a.v)});
+  var rangReg=0;Lr.forEach(function(c,i){if(c.pid===pid)rangReg=i+1});
+  return {S:S,v:v,seances:mes.length,jours:Object.keys(jours).length,rang:rang,rangReg:rangReg,participants:S.classement.length,part:S.total>0?Math.round(100*v/S.total):0};
+}
+async function dfsCarteBilan(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0],moi=dfsMoi();if(!d||!moi)return;
+  var M=dfsMonBilan(d,moi.id);
+  if(!M.seances){showToast("Fais d'abord une séance : ta carte se remplira toute seule 💪","info");return}
+  showToast("Création de ta carte…","info");
+  try{await document.fonts.load("700 40px Oswald");await document.fonts.load("600 24px Inter");}catch(e){}
+  var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+  var C=d.couleur||"#ea580c",AC="#fbbf24",TX="#fafaf9",MU="#d6d3d1";
+  g.fillStyle="#0c0a09";g.fillRect(0,0,W,H);
+  var rg=g.createRadialGradient(W/2,300,60,W/2,300,900);rg.addColorStop(0,C);rg.addColorStop(.55,"rgba(28,25,23,.95)");rg.addColorStop(1,"#0c0a09");
+  g.globalAlpha=.85;g.fillStyle=rg;g.fillRect(0,0,W,H);g.globalAlpha=1;
+  g.strokeStyle="rgba(251,191,36,.55)";g.lineWidth=4;rectArrondi(g,30,30,W-60,H-60,44);g.stroke();
+  var fini=d.fin<dfsIso(new Date());
+  g.textAlign="center";g.fillStyle=AC;g.font="600 34px Oswald, sans-serif";g.letterSpacing="6px";
+  g.fillText(fini?"DÉFI TERMINÉ":"DÉFI EN COURS",W/2,104);g.letterSpacing="0px";
+  g.fillStyle=TX;g.font="700 62px Oswald, sans-serif";
+  var tl=lignesTexte(g,d.titre.toUpperCase(),W-160).slice(0,2);tl.forEach(function(l,i){g.fillText(l,W/2,178+i*68)});
+  var y0=178+tl.length*68;
+  var img=await chargerImageCarte("img/mascotte/grand/sergent-"+(M.S.atteint?"fete":"fier")+".webp");
+  if(img){var T=430;g.drawImage(img,W/2-T/2,y0-10,T,T);}
+  var y=y0+440;
+  g.fillStyle=TX;g.font="700 58px Oswald, sans-serif";g.fillText((moi.prenom+" "+moi.nom).toUpperCase(),W/2,y);
+  var th=themeHumour(d),titre=titreHumour(d,M.v);
+  if(titre){g.fillStyle=AC;g.font="600 30px Inter, sans-serif";g.fillText(titre.replace(/<[^>]+>/g,""),W/2,y+46);}
+  y+=96;
+  // le gros chiffre
+  g.fillStyle=AC;g.font="700 150px Oswald, sans-serif";g.fillText(dfsNum(M.v),W/2-60,y+120);
+  var wv=g.measureText(dfsNum(M.v)).width;g.textAlign="left";g.fillStyle=TX;g.font="600 54px Oswald, sans-serif";g.fillText(d.unite,W/2-60+wv/2+18,y+120);g.textAlign="center";
+  y+=170;
+  var cases=[[String(M.seances),"séance"+(M.seances>1?"s":"")],[String(M.jours),"jour"+(M.jours>1?"s":"")+" actif"+(M.jours>1?"s":"")],[M.rangReg+(M.rangReg===1?"er":"e"),"en régularité"],[M.part+" %","du total du centre"]];
+  var cw=(W-160-3*18)/4;
+  cases.forEach(function(c,i){var x=80+i*(cw+18);
+    g.fillStyle="rgba(255,255,255,.08)";rectArrondi(g,x,y,cw,150,24);g.fill();g.strokeStyle="rgba(255,255,255,.18)";g.lineWidth=2;g.stroke();
+    g.fillStyle=TX;g.font="700 56px Oswald, sans-serif";g.fillText(c[0],x+cw/2,y+72);
+    g.fillStyle=MU;g.font="500 22px Inter, sans-serif";lignesTexte(g,c[1],cw-20).forEach(function(l,k){g.fillText(l,x+cw/2,y+106+k*26)});});
+  y+=196;
+  // jauge du centre
+  var jw=W-200,pc=Math.min(1,M.S.total/Number(d.objectif));
+  g.fillStyle="rgba(255,255,255,.12)";rectArrondi(g,100,y,jw,26,13);g.fill();
+  var gr=g.createLinearGradient(100,0,100+jw,0);gr.addColorStop(0,C);gr.addColorStop(1,AC);g.fillStyle=gr;rectArrondi(g,100,y,Math.max(26,jw*pc),26,13);g.fill();
+  g.fillStyle=TX;g.font="600 30px Inter, sans-serif";
+  g.fillText("Le centre : "+dfsNum(M.S.total)+" / "+dfsNum(d.objectif)+" "+d.unite+(M.S.atteint?"  ·  objectif atteint 🎉":""),W/2,y+72);
+  g.fillStyle=MU;g.font="500 24px Inter, sans-serif";g.fillText(M.participants+" participant"+(M.participants>1?"s":"")+" · CIS Cruzy-Quarante · SDIS 34",W/2,H-70);
+  var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});
+  if(blob)diffuserImage(blob,"Mon_defi_"+d.titre.replace(/[^A-Za-z0-9]+/g,"_")+".png","Mon défi : "+d.titre);
+}
+// Vitrine des défis sur la fiche : une médaille par défi auquel le pompier a contribué
+function vitrineDefisHtml(p){
+  if(!dfsCharge||!dfsListe.length||!tabAutorise("defis"))return "";
+  var t=dfsIso(new Date());
+  var L=dfsListe.filter(function(d){return !dfsAVenir(d)}).map(function(d){
+    var v=0;dfsContrib.forEach(function(x){if(x.defi_id===d.id&&x.pompier_id===p.id)v+=Number(x.valeur||0)});
+    return {d:d,v:v,fini:d.fin<t||!d.actif,atteint:dfsStats(d).atteint};
+  }).filter(function(o){return o.v>0}).sort(function(a,b){return b.d.debut.localeCompare(a.d.debut)});
+  if(!L.length)return "";
+  return '<div class="vitrine"><div class="vitrine-t">🏅 Vitrine des défis</div><div class="vitrine-l">'+L.map(function(o){
+    var etat=!o.fini?"en cours":o.atteint?"réussi":"participé";
+    return '<span class="medaille-defi'+(!o.fini?" encours":o.atteint?" or":"")+'" title="'+escAttr(o.d.titre)+'">'
+      +'<i>'+(themeHumour(o.d)?iconeDefi(o.d).replace("ic-illu","ic-theme"):themeIc(o.d.theme,o.d.icone||"🏆"))+'</i>'
+      +'<span><b>'+escAttr(o.d.titre)+'</b><small>'+dfsNum(o.v)+' '+escAttr(o.d.unite)+' · '+etat+'</small></span></span>'}).join("")+'</div></div>';
+}
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
   if(dfsAVenir(d))return;
@@ -3451,6 +3559,7 @@ function renderFiche(){
     +(PHOTOS[p.id]?'<button class="btn btn-sm" style="background:var(--surface2);color:var(--muted);border:1px solid var(--border)" onclick="retirerPhoto('+p.id+')">Retirer</button>':'')+'</div>';
   var bgs=badgesFiche(p,age,pts);
   if(bgs.length)html+='<div class="badges-fiche">'+bgs.map(badgeHtml).join("")+'</div>';
+  html+=vitrineDefisHtml(p);
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
     if(v&&v.toString().trim()!==""){n=t.key==="rameur"?evalRameur(p.sexe,p.poids,age,v):evalTest(t.key,p.sexe,age,v);n=n?n.toString():"?";}
@@ -5246,6 +5355,7 @@ function dfsCarte(d){
     +'<div class="dfs-sous"><span>'+S.pct+' %</span>'
     +(S.atteint?'<span class="dfs-ok">🎉 Objectif atteint !</span>'
                :'<span>il reste '+dfsNum(Number(d.objectif)-S.total)+' '+dfsEsc(d.unite)+'</span>')+'</div>'
+    +dfsBonusHtml(d,S)
     +(d.recompense?'<div class="dfs-reco">🎁 <b>À la clé :</b> '+dfsEsc(d.recompense)+'</div>':'')
     +'</div>';
   // ma contribution
@@ -5261,8 +5371,13 @@ function dfsCarte(d){
       +'<div class="dfs-add"><input type="number" id="dfsVal" step="'+t.pas+'" min="0" placeholder="+ '+t.pas+'" inputmode="decimal">'
       +'<button class="pbtn pri" onclick="dfsAjouter('+d.id+')">Ajouter</button></div></div>'
       +'<p class="note">Tu ajoutes ce que tu viens de faire : ça s\'additionne à ta part et au total du centre.</p>'
-      +dfsMesLignes(d,moi)+'</div>';
+      +dfsMesLignes(d,moi)
+      +'<div class="prow" style="margin-top:10px"><button class="pbtn" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button></div></div>';
   }
+  if(moi&&!dfsAVenir(d)&&!(d.actif&&d.fin>=dfsIso(new Date()))){var MB=dfsMonBilan(d,moi.id);
+    if(MB.seances)h+='<div class="pcard"><div class="sec">Mon bilan</div><div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(MB.v)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
+      +'<span class="note" style="margin:0">'+MB.seances+' séance'+(MB.seances>1?'s':'')+' · '+MB.jours+' jour'+(MB.jours>1?'s':'')+' · '+MB.part+' % du total du centre</span></div>'
+      +'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button></div></div>';}
   if(d.par_garde)h+=dfsGardesHtml(d);
   if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
   // classement
