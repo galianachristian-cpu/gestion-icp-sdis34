@@ -423,6 +423,24 @@ body.tv-on{overflow:hidden}
 .medaille-defi.or i{background:radial-gradient(circle at 35% 30%,#fde68a,#b45309);border-color:#fbbf24;box-shadow:0 0 10px rgba(251,191,36,.5)}
 .medaille-defi.encours{border-style:dashed;opacity:.85}
 .medaille-defi b{display:block;font-size:13px;line-height:1.2}.medaille-defi small{display:block;font-size:11.5px;color:var(--muted)}
+/* ===== ACCUEIL PERSONNALISÉ, CONNEXION ===== */
+#accueilPerso:empty{display:none}
+.accueil{margin:0 0 14px;animation:monte .45s cubic-bezier(.2,.8,.2,1) both}
+.acc-salut{display:flex;align-items:center;gap:10px;font-family:var(--titre);font-size:24px;letter-spacing:.3px;margin-bottom:10px}
+.acc-salut b{color:var(--accent)}
+.acc-salut .avatar-mini{width:40px;height:40px;font-size:14px}
+.acc-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.acc-case{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--border);color:var(--text);font:inherit;text-align:left;cursor:pointer;min-width:0}
+div.acc-case{cursor:default}
+.acc-case i{width:14px;height:14px;border-radius:50%;flex-shrink:0;box-shadow:0 0 10px currentColor;font-style:normal}
+.acc-case i.em{width:auto;height:auto;font-size:22px;box-shadow:none;border-radius:0}
+.acc-case small{display:block;font-size:11.5px;color:var(--muted)}
+.acc-case b{display:block;font-size:13.5px;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+.login-sergent{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px}
+.login-sergent img{width:64px;height:64px;border-radius:50%;object-fit:cover;background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);border:2px solid rgba(251,191,36,.6);animation:mp-float 3s ease-in-out infinite}
+.login-sergent span{position:relative;padding:8px 12px;border-radius:14px;background:#fff;color:#1c1917;font-weight:700;font-size:13.5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.login-sergent span::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right-color:#fff}
+#demarrage .dem-sergent{position:absolute;width:84px;height:84px;border-radius:50%;object-fit:cover;width:64px;height:64px;margin:20px 0 0 170px;border:3px solid rgba(251,191,36,.7);background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);animation:pop .6s cubic-bezier(.2,1.6,.4,1) .3s both}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -909,7 +927,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
 <body>
-<div id="demarrage" aria-hidden="true"><img src="icons/logo.webp" alt="" width="150" height="150"><div class="dem-titre">ICP <span>CRUZY-QUARANTE</span></div><div class="dem-barre"><i></i></div></div>
+<div id="demarrage" aria-hidden="true"><img src="icons/logo.webp" alt="" width="150" height="150"><img class="dem-sergent" src="img/mascotte/sergent-chef-buste.webp" alt="" width="84" height="84"><div class="dem-titre">ICP <span>CRUZY-QUARANTE</span></div><div class="dem-barre"><i></i></div></div>
 <div id="toastContainer"></div>
 <div class="app">
 <div id="loginScreen" class="login-box card">
@@ -917,6 +935,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div style="margin-bottom:8px"><img src="icons/logo.webp" alt="Logo Gym &amp; Fitness — Sapeurs-Pompiers Cruzy-Quarante" width="180" height="180" style="width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 0 18px rgba(234,88,12,.35))"></div>
 <h2 style="color:var(--accent)">Gestion ICP - SDIS 34</h2>
 <p style="color:var(--muted);font-size:13px">Cruzy-Quarante — Barèmes officiels Hérault 2026</p>
+<div class="login-sergent"><img src="img/mascotte/sergent-fier.webp" alt="" width="64" height="64"><span id="loginSergentMot">Identifie-toi, et que ça saute !</span></div>
 </div>
 <div class="form-row"><label>Email</label><input type="email" id="loginUser" placeholder="prenom.nom@sdis34.fr" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()"></div>
 <div class="form-row"><label>Mot de passe</label>
@@ -987,6 +1006,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="modal"><h3>Tous les onglets</h3><div id="plusContenu"></div>
 <div style="display:flex;justify-content:flex-end"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPlus()">Fermer</button></div></div>
 </div>
+<div id="accueilPerso"></div>
 <div id="bandeauDefi"></div>
 <div id="motSergent"></div>
 <div id="tab-dashboard">
@@ -1979,7 +1999,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi();renderMotSergent(tab)}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi();renderMotSergent(tab);renderAccueilPerso(tab)}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -2846,7 +2866,7 @@ function renderTV(){
 }
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
-  renderMotSergent();
+  renderMotSergent();renderAccueilPerso();
   try{var tf=document.getElementById('tab-fiche');if(tf&&!tf.classList.contains('hidden')&&!document.querySelector('#tab-fiche .vitrine'))renderFiche()}catch(e){}
   if(document.body.classList.contains("tv-on")){renderTV();return}
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
@@ -3153,6 +3173,27 @@ function vitrineDefisHtml(p){
     return '<span class="medaille-defi'+(!o.fini?" encours":o.atteint?" or":"")+'" title="'+escAttr(o.d.titre)+'">'
       +'<i>'+(themeHumour(o.d)?iconeDefi(o.d).replace("ic-illu","ic-theme"):themeIc(o.d.theme,o.d.icone||"🏆"))+'</i>'
       +'<span><b>'+escAttr(o.d.titre)+'</b><small>'+dfsNum(o.v)+' '+escAttr(o.d.unite)+' · '+etat+'</small></span></span>'}).join("")+'</div></div>';
+}
+document.addEventListener("DOMContentLoaded",function(){var m=document.getElementById("loginSergentMot");if(!m||/[?&]ajout\b/.test(location.search))return;
+  var h=new Date().getHours(),L=h<9?["Déjà debout ? Ça, c'est un pompier.","Identifie-toi. Le café, c'est après."]:h>=20?["Encore là à cette heure ? Respect.","Identifie-toi, et après : au lit."]:["Identifie-toi, et que ça saute !","Halte ! Qui va là ?","Papiers du véhicule… non, juste ton mot de passe."];
+  m.textContent=L[Math.floor(Date.now()/864e5)%L.length];});
+// ===== ACCUEIL PERSONNALISÉ (comptes reliés à un pompier) =====
+// « Bonjour Hugo » + son niveau, sa part du défi et la prochaine session ICP, en haut de la fiche.
+function renderAccueilPerso(tab){
+  var el=document.getElementById("accueilPerso");if(!el)return;
+  tab=tab||ongletCourant;
+  var p=monPompierId?(data||[]).filter(function(x){return x.id===monPompierId})[0]:null;
+  if(!p||modeApercu&&!p||["fiche","dashboard","synthese"].indexOf(tab)===-1||document.body.classList.contains("tv-on")){el.innerHTML="";return}
+  var h=new Date().getHours(),salut=h<5?"Bonne nuit":h<18?"Bonjour":"Bonsoir";
+  var qui=p.grade&&/^(CNE|CDT|LTN|LCL|COL)/.test(p.grade)?gradeComplet(p.grade):p.prenom;
+  var n=getNiveauGlobal(p),c=COULEURS_NIVEAU[n],cases=[];
+  cases.push('<button class="acc-case" onclick="switchTab(\'fiche\')"><i style="background:'+(c?c.hex:"var(--border)")+'"></i><span><small>Mon niveau ICP</small><b>'+(c?c.txt:"À évaluer")+'</b></span></button>');
+  try{var d=tabAutorise("defis")&&dfsCharge?dfsDefiDuBandeau():null;
+    if(d&&!dfsAVenir(d)){var M=dfsMonBilan(d,p.id);
+      cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">'+(M.seances?"🔥":"💤")+'</i><span><small>Ma part du défi</small><b>'+(M.seances?dfsNum(M.v)+" "+dfsEsc(d.unite)+" · "+M.seances+" séance"+(M.seances>1?"s":""):"Pas encore de séance")+'</b></span></button>');}
+    else if(d){cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">⏳</i><span><small>Prochain défi</small><b>J-'+dfsJoursAvant(d)+' · '+dfsEsc(d.titre)+'</b></span></button>');}}catch(e){}
+  try{var s=prochaineSession();if(s)cases.push('<div class="acc-case"><i class="em">📅</i><span><small>Prochaine session ICP</small><b>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+'</b></span></div>');}catch(e){}
+  el.innerHTML='<div class="accueil"><div class="acc-salut">'+avatarMini(p.id,initialesDe(p.id))+'<span>'+salut+' <b>'+escAttr(qui)+'</b> 👋</span></div><div class="acc-cases">'+cases.join("")+'</div></div>';
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
