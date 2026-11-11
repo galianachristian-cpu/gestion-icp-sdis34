@@ -441,6 +441,12 @@ div.acc-case{cursor:default}
 .login-sergent span{position:relative;padding:8px 12px;border-radius:14px;background:#fff;color:#1c1917;font-weight:700;font-size:13.5px;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .login-sergent span::before{content:"";position:absolute;right:100%;top:50%;transform:translateY(-50%);border:7px solid transparent;border-right-color:#fff}
 #demarrage .dem-sergent{position:absolute;width:84px;height:84px;border-radius:50%;object-fit:cover;width:64px;height:64px;margin:20px 0 0 170px;border:3px solid rgba(251,191,36,.7);background:radial-gradient(circle at 50% 35%,#7f1d1d,#1c1917);animation:pop .6s cubic-bezier(.2,1.6,.4,1) .3s both}
+/* ===== SUIVI DE LA PARTICIPATION (admin) ===== */
+.suivi-barre{display:flex;height:12px;border-radius:999px;background:var(--surface2);overflow:hidden}
+.suivi-barre i{display:block;height:100%}
+.suivi{border-top:1px solid var(--border);padding:8px 0}
+.suivi summary{cursor:pointer;font-size:14px;font-weight:600}.suivi summary b{color:var(--accent)}
+.suivi p{margin:8px 0 2px;font-size:13.5px;line-height:1.6;color:var(--text)}.suivi p small{color:var(--muted)}
 /* ===== FLAMME, BRAVOS, SERGENT SUR LE NIVEAU ===== */
 .flamme{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:800;font-style:normal;white-space:nowrap;color:#fff;background:linear-gradient(135deg,#dc2626,#f59e0b);box-shadow:0 0 8px rgba(245,158,11,.5)}
 .dfs-seances{display:flex;flex-direction:column}
@@ -3062,6 +3068,7 @@ var SERGENT={
  soir:["À demain, de bonne heure, de bonne humeur, de préférence !","Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
  avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
  retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
+ revenant:["Tiens, un revenant ! Le rameur demandait de tes nouvelles.","Regardez qui voilà ! On t'avait porté disparu. Allez, une petite séance pour fêter ça.","Ça fait un bail, dis donc. Le défi continue, et il reste de la place pour toi.","Te revoilà ! Je ne dis rien. Mais dix minutes de rameur, ça dirait beaucoup."],
  atteint:["Vous pensiez avoir fini ? Objectif bonus ! Le rameur n'est pas fatigué, lui.","Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
 };
 // phrases du moment (jour, heure, défi) d'abord, puis les phrases de tous les jours
@@ -3075,6 +3082,15 @@ function phrasesSergent(){
   if([10,11,0,1].indexOf(now.getMonth())!==-1&&h<12)C=C.concat(SERGENT.hiver);
   try{var d=dfsDefiDuBandeau();if(d&&!dfsAVenir(d)){var e=humeurDefi(d);if(e!=="normal"&&SERGENT[e])C=C.concat(SERGENT[e]);}}catch(e){}
   return {moment:C,tous:C.concat(SERGENT.toujours)};
+}
+// Nombre de jours depuis ma dernière séance sur le défi en cours (0 si pas de défi, pas de fiche, ou défi trop récent)
+function joursSansSeance(){
+  try{var moi=dfsMoi(),d=dfsCharge?dfsDefiDuBandeau():null;if(!moi||isAdmin||!d||dfsAVenir(d))return 0;
+    var t=new Date();t.setHours(12,0,0,0);var dern=d.debut;
+    dfsContrib.forEach(function(x){if(x.defi_id===d.id&&x.pompier_id===moi.id&&x.date>dern)dern=x.date});
+    var aNote=dfsContrib.some(function(x){return x.defi_id===d.id&&x.pompier_id===moi.id&&x.date===dern});
+    var n=Math.round((t-new Date(dern+"T12:00:00"))/864e5);return aNote&&dern===dfsIso(new Date())?0:n;
+  }catch(e){return 0}
 }
 // Son humeur (et son portrait) selon l'heure et le défi
 function humeurSergent(){
@@ -3095,8 +3111,11 @@ function renderMotSergent(tab){
   // la première phrase colle à son humeur (fâché si retard, fier si avance, la fête si réussi, fatigué le soir)
   var gr={fache:"retard",fier:"avance",fete:"atteint",dodo:"soir"}[humeurSergent()];
   if(sergentDecalage===0&&gr&&SERGENT[gr])phrase=SERGENT[gr][jour%SERGENT[gr].length];
+  // « Tiens, un revenant ! » : rien noté depuis 7 jours alors qu'un défi tourne
+  var rev=sergentDecalage===0&&joursSansSeance()>=7;
+  if(rev)phrase=SERGENT.revenant[jour%SERGENT.revenant.length];
   el.innerHTML='<div class="sergent" onclick="sergentSuivant(event)" title="Touche-le, il a de la réserve">'
-    +(function(){var hu=humeurSergent();return '<img class="h-'+hu+'" src="img/mascotte/'+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+'.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">';})()
+    +(function(){var hu=rev?"fier":humeurSergent();return '<img class="h-'+hu+'" src="img/mascotte/'+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+'.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">';})()
     +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span></div>'
     +'<button class="sergent-x" onclick="event.stopPropagation();taireSergent()" title="Le faire taire jusqu\'à demain">✕</button></div>';
 }
@@ -5508,8 +5527,38 @@ function dfsCarte(d){
   if(isAdmin)h+=dfsAdminHtml(d);
   return h;
 }
+// Suivi de la participation (admin) : qui rame, qui a décroché, qui n'a jamais commencé
+function dfsSuiviHtml(d){
+  if(dfsAVenir(d))return "";
+  var t=new Date();t.setHours(12,0,0,0);var der={};
+  dfsContrib.forEach(function(x){if(x.defi_id===d.id&&(!der[x.pompier_id]||x.date>der[x.pompier_id]))der[x.pompier_id]=x.date});
+  var enCours=d.actif&&d.fin>=dfsIso(new Date()),actifs=[],decro=[],jamais=[];
+  data.slice().sort(parNomPrenom).forEach(function(p){
+    if(!der[p.id]){jamais.push(p);return}
+    var n=Math.round((t-new Date(der[p.id]+"T12:00:00"))/864e5);
+    (enCours&&n>=7?decro:actifs).push({p:p,n:n});
+  });
+  var nom=function(p){return escAttr(p.prenom+" "+p.nom)};
+  var bloc=function(titre,L,ouvert){return '<details class="suivi"'+(ouvert?' open':'')+'><summary>'+titre+' <b>'+L.length+'</b></summary><p>'+(L.length?L.join(" · "):"Personne.")+'</p></details>'};
+  var total=data.length,part=actifs.length+decro.length;
+  return '<div class="pcard"><div class="sec">📊 Suivi de la participation</div>'
+    +'<div class="suivi-barre"><i style="width:'+(total?100*actifs.length/total:0)+'%;background:#16a34a"></i><i style="width:'+(total?100*decro.length/total:0)+'%;background:#f59e0b"></i></div>'
+    +'<p class="note" style="margin-top:6px"><b>'+part+' sur '+total+'</b> ont participé ('+(total?Math.round(100*part/total):0)+' %). Visible par toi seul.</p>'
+    +bloc("🟢 Actifs"+(enCours?" (séance il y a moins de 7 jours)":""),actifs.map(function(o){return nom(o.p)+(enCours&&o.n>0?' <small>('+o.n+' j)</small>':'')}),false)
+    +(enCours?bloc("🟠 Ont décroché (rien depuis 7 jours ou plus)",decro.map(function(o){return nom(o.p)+' <small>('+o.n+' j)</small>'}),decro.length>0):"")
+    +bloc("⚪ N'ont jamais participé",jamais.map(nom),false)
+    +'<div class="prow" style="margin-top:10px"><button class="pbtn" onclick="dfsCopierRelance('+d.id+')">📋 Copier la liste à relancer</button></div></div>';
+}
+function dfsCopierRelance(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  var t=new Date();t.setHours(12,0,0,0);var der={};
+  dfsContrib.forEach(function(x){if(x.defi_id===d.id&&(!der[x.pompier_id]||x.date>der[x.pompier_id]))der[x.pompier_id]=x.date});
+  var dec=[],jam=[];data.slice().sort(parNomPrenom).forEach(function(p){var n=p.prenom+" "+p.nom;if(!der[p.id])jam.push(n);else if(Math.round((t-new Date(der[p.id]+"T12:00:00"))/864e5)>=7)dec.push(n)});
+  var txt="Défi « "+d.titre+" »\n\nOnt décroché ("+dec.length+") : "+(dec.join(", ")||"personne")+"\n\nN'ont jamais participé ("+jam.length+") : "+(jam.join(", ")||"personne");
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){showToast("📋 Liste copiée","success")},function(){prompt("Copie la liste :",txt)});
+}
 function dfsAdminHtml(d){
-  var h="";
+  var h=dfsSuiviHtml(d);
   {
     h+='<div class="pcard"><div class="sec">Administration</div><div class="prow">'
       +'<button class="pbtn" onclick="dfsModifier('+d.id+')">✏️ Modifier</button>'

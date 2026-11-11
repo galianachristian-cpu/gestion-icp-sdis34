@@ -2,7 +2,8 @@
 // Appelée toutes les 15 minutes par pg_cron. Pour chaque appareil abonné dont
 // l'heure et le jour correspondent, envoie une notification, une seule par jour.
 // Défis du centre : prévient aussi tous les abonnés au départ d'un défi et quand le
-// centre franchit 25, 50, 75 et 100 % (une seule fois par palier, entre 8 h et 21 h 30).
+// centre franchit 25, 50, 75 et 100 %, puis les paliers bonus 150, 200, 250 %…
+// (une seule fois par palier, entre 8 h et 21 h 30).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.47.10";
 import webpush from "npm:web-push@3.6.7";
@@ -95,8 +96,9 @@ Deno.serve(async (req: Request) => {
       for (const d of defis ?? []) {
         const { data: cs } = await sb.from("defis_contrib").select("valeur").eq("defi_id", d.id);
         const total = (cs ?? []).reduce((t: number, x: { valeur: number }) => t + Number(x.valeur || 0), 0);
-        const pct = Math.min(100, Math.floor(100 * total / Math.max(1, Number(d.objectif))));
-        const palier = [100, 75, 50, 25, 0].find((p) => pct >= p) ?? 0;
+        const pct = Math.floor(100 * total / Math.max(1, Number(d.objectif)));
+        // au-delà de 100 % : paliers bonus tous les 50 % (150, 200, 250…)
+        const palier = pct >= 100 ? Math.floor(pct / 50) * 50 : ([75, 50, 25, 0].find((p) => pct >= p) ?? 0);
         const deja = Number(d.palier_notifie ?? -1);
         if (palier <= deja) continue;
         // on note le palier AVANT d'envoyer : jamais deux fois la même notification
@@ -108,11 +110,13 @@ Deno.serve(async (req: Request) => {
         const km = (v: number) => String(Math.round(v * 10) / 10).replace(".", ",");
         const corps = palier === 0
           ? (noel ? "Le Père Noël chausse ses skis : chaque km compte, à vous de jouer !" : mov ? "Les moustaches sont lâchées : à vos rames !" : "Le défi du centre commence aujourd'hui. À vous de jouer !")
+          : palier > 100
+          ? `Sergent-Chef à tous : ${km(total)} ${d.unite}, soit ${palier} % de l'objectif. Vous pensiez avoir fini ? Prochain palier : ${km(Number(d.objectif) * (palier + 50) / 100)} ${d.unite}.`
           : palier === 100
           ? `Objectif atteint : ${km(total)} ${d.unite}. Bravo à tout le centre !`
           : (noel ? ["", "Les rennes sont attelés", "Les montagnes sont passées", "Le village est en vue"][palier / 25] + ` : ${km(total)} / ${km(Number(d.objectif))} ${d.unite}. On ne lâche rien !`
                   : `Le centre a passé ${palier} % : ${km(total)} / ${km(Number(d.objectif))} ${d.unite}. On continue !`);
-        const titre = palier === 0 ? `🚀 C'est parti : ${d.titre}` : palier === 100 ? `🎉 ${d.titre} : défi réussi !` : `🔥 ${d.titre} : ${palier} % !`;
+        const titre = palier === 0 ? `🚀 C'est parti : ${d.titre}` : palier > 100 ? `🏅 ${d.titre} : palier bonus ${palier} % !` : palier === 100 ? `🎉 ${d.titre} : défi réussi !` : `🔥 ${d.titre} : ${palier} % !`;
         const charge = JSON.stringify({ titre, corps, url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/" });
         for (const a of abos ?? []) {
           try {
