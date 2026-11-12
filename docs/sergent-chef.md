@@ -67,3 +67,16 @@ Buste : `img/mascotte/sergent-chef-buste.webp`.
 | Neutre (bras croisés) | le reste du temps | `img/mascotte/sergent-chef-buste.webp` |
 
 Versions grandes (512 px, fond transparent) dans `img/mascotte/grand/`.
+
+## Version Noël (décembre)
+
+La déco de Noël s'allume toute seule du 1er au 31 décembre (guirlande, neige, bonnets, calendrier de l'Avent,
+phrases de Noël). En attendant ses images de Noël, le Sergent-Chef porte un bonnet dessiné par-dessus son portrait.
+Quand les images existent, les ranger dans `img/mascotte/noel/` et les déclarer dans `SERGENT_NOEL_IMG` (index.html).
+
+Textes pour ChatGPT ou Canva (joindre la planche de référence) :
+
+- **Fâché** : « Même personnage exactement que l'image jointe, même style. Portrait en buste, de face. Il porte un bonnet de Père Noël rouge à pompon blanc par-dessus son casque et un pull de Noël moche avec un renne. Il est fâché de façon comique : sourcils froncés, fumée qui sort des oreilles, il pointe le doigt vers le spectateur. Fond transparent (PNG), aucun texte. »
+- **Fier** : « … même tenue de Noël. Grand sourire, clin d'œil, pouce levé, une guirlande lumineuse autour du cou. Fond transparent (PNG), aucun texte. »
+- **La fête** : « … même tenue de Noël. Bouche ouverte qui crie de joie, les deux poings levés, flocons de neige et paquets cadeaux qui volent autour. Fond transparent (PNG), aucun texte. »
+- **Fatigué** : « … même tenue de Noël. Il bâille, yeux mi-clos, une tasse de chocolat chaud fumante à la main, des Z de sommeil au-dessus du bonnet. Fond transparent (PNG), aucun texte. »

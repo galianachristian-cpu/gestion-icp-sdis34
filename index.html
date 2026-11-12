@@ -482,6 +482,56 @@ span.bravo.vu{cursor:default;opacity:.85}
 .simu-c{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .simu-c select,.simu-c input{width:auto;flex:1;min-width:110px}
 .simu-res{flex:1 1 100%;text-align:center;padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;color:#fff;background:var(--border)}
+/* ===== DÉCO DE NOËL ===== */
+#guirlande{position:absolute;left:14px;right:14px;bottom:-11px;height:20px;pointer-events:none;z-index:2}
+.guirlande{position:relative;display:flex;justify-content:space-between;align-items:flex-start;height:20px;padding:0 4px}
+.guirlande::before{content:"";position:absolute;left:0;right:0;top:3px;height:6px;border-bottom:2px solid #14532d;border-radius:0 0 50% 50%/0 0 100% 100%}
+.guirlande i{position:relative;top:6px;width:7px;height:11px;border-radius:50% 50% 45% 45%;background:#dc2626;box-shadow:0 0 8px 2px currentColor;color:#dc2626;animation:ampoule 1.6s ease-in-out infinite}
+.guirlande i::before{content:"";position:absolute;top:-3px;left:1.5px;width:4px;height:4px;border-radius:1px;background:#3f3f46}
+.guirlande i:nth-child(4n+2){background:#16a34a;color:#16a34a}.guirlande i:nth-child(4n+3){background:#fbbf24;color:#fbbf24}.guirlande i:nth-child(4n){background:#3b82f6;color:#3b82f6}
+@keyframes ampoule{0%,100%{opacity:1;filter:brightness(1.25)}50%{opacity:.35;box-shadow:none;filter:none}}
+#neigeGlobale{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+body.tv-on #neigeGlobale{z-index:9500}
+.entete-marque{position:relative}
+.bonnet-logo{position:absolute;left:-2px;top:-12px;width:30px;height:27px;transform:rotate(-18deg);pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.bonnet-logo svg,.av-bonnet,.sergent-bonnet{display:block;width:100%;height:100%}
+.av-noel{position:relative;display:inline-flex;flex-shrink:0;vertical-align:middle}
+.av-noel .av-bonnet{position:absolute;top:-8px;left:-4px;width:17px;height:15px;transform:rotate(-22deg);pointer-events:none;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+.acc-salut .av-noel .av-bonnet{top:-12px;left:-6px;width:26px;height:23px}
+.sergent-port{position:relative;flex-shrink:0;display:inline-flex}
+.sergent-port .sergent-bonnet{position:absolute;top:-14px;left:-6px;width:40px;height:36px;transform:rotate(-20deg);pointer-events:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.45))}
+#avent:empty{display:none}
+.avent-bandeau{display:flex;align-items:center;gap:12px;width:100%;margin:0 0 16px;padding:12px 14px;border-radius:16px;cursor:pointer;color:var(--text);font:inherit;text-align:left;
+  background:linear-gradient(120deg,#7f1d1d,#14532d);border:1px solid rgba(251,191,36,.55);box-shadow:0 6px 18px rgba(0,0,0,.25);animation:monte .5s both}
+.avent-bandeau .avent-ic{font-size:30px;animation:mp-float 2.4s ease-in-out infinite}
+.avent-bandeau b{display:block;font-family:var(--titre);font-size:17px;letter-spacing:.04em;color:#fde68a}
+.avent-bandeau small{display:block;font-size:13px;color:#f5f5f4}
+.avent-bandeau .avent-num{margin-left:auto;font-family:var(--titre);font-size:30px;color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,.6)}
+.avent-bandeau:not(.faite) .avent-num{animation:sergent-saute 1.2s ease-in-out infinite}
+.avent-bandeau.faite{opacity:.85}
+.modal.modal-avent{position:relative;max-width:520px;width:100%;background:linear-gradient(160deg,#450a0a,#1c1917 55%,#052e16);border-color:rgba(251,191,36,.45);overflow:hidden}
+.modal-avent .guirlande{margin:-6px -6px 6px}
+.modal-avent h3{color:#fde68a;text-align:center}
+.avent-sous{text-align:center;color:#d6d3d1;font-size:13px;margin:-4px 0 12px}
+.avent-grille{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
+.avent-case{position:relative;aspect-ratio:1;border-radius:10px;border:1px solid rgba(251,191,36,.45);background:linear-gradient(145deg,#b91c1c,#7f1d1d);color:#fff;font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;transition:transform .15s}
+.avent-case:nth-child(3n+2){background:linear-gradient(145deg,#15803d,#14532d)}.avent-case:nth-child(5n+4){background:linear-gradient(145deg,#a16207,#713f12)}
+.avent-case:active{transform:scale(.94)}
+.avent-case .avent-n{font-family:var(--titre);font-size:13px;opacity:.85}.avent-case .avent-n.gros{font-size:22px;opacity:1}
+.avent-case .avent-cad{position:absolute;bottom:3px;right:4px;font-size:10px;opacity:.75}
+.avent-case.fermee{filter:saturate(.55) brightness(.75)}
+.avent-case.jour{box-shadow:0 0 0 2px #fbbf24,0 0 16px rgba(251,191,36,.7);animation:sergent-saute 1.2s ease-in-out infinite}
+.avent-case.ouverte{background:#fafaf9!important;color:#1c1917;border-color:#fbbf24}
+.avent-case .avent-em{font-size:22px;line-height:1}
+.avent-case.flip{animation:avent-flip .6s cubic-bezier(.2,.8,.2,1)}
+@keyframes avent-flip{0%{transform:rotateY(90deg) scale(.9)}100%{transform:none}}
+.avent-texte{margin-top:12px;padding:12px;border-radius:12px;background:rgba(0,0,0,.35);border:1px solid rgba(251,191,36,.35);color:#fafaf9;font-size:14.5px;line-height:1.45;min-height:48px}
+.avent-texte b{color:#fbbf24}
+.tv-guirlande{margin:-2.2vh -2.4vw 0;height:22px}.tv-guirlande .guirlande{height:22px}
+.tv-noel{margin-left:auto;padding:.8vh 1.4vw;border-radius:999px;font-weight:800;font-size:2.6vh;color:#fff;background:linear-gradient(135deg,#b91c1c,#15803d);border:1px solid rgba(251,191,36,.6)}
+.tv-noel+.tv-heure{margin-left:1.2vw}
+.perso-zone.decolle{animation:traineau-decolle 3.2s cubic-bezier(.45,0,.2,1) infinite}
+@keyframes traineau-decolle{0%{transform:translateX(-50%)}35%{transform:translate(-30%,-10px) rotate(-6deg)}70%{transform:translate(10%,-46px) rotate(-14deg);opacity:1}88%{transform:translate(40%,-70px) rotate(-18deg);opacity:0}89%{transform:translateX(-50%);opacity:0}100%{transform:translateX(-50%);opacity:1}}
 /* 11. Respect du réglage « réduire les animations » */
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 .galon{display:inline-flex;flex-shrink:0;filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -1006,6 +1056,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="info" id="emailCompte"></div>
 <button onclick="fermerMenuCompte();ouvrirMonMdp()">🔑 Changer mon mot de passe</button>
 <button onclick="basculerThemeAnime(event)" id="btnTheme">☀️ Mode clair</button>
+<button onclick="basculerNeige()" id="btnNeige" class="hidden">❄️ Couper la neige</button>
 <button onclick="fermerMenuCompte();afficherBienvenue(true)">❓ Comprendre les couleurs</button>
 <button id="btnApercuChef" class="hidden" onclick="fermerMenuCompte();choisirApercuChef()">👁 Voir l'appli comme un chef</button>
 <button class="rouge" onclick="fermerMenuCompte();doLogout()">🔒 Déconnexion</button>
@@ -1050,6 +1101,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div id="accueilPerso"></div>
 <div id="bandeauDefi"></div>
 <div id="motSergent"></div>
+<div id="avent"></div>
 <div id="tab-dashboard">
 <div class="card" id="carteSessions"><div class="card-title">📅 Sessions ICP</div><div id="sessionsContenu"><div class="squelette" style="min-height:70px"></div></div></div>
 <div class="card"><div class="card-title">🔥 Condition physique de la caserne</div><div id="dashVisuel"></div></div>
@@ -2040,7 +2092,7 @@ function switchTab(tab,el){
     ongletCourant=tab;document.startViewTransition(function(){switchTabInterne(tab,el)});return;}
   ongletCourant=tab;switchTabInterne(tab,el);
 }
-function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi();renderMotSergent(tab);renderAccueilPerso(tab)}
+function switchTabInterne(tab,el){var tabs=["dashboard","synthese","fiche","saisie","terrain","bilan","progression","cardio","muscu","seances","programme","echelles","ppa","menage","defis","aide","export","comptes"];if(!tabAutorise(tab)){alert("Vous n'avez pas accès à cet onglet.");return;}document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active")});if(el)el.classList.add("active");else{var navEl=document.getElementById("navtab-"+tab);if(navEl)navEl.classList.add("active")}tabs.forEach(function(t){var el2=document.getElementById("tab-"+t);if(el2)el2.classList.toggle("hidden",t!==tab)});if(tab==="dashboard"){renderDashboard();renderDashboardVisuel();renderSessions();}if(tab==="synthese")renderSynthese();if(tab==="fiche")renderFiche();if(tab==="saisie")renderSaisie();if(tab==="terrain")renderTerrain();if(tab==="bilan")renderBilan();if(tab==="progression")renderProgression();if(tab==="cardio")renderCardio();if(tab==="muscu")renderMuscu();if(tab==="seances"){renderSeance();chargerCarnetSiBesoin();}if(tab==="echelles")renderEchelles();if(tab==="ppa")renderPPA();if(tab==="menage")renderMenage();if(tab==="defis")renderDefis();if(tab==="aide")renderAide();if(tab==="programme")renderProgramme();if(tab==="export")renderExport();if(tab==="comptes")renderComptes();majNavActive(tab);animerOnglet(document.getElementById("tab-"+tab));renderBandeauDefi();renderMotSergent(tab);renderAccueilPerso(tab);renderAvent(tab)}
 function renderAll(){renderDashboard();renderDashboardVisuel();renderSynthese();renderFiche();renderSaisie();renderTerrain();renderBilan();renderProgression();renderCardio();renderMuscu();renderSeance();renderEchelles();renderExport()}
 function renderDashboard(){var total=data.length;var hommes=data.filter(function(p){return p.sexe==="M"}).length;var femmes=data.filter(function(p){return p.sexe==="F"}).length;var connus=data.filter(function(p){return p.annee});var avgAge=Math.round(connus.reduce(function(s,p){return s+getAge(p.annee)},0)/(connus.length||1));var allF=["rameur_temps","luc_perf","souplesse","pompes","tractions","poids"];var tf=0,ff=0;data.forEach(function(p){allF.forEach(function(f){tf++;if(p[f]&&p[f].toString().trim()!=="")ff++})});var gr=Math.round((ff/(tf||1))*100);var complets=data.filter(function(p){return participationRate(p)===100}).length;document.getElementById("dashboardStats").innerHTML='<div class="stat-box"><div class="stat-value">'+total+'</div><div class="stat-label">Pompiers</div><div class="stat-sub">'+hommes+" H / "+femmes+' F</div></div><div class="stat-box"><div class="stat-value">'+avgAge+'</div><div class="stat-label">Âge moyen</div></div><div class="stat-box"><div class="stat-value">'+gr+'%</div><div class="stat-label">Remplissage global</div><div class="stat-sub">'+ff+"/"+tf+'</div></div><div class="stat-box"><div class="stat-value">'+complets+'</div><div class="stat-label">Fiches complètes</div></div>';var miss=data.filter(function(p){return participationRate(p)<50});var vigilance=data.filter(function(p){return getNiveauGlobal(p)==="1"});var alerts="";if(miss.length>0){alerts+='<p style="color:var(--warning);margin-bottom:8px">⚠️ Fiches incomplètes ('+miss.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px;margin-bottom:16px">';miss.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+participationRate(p)+"% renseigné</li>"});alerts+="</ul>"}if(vigilance.length>0){alerts+='<p style="color:#fca5a5;margin-bottom:8px">🚨 Niveau VIGILANCE ('+vigilance.length+') :</p><ul style="padding-left:20px;color:var(--muted);font-size:13px">';vigilance.forEach(function(p){alerts+="<li><b>"+p.prenom+" "+p.nom+"</b> — "+txtAge(getAge(p.annee))+" ans</li>"});alerts+="</ul>"}if(!alerts)alerts='<p style="color:var(--success)">✅ Toutes les fiches sont bien renseignées, aucun niveau vigilance.</p>';document.getElementById("alertsList").innerHTML=alerts;var wd=data.filter(function(p){return p.luc_perf!==""||p.rameur_temps!==""||p.pompes!==""||p.tractions!==""});var topHtml='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">';wd.slice(0,8).forEach(function(p){var nivG=getNiveauGlobal(p);topHtml+='<div style="background:var(--surface2);padding:14px;border-radius:10px;border:1px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600;font-size:15px">'+p.prenom+" "+p.nom+'</div><div>'+getLevelBadge(nivG)+'</div></div><div style="font-size:12px;color:var(--muted);margin-top:6px">'+(p.rameur_temps?"🚣 "+p.rameur_temps+" ":"")+(p.luc_perf?"🏃 Luc:"+p.luc_perf+" ":"")+(p.souplesse?"🤸 "+p.souplesse+"cm ":"")+(p.pompes?"💪 Pompes:"+p.pompes+" ":"")+(p.tractions?"🎯 Tractions:"+p.tractions+" ":"")+"</div></div>"});topHtml+="</div>";document.getElementById("topPerfs").innerHTML=topHtml}
 // Anneau (pourcentage) en SVG
@@ -2688,7 +2740,8 @@ function confettis(forme){
   var t0=performance.now();
   (function boucle(t){ctx.clearRect(0,0,W,H);var fini=t-t0>2600;
     ps.forEach(function(p){p.vy+=.32;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);ctx.globalAlpha=Math.max(0,1-(t-t0)/2600);ctx.fillStyle=p.c;
-      if(forme==="flocon"){ctx.strokeStyle=p.r>7?"#ffffff":"#bfdbfe";ctx.lineWidth=1.6;for(var b=0;b<3;b++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.moveTo(-p.r,0);ctx.lineTo(p.r,0);ctx.stroke();}}
+      if(forme==="noel"&&p.r>7.5){ctx.fillStyle=["#dc2626","#16a34a","#2563eb"][p.r*10%3|0];ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);ctx.fillStyle="#fbbf24";ctx.fillRect(-1,-p.r/2,2,p.r);ctx.fillRect(-p.r/2,-1,p.r,2);}
+      else if(forme==="flocon"||forme==="noel"){ctx.strokeStyle=p.r>7?"#ffffff":"#bfdbfe";ctx.lineWidth=1.6;for(var b=0;b<3;b++){ctx.rotate(Math.PI/3);ctx.beginPath();ctx.moveTo(-p.r,0);ctx.lineTo(p.r,0);ctx.stroke();}}
       else if(forme==="moustache"&&p.r>6.5){ctx.fillStyle="#1c1917";ctx.scale(p.r/9,p.r/9);ctx.beginPath();ctx.moveTo(0,-1);ctx.bezierCurveTo(-3,-5,-9,-5,-12,0);ctx.bezierCurveTo(-8,2,-3,2,0,0);ctx.bezierCurveTo(3,2,8,2,12,0);ctx.bezierCurveTo(9,-5,3,-5,0,-1);ctx.fill();}
       else ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);ctx.restore();});
     if(!fini)requestAnimationFrame(boucle);else c.remove();})(t0);
@@ -2866,8 +2919,9 @@ document.addEventListener("keydown",function(e){if(e.key==="Escape"&&document.bo
 function renderTV(){
   var el=document.getElementById("modeTV");if(!el||el.classList.contains("hidden"))return;
   var now=new Date(),d=dfsDefiDuBandeau();
-  var haut='<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
+  var haut=(NOEL_ON?'<div class="tv-guirlande">'+guirlandeHtml(40)+'</div>':'')+'<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
     +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'
+    +(NOEL_ON&&joursAvantNoel()<=31?'<span class="tv-noel">🎄 '+(joursAvantNoel()===0?"Joyeux Noël !":"J-"+joursAvantNoel()+" avant Noël")+'</span>':'')
     +'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
     +'<button class="tv-x" onclick="fermerModeTV()" title="Quitter le mode TV">✕</button></div>';
   if(!d){el.innerHTML='<div class="tv">'+haut+'<div class="tv-vide">'+etatVide("trophee","Pas de défi en cours","Le prochain défi du centre arrive bientôt. En attendant : on garde la forme 💪")+'</div></div>';return;}
@@ -2907,7 +2961,7 @@ function renderTV(){
 }
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
-  renderMotSergent();renderAccueilPerso();
+  renderMotSergent();renderAccueilPerso();renderAvent();
   try{var tf=document.getElementById('tab-fiche');if(tf&&!tf.classList.contains('hidden')&&!document.querySelector('#tab-fiche .vitrine'))renderFiche()}catch(e){}
   if(document.body.classList.contains("tv-on")){renderTV();return}
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
@@ -3088,6 +3142,7 @@ var SERGENT={
  soir:["À demain, de bonne heure, de bonne humeur, de préférence !","Il est tard. Étire-toi, bois de l'eau, et au lit. C'est un ordre.","Séance du soir, bonsoir. Pas trop tard quand même, l'astreinte peut sonner."],
  avance:["En avance sur le défi ? Ne vous reposez pas sur vos moustaches.","Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois."],
  retard:["Le centre est en retard sur le défi. Je ne dis rien… mais je n'en pense pas moins.","Le défi prend du retard. Qui est-ce qui va ramer ? Toi. Oui, toi."],
+ noel:["Le Père Noël compte sur toi. Et il note tout.","Pas de séance, pas de cadeau. C'est le règlement.","Le bonnet est réglementaire jusqu'au 25. Le SkiErg aussi.","Ho ho ho ! Pardon, ça m'a échappé. Au SkiErg !","Les rennes s'entraînent toute l'année. Eux.","La bûche, ça se mérite. Deux kilomètres la part.","Cette année, je suis sur la liste des gentils. Grâce au cardio."],
  revenantF:["Tiens, une revenante ! Le rameur demandait de tes nouvelles.","Regardez qui voilà ! On t'avait portée disparue. Allez, une petite séance pour fêter ça.","Ça fait un bail, dis donc. Le défi continue, et il reste de la place pour toi.","Te revoilà ! Je ne dis rien. Mais dix minutes de rameur, ça dirait beaucoup."],
  revenant:["Tiens, un revenant ! Le rameur demandait de tes nouvelles.","Regardez qui voilà ! On t'avait porté disparu. Allez, une petite séance pour fêter ça.","Ça fait un bail, dis donc. Le défi continue, et il reste de la place pour toi.","Te revoilà ! Je ne dis rien. Mais dix minutes de rameur, ça dirait beaucoup."],
  atteint:["Vous pensiez avoir fini ? Objectif bonus ! Le rameur n'est pas fatigué, lui.","Défi réussi. Je verse une larme. C'est de la sueur, mais quand même.","Objectif atteint ! Repos ce soir. Demain, on recommence."]
@@ -3100,6 +3155,7 @@ function phrasesSergent(){
   if(j===0||j===6)C=C.concat(SERGENT.weekend);
   if(h<10)C=C.concat(SERGENT.matin);
   if(h>=20)C=C.concat(SERGENT.soir);
+  if(NOEL_ON)C=C.concat(SERGENT.noel);
   if([10,11,0,1].indexOf(now.getMonth())!==-1&&h<12)C=C.concat(SERGENT.hiver);
   try{var d=dfsDefiDuBandeau();if(d&&!dfsAVenir(d)){var e=humeurDefi(d);if(e!=="normal"&&SERGENT[e])C=C.concat(SERGENT[e]);}}catch(e){}
   return {moment:C,tous:C.concat(SERGENT.toujours)};
@@ -3136,7 +3192,7 @@ function renderMotSergent(tab){
   var rev=sergentDecalage===0&&joursSansSeance()>=7;
   if(rev){var LR=(dfsMoi()||{}).sexe==="F"?SERGENT.revenantF:SERGENT.revenant;phrase=LR[jour%LR.length];}
   el.innerHTML='<div class="sergent" onclick="sergentSuivant(event)" title="Touche-le, il a de la réserve">'
-    +(function(){var hu=rev?"fier":humeurSergent();return '<img class="h-'+hu+'" src="img/mascotte/'+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+'.webp" alt="Le Sergent-Chef" width="64" height="64" draggable="false">';})()
+    +(function(){var hu=rev?"fier":humeurSergent(),src=(NOEL_ON&&SERGENT_NOEL_IMG[hu])||"img/mascotte/"+(hu==="buste"?"sergent-chef-buste":"sergent-"+hu)+".webp";return '<span class="sergent-port"><img class="h-'+hu+'" src="'+src+'" alt="Le Sergent-Chef" width="64" height="64" draggable="false">'+(NOEL_ON&&!SERGENT_NOEL_IMG[hu]?bonnetSvg("sergent-bonnet"):'')+'</span>';})()
     +'<div class="sergent-bulle"><b>Le Sergent-Chef</b><span>'+dfsEsc(phrase)+'</span>'+(dfsMoi()&&!isAdmin?defiDuJourHtml():'')+'</div>'
     +'<button class="sergent-x" onclick="event.stopPropagation();taireSergent()" title="Le faire taire jusqu\'à demain">✕</button></div>';
 }
@@ -3229,6 +3285,7 @@ function vitrineDefisHtml(p){
       +'<i>'+(themeHumour(o.d)?iconeDefi(o.d).replace("ic-illu","ic-theme"):themeIc(o.d.theme,o.d.icone||"🏆"))+'</i>'
       +'<span><b>'+escAttr(o.d.titre)+'</b><small>'+dfsNum(o.v)+' '+escAttr(o.d.unite)+' · '+etat+'</small></span></span>'}).join("")+'</div></div>';
 }
+document.addEventListener("DOMContentLoaded",function(){try{appliquerNoel()}catch(e){}});
 document.addEventListener("DOMContentLoaded",function(){var m=document.getElementById("loginSergentMot");if(!m||/[?&]ajout\b/.test(location.search))return;
   var h=new Date().getHours(),L=h<9?["Déjà debout ? Ça, c'est du sérieux.","Identifie-toi. Le café, c'est après."]:h>=20?["Encore là à cette heure ? Respect.","Identifie-toi, et après : au lit."]:["Identifie-toi, et que ça saute !","Halte ! Qui va là ?","Papiers du véhicule… non, juste ton mot de passe."];
   m.textContent=L[Math.floor(Date.now()/864e5)%L.length];});
@@ -3363,6 +3420,133 @@ function majSimulateur(){
   if(!c||n==="?"){res.textContent="Valeur non reconnue";res.style.background="";return}
   res.textContent=c.txt;res.style.background=c.hex;
 }
+// ===== DÉCO DE NOËL (automatique du 1er au 31 décembre) =====
+// Guirlande dans l'en-tête, neige sur tout l'écran, bonnets sur le logo et les pastilles,
+// calendrier de l'Avent, phrases de Noël du Sergent-Chef, mode TV de Noël et grand final du 24.
+// L'admin peut la prévisualiser sur son téléphone avant le 1er décembre (bouton dans Défis → Administration).
+var NOEL_ON=false,neigeAnim=null;
+var SERGENT_NOEL_IMG={}; // images du Sergent-Chef en version Noël, à brancher quand elles existent : {fache:"img/mascotte/noel/sergent-fache.webp",…}
+function estPeriodeNoel(){
+  try{var f=localStorage.getItem("icp_noel_force");if(f==="1")return true;if(f==="0")return false}catch(e){}
+  return new Date().getMonth()===11;
+}
+function bonnetSvg(cls){return BONNET.replace('class="bonnet"','class="'+(cls||"bonnet-svg")+'"')}
+function guirlandeHtml(n){var h='<div class="guirlande" aria-hidden="true">';for(var i=0;i<(n||26);i++)h+='<i style="animation-delay:-'+((i*0.37)%1.6).toFixed(2)+'s"></i>';return h+'</div>'}
+function appliquerNoel(){
+  NOEL_ON=estPeriodeNoel();
+  document.documentElement.classList.toggle("noel",NOEL_ON);
+  var ent=document.querySelector(".entete");
+  if(ent){var g=document.getElementById("guirlande");
+    if(NOEL_ON&&!g){var d=document.createElement("div");d.id="guirlande";d.innerHTML=guirlandeHtml(26);ent.appendChild(d)}
+    if(!NOEL_ON&&g)g.remove();}
+  var marque=document.querySelector(".entete-marque");
+  if(marque){var b=marque.querySelector(".bonnet-logo");
+    if(NOEL_ON&&!b){var s=document.createElement("span");s.className="bonnet-logo";s.innerHTML=bonnetSvg();marque.appendChild(s)}
+    if(!NOEL_ON&&b)b.remove();}
+  var bn=document.getElementById("btnNeige");if(bn){bn.classList.toggle("hidden",!NOEL_ON);bn.textContent=neigeVoulue()?"❄️ Couper la neige":"❄️ Remettre la neige"}
+  if(NOEL_ON&&neigeVoulue())demarrerNeige();else arreterNeige();
+}
+function neigeVoulue(){try{return localStorage.getItem("icp_neige")!=="0"}catch(e){return true}}
+function basculerNeige(){try{localStorage.setItem("icp_neige",neigeVoulue()?"0":"1")}catch(e){}appliquerNoel()}
+function demarrerNeige(){
+  if(neigeAnim||MOUVEMENT_REDUIT)return;
+  var c=document.createElement("canvas");c.id="neigeGlobale";c.setAttribute("aria-hidden","true");document.body.appendChild(c);
+  var ctx=c.getContext("2d"),W,H,dpr=Math.min(2,window.devicePixelRatio||1);
+  var taille=function(){W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)};taille();
+  addEventListener("resize",taille);
+  var N=innerWidth<700?32:55,fl=[];
+  for(var i=0;i<N;i++)fl.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.6+1,v:Math.random()*.6+.35,o:Math.random()*Math.PI*2,a:Math.random()*.5+.45});
+  var dernier=0;
+  neigeAnim={c:c,id:0,taille:taille};
+  (function boucle(t){
+    if(!neigeAnim)return;
+    neigeAnim.id=requestAnimationFrame(boucle);
+    if(document.hidden||t-dernier<33)return;dernier=t;
+    ctx.clearRect(0,0,W,H);
+    fl.forEach(function(f){f.y+=f.v;f.o+=.012;f.x+=Math.sin(f.o)*.45;
+      if(f.y>H+6){f.y=-6;f.x=Math.random()*W}
+      ctx.globalAlpha=f.a;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,Math.PI*2);ctx.fill();});
+  })(0);
+}
+function arreterNeige(){if(!neigeAnim)return;cancelAnimationFrame(neigeAnim.id);removeEventListener("resize",neigeAnim.taille);neigeAnim.c.remove();neigeAnim=null}
+function apercuNoel(){
+  var on;try{on=localStorage.getItem("icp_noel_force")==="1";if(on)localStorage.removeItem("icp_noel_force");else localStorage.setItem("icp_noel_force","1")}catch(e){}
+  appliquerNoel();showToast(NOEL_ON?"🎄 Aperçu de Noël activé sur ce téléphone":"Aperçu de Noël coupé","info");
+  renderDefis();renderBandeauDefi();renderMotSergent();renderAvent();renderAccueilPerso();renderTV();
+}
+// Jours avant Noël (25 décembre)
+function joursAvantNoel(){var t=new Date();t.setHours(12,0,0,0);var n=new Date(t.getFullYear(),11,25,12);if(t>n)n=new Date(t.getFullYear()+1,11,25,12);return Math.round((n-t)/864e5)}
+// ----- Calendrier de l'Avent -----
+var AVENT=[
+ ["🎄","Le calendrier est ouvert. Une case par jour, pas de triche : j'ai les clés."],
+ ["💪","Mini-défi : 20 squats pendant que la bouilloire chauffe."],
+ ["😂","Pourquoi le Père Noël a-t-il du ventre ? Parce qu'il n'a jamais fait de SkiErg. Toi, tu n'as pas d'excuse."],
+ ["🩺","En hiver, on boit aussi. Le froid coupe la soif, pas les besoins : un litre et demi par jour, minimum."],
+ ["💪","Mini-défi : 1 minute de gainage. Si tu trembles, c'est que ça marche."],
+ ["🎅","C'est la Saint-Nicolas. Lui, il fait sa tournée à pied. Respect. Et toi, 10 minutes de SkiErg ?"],
+ ["😂","Les rennes font le tour du monde en une nuit. Tu peux bien faire 2 km."],
+ ["🩺","Par temps froid : 10 minutes d'échauffement au lieu de 5. Tes tendons te diront merci."],
+ ["💪","Mini-défi : monte les escaliers de la caserne 3 fois, en petites foulées."],
+ ["👏","Mission du jour : envoie un bravo à 3 collègues dans le défi. Ça ne coûte rien, ça motive tout le monde."],
+ ["😂","Il paraît que les lutins ont monté un syndicat. Ils réclament un rameur."],
+ ["💪","Mini-défi : 15 pompes. Sur les genoux si besoin : ça compte quand même."],
+ ["🩺","Sept heures de sommeil minimum. La récupération, c'est aussi de l'entraînement."],
+ ["🎄","Mi-parcours ! Regarde où en est le Père Noël sur la jauge : il a besoin de toi."],
+ ["😂","Le traîneau a des freins. Le Père Noël, lui, n'en a pas aux repas de fin d'année."],
+ ["💪","Mini-défi : 30 secondes de chaise contre le mur, deux fois."],
+ ["🩺","Repas de fêtes : on ne culpabilise pas, on bouge le lendemain. Vingt minutes de marche suffisent."],
+ ["🤝","Mission du jour : embarque un collègue qui n'a pas encore participé. Le Père Noël compte double (dans son cœur)."],
+ ["😂","Rudolph a le nez rouge. Toi aussi, après 2 km de SkiErg. Coïncidence ?"],
+ ["💪","Mini-défi : 40 jumping jacks. Le bonnet de Père Noël est facultatif, mais recommandé."],
+ ["🌙","Solstice : la nuit la plus longue de l'année. Bonne nouvelle, dès demain il y a plus de jour pour s'entraîner."],
+ ["🩺","Cinq minutes d'étirements ce soir, épaules et dos : le SkiErg tire fort sur le haut du corps."],
+ ["😂","Le Père Noël ne fait pas de régime. Il fait du SkiErg. Enfin, il compte sur toi pour en faire."],
+ ["🎅","C'est le grand soir. Le traîneau décolle grâce à vous. Joyeux Noël au centre, et merci."]
+];
+// ordre des cases mélangé (toujours le même), comme un vrai calendrier
+var AVENT_ORDRE=[14,3,21,8,1,17,11,24,6,19,2,13,22,9,16,5,20,12,7,23,10,18,4,15];
+function jourAvent(){var t=new Date();if(t.getMonth()===11)return Math.min(t.getDate(),25);return NOEL_ON?1:0}
+function cleAvent(){return "icp_avent_"+(emailConnecte||"x")+"_"+new Date().getFullYear()}
+function aventOuvertes(){try{return JSON.parse(localStorage.getItem(cleAvent())||"[]")}catch(e){return []}}
+function renderAvent(tab){
+  var el=document.getElementById("avent");if(!el)return;
+  tab=tab||ongletCourant;
+  var j=jourAvent(),ok=NOEL_ON&&j>=1&&j<=24&&emailConnecte&&!estEcran()&&["dashboard","fiche","synthese","programme"].indexOf(tab)!==-1&&!document.body.classList.contains("tv-on");
+  if(!ok){el.innerHTML="";return}
+  var faite=aventOuvertes().indexOf(j)!==-1;
+  el.innerHTML='<button class="avent-bandeau'+(faite?' faite':'')+'" onclick="ouvrirAvent()"><span class="avent-ic">🎁</span><span><b>Calendrier de l\'Avent</b><small>'
+    +(faite?'Case du '+j+' décembre ouverte · revoir le calendrier':'La case du '+j+' décembre t\'attend !')+'</small></span><span class="avent-num">'+j+'</span></button>';
+}
+function ouvrirAvent(){
+  var m=document.getElementById("modalAvent");
+  if(!m){m=document.createElement("div");m.id="modalAvent";m.className="modal-overlay";m.onclick=function(e){if(e.target===m)fermerAvent()};document.body.appendChild(m)}
+  m.classList.remove("hidden");dessinerAvent();
+}
+function fermerAvent(){var m=document.getElementById("modalAvent");if(m)m.classList.add("hidden");renderAvent()}
+function dessinerAvent(ouvreJour){
+  var m=document.getElementById("modalAvent");if(!m)return;
+  var j=jourAvent(),ouv=aventOuvertes();
+  m.innerHTML='<div class="modal modal-avent">'+guirlandeHtml(14)+'<h3>🎄 Calendrier de l\'Avent</h3><p class="avent-sous">Une case par jour, du 1er au 24 décembre. Signé : le Sergent-Chef.</p><div class="avent-grille">'
+    +AVENT_ORDRE.map(function(n){
+      var o=ouv.indexOf(n)!==-1,futur=n>j,c=AVENT[n-1];
+      return '<button class="avent-case'+(o?' ouverte':'')+(futur?' fermee':'')+(n===j&&!o?' jour':'')+(n===ouvreJour?' flip':'')+'" onclick="caseAvent('+n+')">'
+        +(o?'<span class="avent-em">'+c[0]+'</span><span class="avent-n">'+n+'</span>':'<span class="avent-n gros">'+n+'</span>'+(futur?'<span class="avent-cad">🔒</span>':''))+'</button>'}).join("")
+    +'</div><div id="aventTexte" class="avent-texte">'+(ouvreJour?'<b>'+ouvreJour+' décembre</b> '+AVENT[ouvreJour-1][0]+' '+dfsEsc(AVENT[ouvreJour-1][1]):'Touche la case du jour pour l\'ouvrir.')+'</div>'
+    +'<div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerAvent()">Fermer</button></div></div>';
+}
+function caseAvent(n){
+  var j=jourAvent();
+  if(n>j){showToast("🔒 Pas avant le "+n+" décembre ! J'ai déjà vu des petits malins.","info");return}
+  var ouv=aventOuvertes(),neuve=ouv.indexOf(n)===-1;
+  if(neuve){ouv.push(n);try{localStorage.setItem(cleAvent(),JSON.stringify(ouv))}catch(e){}vibrer();if(n===j)confettis("noel")}
+  dessinerAvent(n);
+}
+// ----- Grand final du 24 décembre : le traîneau décolle -----
+function finalNoel(d){
+  if(!estNoel(d)||d.fin!==dfsIso(new Date())||dfsAVenir(d))return false;
+  var k="icp_final_noel_"+d.id;try{if(!localStorage.getItem(k)){localStorage.setItem(k,"1");setTimeout(function(){confettis("noel");setTimeout(function(){confettis("noel")},900);showToast("🎅 Le traîneau décolle ! Joyeux Noël au centre, et merci.","success")},700)}}catch(e){}
+  return true;
+}
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
   if(dfsAVenir(d))return;
@@ -3416,7 +3600,7 @@ function humeurDefi(d){
   return S.atteint?"atteint":S.pct>=att+5?"avance":S.pct<att-5?"retard":"normal";
 }
 var BULLES={
- noel:{normal:["Ho ho ho !","Allez le centre !","Qui a mangé mes biscuits ?","Plus vite les lutins !"],avance:["Je vole !","Trop facile !","Ho ho ho, quel rythme !"],retard:["À l'aide les gars !","J'ai chaud sous la barbe…","Je fatigue…"],atteint:["Merci les gars !","Pôle Nord atteint !"]},
+ noel:{normal:["Ho ho ho !","Allez le centre !","Qui a mangé mes biscuits ?","Plus vite les lutins !"],avance:["Je vole !","Trop facile !","Ho ho ho, quel rythme !"],retard:["À l'aide, le centre !","J'ai chaud sous la barbe…","Je fatigue…"],atteint:["Merci le centre !","Pôle Nord atteint !"]},
  movember:{normal:["Rame, moussaillon !","Ma moustache pousse !","Allez le centre !"],avance:["Moustache au vent !","On file !"],retard:["Je rame dans le vide…","À l'aide, je coule !"],atteint:["Moustaches de légende !"]}
 };
 // Illustrations des thèmes de défi (le pompier moustachu) ; sinon l'émoji du thème
@@ -3436,6 +3620,8 @@ function personnageHtml(d,pct){
   var img=th==="noel"?(h==="atteint"?"img/defis/arrivee.webp":"img/defis/perenoel.webp"):"img/defis/rameur.webp";
   // à l'arrivée, le personnage s'arrête avant le dernier décor (maison ou phare) pour le laisser voir
   var gauche=h==="atteint"?Math.min(th==="noel"?74:80,pct):Math.max(6,Math.min(94,pct));
+  if(th==="noel"&&finalNoel(d))return '<span class="perso-zone decolle" style="left:'+gauche+'%" onclick="oeufDePaques(event)" title="Joyeux Noël !">'
+    +'<span class="bulle'+(pct>55?' gauche':'')+'">Joyeux Noël, le centre !</span><span class="perso perso-noel humeur-avance"><span class="p-vitesse"><i></i><i></i><i></i></span><img src="img/defis/perenoel.webp" alt="" width="80" height="74" draggable="false"><span class="p-etoiles">✨</span></span></span>';
   return '<span class="perso-zone" style="left:'+gauche+'%" onclick="oeufDePaques(event)" title="Psst…">'
     +'<span class="bulle'+(pct>55?' gauche':'')+'">'+dfsEsc(phrase)+'</span>'
     +'<span class="perso perso-'+th+' humeur-'+h+(th==="noel"&&h==="atteint"?' perso-arrivee':'')+'">'
@@ -3520,8 +3706,8 @@ async function chargerPhotos(){
     if(!r.error){PHOTOS={};(r.data||[]).forEach(function(x){PHOTOS[x.pompier_id]=x.image})}}catch(e){}
 }
 function avatarMini(pid,ini){
-  if(PHOTOS[pid])return '<img class="avatar-mini" src="'+PHOTOS[pid]+'" alt="">';
-  return '<span class="avatar-mini">'+escAttr((ini||"?").toUpperCase())+'</span>';
+  var a=PHOTOS[pid]?'<img class="avatar-mini" src="'+PHOTOS[pid]+'" alt="">':'<span class="avatar-mini">'+escAttr((ini||"?").toUpperCase())+'</span>';
+  return NOEL_ON?'<span class="av-noel">'+a+bonnetSvg("av-bonnet")+'</span>':a;
 }
 function initialesDe(pid){var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];return p?((p.prenom||" ")[0]+(p.nom||" ")[0]):"?"}
 function peutChangerPhoto(p){return isAdmin||(monPompierId&&p.id===monPompierId&&!modeApercu)}
@@ -5660,7 +5846,8 @@ function dfsAdminHtml(d){
       +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button>'
       +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button>'
       +'<button class="pbtn" onclick="ouvrirModeTV()">📺 Mode TV (salle)</button>'
-      +'<button class="pbtn" onclick="dfsAffichetteQR()">🖨️ Affichettes QR rameur / SkiErg</button></div>'
+      +'<button class="pbtn" onclick="dfsAffichetteQR()">🖨️ Affichettes QR rameur / SkiErg</button>'
+      +'<button class="pbtn" onclick="apercuNoel()">🎄 '+((function(){try{return localStorage.getItem("icp_noel_force")==="1"}catch(e){return false}})()?'Couper l\'aperçu de Noël':'Aperçu de la déco de Noël')+'</button></div>'
       +'<p class="note">📺 Pour la télé ou la tablette de la salle : crée dans Comptes un compte avec <b>seulement l\'onglet Défis</b> et sans pompier relié. Il s\'ouvre directement en mode TV et ne voit aucun résultat ICP.</p></div>';
   }
   return h;
@@ -5685,6 +5872,7 @@ async function dfsAjouter(id){
     var r=await supabaseClient.from("defis_contrib")
       .insert({defi_id:id,pompier_id:moi.id,valeur:v,date:dfsIso(new Date())});
     if(r.error)throw r.error;
+    if(NOEL_ON)confettis("noel");
     if(ancien&&v>Number(ancien.valeur))setTimeout(function(){confettis();showToast("🏆 Nouveau record personnel : "+dfsNum(v)+" "+dRec.unite+" ! (ancien : "+dfsNum(ancien.valeur)+")","success")},900);
     var dAj=dfsListe.filter(function(x){return x.id===id})[0],huA=dAj&&HUMOUR[themeHumour(dAj)];
     showToast(huA?phraseAuHasard(moi.sexe==="F"&&huA.ajoutF?huA.ajoutF:huA.ajout).replace("{v}",dfsNum(v)):"💪 +"+dfsNum(v)+" pour le centre","success");
