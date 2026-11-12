@@ -482,6 +482,7 @@ span.bravo.vu{cursor:default;opacity:.85}
 .simu-c{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
 .simu-c select,.simu-c input{width:auto;flex:1;min-width:110px}
 .simu-res{flex:1 1 100%;text-align:center;padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;color:#fff;background:var(--border)}
+.btn-annee{background:linear-gradient(135deg,#b45309,#7c2d12)!important;color:#fff!important;border:1px solid rgba(251,191,36,.6)!important}
 /* ===== DÉCO DE NOËL ===== */
 #guirlande{position:absolute;left:14px;right:14px;bottom:-11px;height:20px;pointer-events:none;z-index:2}
 .guirlande{position:relative;display:flex;justify-content:space-between;align-items:flex-start;height:20px;padding:0 4px}
@@ -2793,6 +2794,9 @@ function badgesFiche(p,age,pts){
   if(nivs.length&&nivs.every(function(n){return n==="3"}))b.push("🏆 Tout vert");
   if(TESTS_SYNTHESE.some(function(t){var e=evolutionTest(t,p,age);return e&&e.indexOf("En progrès")!==-1}))b.push("📈 En progrès");
   if(pts.length>=3)b.push("🎖️ Fidèle : "+(pts.length-(pts[pts.length-1].c==="En cours"?1:0))+" campagnes");
+  var pc=pts.filter(function(x){return x.n&&x.n!=="?"});
+  if(pc.length>=2&&parseInt(pc[pc.length-1].n,10)>parseInt(pc[pc.length-2].n,10))b.push("⬆️ Remonté d'un niveau");
+  try{b=b.concat(badgesDefis(p))}catch(e){}
   return b;
 }
 // 8. Position du résultat sur la jauge rouge / orange / vert (0 à 100) et repère de l'objectif
@@ -3594,6 +3598,145 @@ function finalNoel(d){
   var k="icp_final_noel_"+d.id;try{if(!localStorage.getItem(k)){localStorage.setItem(k,"1");setTimeout(function(){confettis("noel");setTimeout(function(){confettis("noel")},900);showToast("🎅 Le traîneau décolle ! Joyeux Noël au centre, et merci.","success")},700)}}catch(e){}
   return true;
 }
+// ===== AFFICHE ET MESSAGE WHATSAPP DU SERGENT-CHEF (admin, en un clic) =====
+// Podium de la régularité sur tout le défi ; le compte de l'admin n'y figure pas (il participe pour aider).
+function dfsPointSituation(d){
+  var S=dfsStats(d),moiAdm=isAdmin?dfsMoi():null,reg={};
+  S.contribs.forEach(function(x){var o=reg[x.pompier_id]||(reg[x.pompier_id]={pid:x.pompier_id,j:{},v:0});o.j[x.date]=1;o.v+=Number(x.valeur||0)});
+  var L=Object.keys(reg).map(function(k){var o=reg[k];return {pid:o.pid,jours:Object.keys(o.j).length,v:o.v}})
+    .filter(function(o){return !moiAdm||o.pid!==moiAdm.id}).sort(function(a,b){return (b.jours-a.jours)||(b.v-a.v)});
+  var effectif=(data&&data.length)||Object.keys(ANNUAIRE).length,part=S.classement.length;
+  var etat=S.atteint?"atteint":(function(){var deb=new Date(d.debut+"T00:00:00"),fin=new Date(d.fin+"T23:59:59"),now=new Date(),att=100*Math.min(1,Math.max(0,(now-deb)/(fin-deb)));return S.pct>=att?"avance":"retard"})();
+  return {S:S,podium:L,effectif:effectif,participants:part,manquants:Math.max(0,effectif-part),etat:etat,B:dfsBonus(d,S)};
+}
+function prenomDe(pid){return dfsNom(pid).split(" ")[0]}
+function dfsMessageWhatsapp(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  var P=dfsPointSituation(d),S=P.S,u=d.unite,pod=P.podium,lien=lienAppli();
+  var tete={avance:"Le centre est en avance. Je suis fier. Je ne le dirai qu'une fois.",retard:"Le centre est en retard. Je ne dis rien… mais je n'en pense pas moins.",atteint:"Objectif atteint ! Je verse une larme. C'est de la sueur, mais quand même."}[P.etat];
+  var t="🎖️ *POINT DE SITUATION DU SERGENT-CHEF*\n\n";
+  t+="🏁 *"+d.titre+" : "+dfsNum(S.total)+" "+u+" sur "+dfsNum(d.objectif)+" !* "+tete+"\n";
+  if(P.B&&!P.B.fini)t+="🏅 *Objectif bonus* : "+dfsNum(P.B.cible)+" "+u+". On ne s'arrête pas, on n'est pas des touristes.\n";
+  if(pod.length){t+="\n👏 *Le podium de la régularité :*\n";
+    var med=["🥇","🥈","🥉"];
+    pod.slice(0,3).forEach(function(o,i){t+=med[i]+" *"+prenomDe(o.pid)+"* : "+o.jours+" jour"+(o.jours>1?"s":"")+" · "+dfsNum(o.v)+" "+u+(sexeDe(o.pid)==="F"&&estMovember(d)?" 👑":"")+"\n"});
+    if(pod.length>3)t+="Et bravo à "+pod.slice(3).map(function(o){return prenomDe(o.pid)}).join(", ")+" : chaque séance compte.\n";}
+  if(P.manquants>0){t+="\nEt maintenant, les autres. 🧐\nOn est *"+P.effectif+"* au centre. *"+P.participants+"* participent. Je sais compter : il en manque *"+P.manquants+"*.\nVous croyiez que je ne verrais rien ? *J'ai une liste.* Et des jumelles.\n\n";
+    t+="❌ « J'ai pas le temps » → 10 minutes. Le temps d'un café.\n❌ « Je suis pas sportif » → On récompense la régularité, pas les muscles.\n❌ « Je sais pas comment noter » → Tu scannes le QR code sur la machine, ou *➕ J'ai fait…* dans l'appli.\n";}
+  t+="\n*Gentil, ce n'est pas un métier.* 🫡\n\n*Le Sergent-Chef*\n👉 "+lien;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){showToast("📋 Message copié : colle-le dans WhatsApp","success")},function(){prompt("Copie le message :",t)});
+}
+async function dfsAfficheWhatsapp(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  showToast("Création de l'affiche…","info");
+  try{await document.fonts.load("700 80px Oswald");await document.fonts.load("700 30px Inter");await document.fonts.load("600 30px Inter");}catch(e){}
+  var P=dfsPointSituation(d),S=P.S,u=d.unite;
+  var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+  var OR="#fbbf24",BL="#fafaf9",GR="#a8a29e";
+  var rg=g.createRadialGradient(W*.62,H*.26,20,W*.62,H*.26,H*.8);rg.addColorStop(0,"#962018");rg.addColorStop(1,"#0c0a09");g.fillStyle=rg;g.fillRect(0,0,W,H);
+  g.save();g.translate(700,330);g.fillStyle="rgba(251,191,36,.09)";for(var i=0;i<18;i++){g.rotate(Math.PI/9);g.beginPath();g.moveTo(0,0);g.lineTo(1400,0);g.lineTo(1400*Math.cos(.12),1400*Math.sin(.12));g.closePath();g.fill();}g.restore();
+  var humeur=P.etat==="atteint"?"fete":P.etat==="avance"?"fier":"fache";
+  var img=await chargerImageCarte("img/mascotte/grand/sergent-"+humeur+".webp");
+  if(img){var c2=document.createElement("canvas");c2.width=560;c2.height=560;var g2=c2.getContext("2d");g2.drawImage(img,0,0,560,560);
+    g2.globalCompositeOperation="destination-out";var fd=g2.createLinearGradient(0,380,0,560);fd.addColorStop(0,"rgba(0,0,0,0)");fd.addColorStop(1,"rgba(0,0,0,1)");g2.fillStyle=fd;g2.fillRect(0,380,560,180);
+    g.save();g.shadowColor="rgba(0,0,0,.55)";g.shadowBlur=28;g.drawImage(c2,455,70);g.restore();}
+  var titres={retard:["TOI !","OUI, TOI.","Le rameur t'attend.","Moi aussi."],avance:["BRAVO !","LE CENTRE.","En avance sur le rythme.","Ne lâchez rien."],atteint:["RÉUSSI !","ET C'EST PAS FINI.","Objectif atteint.","Place au bonus."]}[P.etat];
+  g.textAlign="left";g.textBaseline="alphabetic";
+  g.fillStyle=OR;g.font="700 150px Oswald, sans-serif";g.fillText(titres[0],60,230);
+  g.fillStyle=BL;g.font="700 "+(titres[1].length>9?66:88)+"px Oswald, sans-serif";g.fillText(titres[1],60,325);
+  g.font="600 38px Inter, sans-serif";g.fillText(titres[2],62,385);g.fillStyle=GR;lignesTexte(g,titres[3],400).forEach(function(l,k){g.fillText(l,62,433+k*44)});
+  g.fillStyle="#fff";rectArrondi(g,60,480,460,84,22);g.fill();g.beginPath();g.moveTo(500,505);g.lineTo(560,476);g.lineTo(510,545);g.fill();
+  g.fillStyle="#1c1917";g.font="700 23px Inter, sans-serif";g.fillText("« Gentil, ce n'est pas un métier. »",86,516);g.fillStyle="#78716c";g.font="600 20px Inter, sans-serif";g.fillText("— Le Sergent-Chef",86,546);
+  // jauge
+  var y=640;g.fillStyle="#1c1917";rectArrondi(g,50,y,W-100,236,30);g.fill();g.strokeStyle="#44403c";g.lineWidth=2;g.stroke();
+  g.fillStyle=OR;g.font="700 34px Oswald, sans-serif";g.fillText(d.titre.toUpperCase().slice(0,44),90,y+58);
+  g.fillStyle=BL;g.font="700 96px Oswald, sans-serif";var nb=dfsNum(S.total);g.fillText(nb,90,y+160);var wv=g.measureText(nb).width;
+  g.fillStyle=GR;g.font="600 34px Inter, sans-serif";g.fillText("/ "+dfsNum(d.objectif)+" "+u,104+wv,y+158);
+  g.textAlign="right";g.fillStyle=OR;g.font="700 70px Oswald, sans-serif";g.fillText(Math.round(100*S.total/Number(d.objectif))+" %",W-90,y+158);g.textAlign="left";
+  var jx=90,jy=y+186,jw=W-180;g.fillStyle="#44403c";rectArrondi(g,jx,jy,jw,26,13);g.fill();
+  var gr=g.createLinearGradient(jx,0,jx+jw,0);gr.addColorStop(0,"#ea580c");gr.addColorStop(1,OR);g.fillStyle=gr;rectArrondi(g,jx,jy,Math.max(26,jw*Math.min(1,S.pct/100)),26,13);g.fill();
+  // podium
+  y=905;g.fillStyle=BL;g.font="700 40px Oswald, sans-serif";g.fillText(P.podium.length?"BRAVO À CEUX QUI PARTICIPENT":"QUI OUVRE LE BAL ?",60,y+30);
+  var meds=[];for(var m=0;m<3;m++)meds.push(await chargerImageCarte("img/defis/medaille-"+["or","argent","bronze"][m]+".webp"));
+  var lignes=P.podium.slice(0,2).map(function(o){return [prenomDe(o.pid),o.jours+" jour"+(o.jours>1?"s":"")+" · "+dfsNum(o.v)+" "+u+(sexeDe(o.pid)==="F"&&estMovember(d)?" · Mo Sister":"")]});
+  if(P.podium.length>2){var rest=P.podium.slice(2,6).map(function(o){return prenomDe(o.pid)});lignes.push([rest.join(", "),P.podium.length>6?"et "+(P.podium.length-6)+" autre"+(P.podium.length>7?"s":"")+" : chaque séance compte":"chaque séance compte"]);}
+  lignes.forEach(function(l,i){var yy=y+58+i*66;if(meds[i])g.drawImage(meds[i],64,yy-4,44,60);
+    g.fillStyle=BL;g.font="700 34px Inter, sans-serif";g.fillText(l[0],126,yy+32);g.fillStyle=GR;g.font="600 24px Inter, sans-serif";g.fillText(l[1],126,yy+60)});
+  // bandeau du bas
+  y=1160;g.fillStyle="#7f1d1d";rectArrondi(g,50,y,W-100,146,26);g.fill();g.strokeStyle=OR;g.lineWidth=3;g.stroke();
+  g.fillStyle=BL;g.font="700 40px Oswald, sans-serif";
+  g.fillText(P.manquants>0?P.participants+" participent. "+P.manquants+" manquent à l'appel.":"Tout le centre participe. Respect.",84,y+58);
+  g.fillStyle="#fee2e2";g.font="600 26px Inter, sans-serif";g.fillText("10 minutes suffisent : scanne, bouge, note.",84,y+100);
+  g.fillStyle="#fecaca";g.font="600 22px Inter, sans-serif";g.fillText("On récompense la régularité, pas les muscles.",84,y+130);
+  try{var q=qrcode(0,"M");q.addData(lienAppli()+"?ajout");q.make();var n=q.getModuleCount(),T=126,qx=W-50-T-14,qy=y+10,mm=T/(n+4);
+    g.fillStyle="#fff";g.fillRect(qx,qy,T,T);g.fillStyle="#000";for(var r=0;r<n;r++)for(var k=0;k<n;k++)if(q.isDark(r,k))g.fillRect(qx+(k+2)*mm,qy+(r+2)*mm,Math.ceil(mm),Math.ceil(mm));}catch(e){}
+  g.textAlign="center";g.fillStyle=GR;g.font="700 22px Oswald, sans-serif";g.fillText("CIS CRUZY-QUARANTE · SDIS 34",W/2,H-16);
+  var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});
+  if(blob)diffuserImage(blob,"Sergent_Chef_"+dfsIso(new Date())+".png","Le point du Sergent-Chef");
+}
+// ===== « MON ANNÉE » (carte à partager, de décembre à fin janvier ; l'admin la voit toute l'année) =====
+function monAnnee(p,an){
+  var deb=an+"-01-01",fin=an+"-12-31",mes=dfsContrib.filter(function(x){return x.pompier_id===p.id&&x.date>=deb&&x.date<=fin});
+  var parUnite={},defis={},mois={},record=null;
+  mes.forEach(function(x){var d=dfsListe.filter(function(z){return z.id===x.defi_id})[0];if(!d)return;
+    parUnite[d.unite]=(parUnite[d.unite]||0)+Number(x.valeur||0);defis[d.id]=d;mois[x.date.slice(5,7)]=(mois[x.date.slice(5,7)]||0)+1;
+    if(!record||Number(x.valeur)>Number(record.x.valeur))record={x:x,d:d};});
+  var mm=Object.keys(mois).sort(function(a,b){return mois[b]-mois[a]})[0];
+  var noms=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  return {seances:mes.length,parUnite:parUnite,defis:Object.keys(defis).map(function(k){return defis[k]}),record:record,meilleurMois:mm?noms[parseInt(mm,10)-1]:null,ddj:Object.keys(CASES.defi_jour).filter(function(k){return k.indexOf(an)===0}).length};
+}
+function boutonAnneeHtml(p){
+  var t=new Date(),m=t.getMonth();if(!isAdmin&&!(m===11||m===0))return "";
+  var an=m===0?t.getFullYear()-1:t.getFullYear();
+  return '<button class="btn btn-sm btn-annee" onclick="carteAnnee('+p.id+','+an+')">🎁 Mon année '+an+' (carte à partager)</button>';
+}
+async function carteAnnee(pid,an){
+  var p=data.find(function(x){return x.id===pid});if(!p)return;
+  if(!dfsCharge)await chargerDefis(true);
+  var A=monAnnee(p,an);showToast("Création de ta carte…","info");
+  try{await document.fonts.load("700 80px Oswald");await document.fonts.load("700 30px Inter");}catch(e){}
+  var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d"),OR="#fbbf24",BL="#fafaf9",GR="#d6d3d1";
+  var bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#7c2d12");bg.addColorStop(.5,"#1c1917");bg.addColorStop(1,"#0c0a09");g.fillStyle=bg;g.fillRect(0,0,W,H);
+  for(var i=0;i<60;i++){g.fillStyle="rgba(251,191,36,"+(Math.random()*.35+.05)+")";g.beginPath();g.arc(Math.random()*W,Math.random()*H*.45,Math.random()*3+1,0,7);g.fill();}
+  g.strokeStyle="rgba(251,191,36,.55)";g.lineWidth=4;rectArrondi(g,30,30,W-60,H-60,44);g.stroke();
+  g.textAlign="center";g.fillStyle=OR;g.font="700 34px Oswald, sans-serif";g.fillText("MON ANNÉE",W/2,110);
+  g.fillStyle=BL;g.font="700 170px Oswald, sans-serif";g.fillText(String(an),W/2,270);
+  g.font="700 54px Oswald, sans-serif";g.fillText((p.prenom+" "+p.nom).toUpperCase(),W/2,350);
+  var img=await chargerImageCarte("img/mascotte/grand/sergent-"+(A.seances?"fete":"fier")+".webp");
+  if(img)g.drawImage(img,W-330,370,280,280);
+  // grand chiffre
+  var cles=Object.keys(A.parUnite).sort(function(a,b){return A.parUnite[b]-A.parUnite[a]}),u0=cles[0];
+  g.textAlign="left";g.fillStyle=OR;g.font="700 160px Oswald, sans-serif";var big=u0?dfsNum(A.parUnite[u0]):String(A.seances);g.fillText(big,90,560);
+  var wb=g.measureText(big).width;g.fillStyle=BL;g.font="600 46px Oswald, sans-serif";g.fillText(u0||"séances",100+wb,560);
+  g.fillStyle=GR;g.font="600 28px Inter, sans-serif";g.fillText(u0?"au compteur des défis du centre":"notées dans l'année",92,605);
+  var cases=[[String(A.seances),"séance"+(A.seances>1?"s":"")],[String(A.defis.length),"défi"+(A.defis.length>1?"s":"")],[A.record?dfsNum(A.record.x.valeur)+" "+A.record.d.unite:"—","record"],[String(A.ddj),"défi"+(A.ddj>1?"s":"")+" du jour"]];
+  var cw=(W-160-3*18)/4,y=680;
+  cases.forEach(function(c,i){var x=80+i*(cw+18);g.fillStyle="rgba(255,255,255,.08)";rectArrondi(g,x,y,cw,160,24);g.fill();g.strokeStyle="rgba(255,255,255,.18)";g.lineWidth=2;g.stroke();
+    g.textAlign="center";g.fillStyle=BL;g.font="700 "+(c[0].length>6?40:56)+"px Oswald, sans-serif";g.fillText(c[0],x+cw/2,y+80);g.fillStyle=GR;g.font="600 22px Inter, sans-serif";g.fillText(c[1],x+cw/2,y+120);});
+  y=900;g.textAlign="left";
+  var age=getAge(p.annee),niv=getNiveauGlobal(p),c=COULEURS_NIVEAU[niv];
+  var lignes=[];
+  if(A.meilleurMois)lignes.push(["📅","Mon mois le plus actif : "+A.meilleurMois]);
+  if(A.defis.length)lignes.push(["🏆","Mes défis : "+A.defis.map(function(d){return d.titre.replace(/ — .*/,"")}).join(" · ")]);
+  if(c&&niv!=="?")lignes.push(["🚦","Mon niveau ICP : "+c.txt]);
+  lignes.push(["🎖️",A.seances>=20?"Le Sergent-Chef : « Une année de machine. Respect. »":A.seances?"Le Sergent-Chef : « Bien. L'année prochaine, on double. »":"Le Sergent-Chef : « L'année prochaine, je t'attends. »"]);
+  lignes.forEach(function(l,i){g.fillStyle=BL;g.font="600 30px Inter, sans-serif";var tl=lignesTexte(g,l[1],W-220);g.fillText(l[0],90,y+i*84);tl.slice(0,2).forEach(function(t,k){g.fillText(t,140,y+i*84+k*36)})});
+  g.textAlign="center";g.fillStyle=GR;g.font="700 24px Oswald, sans-serif";g.fillText("CIS CRUZY-QUARANTE · SDIS 34",W/2,H-60);
+  var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});
+  if(blob)diffuserImage(blob,"Mon_annee_"+an+".png","Mon année "+an);
+}
+// ===== BADGES DE DÉFI SUR LA FICHE =====
+function badgesDefis(p){
+  if(!dfsCharge)return [];
+  var mes=dfsContrib.filter(function(x){return x.pompier_id===p.id}),b=[];
+  var h=function(x){return x.cree_le?new Date(x.cree_le).getHours():12};
+  if(mes.some(function(x){return h(x)<7}))b.push("🌅 Lève-tôt");
+  if(mes.some(function(x){return h(x)>=22}))b.push("🦉 Couche-tard");
+  var nd={};mes.forEach(function(x){nd[x.defi_id]=1});if(Object.keys(nd).length>=3)b.push("🏅 "+Object.keys(nd).length+" défis");
+  var ids={};mes.forEach(function(x){ids[x.id]=1});var nb=dfsBravos.filter(function(x){return ids[x.contrib_id]}).length;if(nb>=10)b.push("👏 "+nb+" bravos reçus");
+  if(flammeDe(p.id)>=4)b.push("🔥 Un mois de régularité");
+  return b;
+}
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
   if(dfsAVenir(d))return;
@@ -4009,6 +4152,7 @@ function renderFiche(){
   if(bgs.length)html+='<div class="badges-fiche">'+bgs.map(badgeHtml).join("")+'</div>';
   html+=sergentNiveauHtml(g);
   html+=compteReboursIcpHtml(p,age);
+  var ba=(monPompierId===p.id||isAdmin)?boutonAnneeHtml(p):"";if(ba)html+='<div class="cj-photo-btn">'+ba+'</div>';
   html+=vitrineDefisHtml(p);
   html+='<div class="fiche-grille">'+TESTS_SYNTHESE.map(function(t){
     var v=p[t.field],n="";
@@ -5873,7 +6017,8 @@ function dfsSuiviHtml(d){
     +bloc("🟢 Actifs"+(enCours?" (séance il y a moins de 7 jours)":""),actifs.map(function(o){return nom(o.p)+(enCours&&o.n>0?' <small>('+o.n+' j)</small>':'')}),false)
     +(enCours?bloc("🟠 Ont décroché (rien depuis 7 jours ou plus)",decro.map(function(o){return nom(o.p)+' <small>('+o.n+' j)</small>'}),decro.length>0):"")
     +bloc("⚪ N'ont jamais participé",jamais.map(nom),false)
-    +'<div class="prow" style="margin-top:10px"><button class="pbtn" onclick="dfsCopierRelance('+d.id+')">📋 Copier la liste à relancer</button></div></div>';
+    +'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="dfsAfficheWhatsapp('+d.id+')">🖼️ Affiche WhatsApp du Sergent-Chef</button><button class="pbtn" onclick="dfsMessageWhatsapp('+d.id+')">💬 Copier le message WhatsApp</button><button class="pbtn" onclick="dfsCopierRelance('+d.id+')">📋 Copier la liste à relancer</button></div>'
+    +'<p class="note">L\'affiche et le message utilisent les chiffres du moment. Ton propre compte n\'apparaît pas sur le podium.</p></div>';
 }
 function dfsCopierRelance(id){
   var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
