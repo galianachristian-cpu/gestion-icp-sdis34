@@ -120,3 +120,6 @@ create table if not exists public.defis_bravos (
 );
 alter table public.defis_bravos enable row level security;
 -- lecture : tout compte connecté ; ajout / retrait : son propre bravo (pompier_id = mon_pompier_id_icp()) ou l'admin.
+
+-- 2026-11-12 : annuaire_icp() renvoie aussi le sexe (id, prenom, nom, grade, garde, sexe) pour accorder les grades
+-- et messages des défis (Mo Sisters) ; exécution réservée aux comptes connectés (authenticated, service_role).
