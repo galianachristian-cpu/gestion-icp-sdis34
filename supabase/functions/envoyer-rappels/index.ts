@@ -3,7 +3,7 @@
 // l'heure et le jour correspondent, envoie une notification, une seule par jour.
 // Défis du centre : prévient aussi tous les abonnés au départ d'un défi et quand le
 // centre franchit 25, 50, 75 et 100 %, puis les paliers bonus 150, 200, 250 %…
-// (une seule fois par palier, entre 8 h et 21 h 30).
+// (une seule fois par palier, entre 8 h et 21 h 30). Session ICP : rappel à J-7 (une fois par session).
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.47.10";
 import webpush from "npm:web-push@3.6.7";
@@ -130,7 +130,29 @@ Deno.serve(async (req: Request) => {
         defisEnvoyes.push(`${d.id}:${palier}`);
       }
     }
-    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes });
+    // ----- Session ICP dans 7 jours : un rappel à tous les abonnés, une seule fois par session -----
+    const sessionsEnvoyees: number[] = [];
+    if (!essai && minutes >= 9 * 60 && minutes <= 20 * 60) {
+      const j7 = new Date(`${aujourdhui}T12:00:00Z`); j7.setUTCDate(j7.getUTCDate() + 7);
+      const dateJ7 = j7.toISOString().slice(0, 10);
+      const { data: ses } = await sb.from("sessions_icp").select("id,date,heure,lieu,rappel_j7").eq("date", dateJ7).eq("rappel_j7", false);
+      for (const se of ses ?? []) {
+        const { data: maj } = await sb.from("sessions_icp").update({ rappel_j7: true }).eq("id", se.id).eq("rappel_j7", false).select("id");
+        if (!maj || !maj.length) continue;
+        const quand = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" }).format(new Date(`${se.date}T12:00:00Z`));
+        const charge = JSON.stringify({
+          titre: "📅 Session ICP dans 7 jours",
+          corps: `${quand}${se.heure ? " à " + se.heure : ""}${se.lieu ? " — " + se.lieu : ""}. Inscris-toi dans l'appli et regarde ta priorité sur ta fiche. Le Sergent-Chef compte sur toi.`,
+          url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/",
+        });
+        for (const a of abos ?? []) {
+          try { await webpush.sendNotification({ endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } }, charge); envoyes++; }
+          catch (e) { const code = (e as { statusCode?: number }).statusCode; if (code === 404 || code === 410) { await sb.from("push_abos").delete().eq("id", a.id); retires++; } }
+        }
+        sessionsEnvoyees.push(se.id);
+      }
+    }
+    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees });
   } catch (e) {
     return Response.json({ erreur: (e as Error).message }, { status: 500 });
   }

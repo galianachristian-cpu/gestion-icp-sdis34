@@ -134,3 +134,16 @@ create table if not exists public.cases_perso (
 );
 -- RLS : chacun lit, ajoute et retire uniquement ses propres cases (email du jeton) ; l'admin peut lire.
 -- Ajout refusé pour une date après demain (pas d'ouverture des cases futures du calendrier).
+
+-- 2026-11-12 : inscriptions aux sessions ICP + rappel J-7
+alter table public.sessions_icp add column if not exists places integer check (places is null or places > 0);
+alter table public.sessions_icp add column if not exists rappel_j7 boolean not null default false;
+create table if not exists public.inscriptions_icp (
+  session_id bigint not null references public.sessions_icp(id) on delete cascade,
+  pompier_id integer not null references public.pompiers(id) on delete cascade,
+  cree_le timestamptz not null default now(),
+  primary key (session_id, pompier_id)
+);
+-- RLS : lecture par les comptes connectés ; inscription / désinscription de soi (mon_pompier_id_icp) ou par l'admin.
+-- Trigger verifier_inscription_icp : refus si la session est passée ou complète (places).
+-- envoyer-rappels v10 : notification « Session ICP dans 7 jours » à tous les abonnés, une fois (rappel_j7).

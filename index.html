@@ -483,6 +483,10 @@ span.bravo.vu{cursor:default;opacity:.85}
 .simu-c select,.simu-c input{width:auto;flex:1;min-width:110px}
 .simu-res{flex:1 1 100%;text-align:center;padding:8px 12px;border-radius:999px;font-weight:700;font-size:14px;color:#fff;background:var(--border)}
 .btn-annee{background:linear-gradient(135deg,#b45309,#7c2d12)!important;color:#fff!important;border:1px solid rgba(251,191,36,.6)!important}
+.insc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.insc-places{font-size:12px;font-weight:700;color:var(--muted)}.insc-places.plein{color:var(--warning)}
+.insc-btn{padding:7px 14px;border-radius:999px;border:0;background:linear-gradient(135deg,var(--rouge),var(--primary));color:#fff;font:800 11.5px Inter,sans-serif;cursor:pointer;white-space:nowrap}
+.insc-btn.on{background:#16a34a;color:#fff}.insc-btn:disabled{opacity:.6;cursor:default}
 /* ===== DÉCO DE NOËL ===== */
 #guirlande{position:absolute;left:14px;right:14px;bottom:-11px;height:20px;pointer-events:none;z-index:2}
 .guirlande{position:relative;display:flex;justify-content:space-between;align-items:flex-start;height:20px;padding:0 4px}
@@ -1126,6 +1130,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="filters" style="margin-bottom:16px;align-items:center">
 <select id="syntheseCampagne" onchange="renderSynthese()" style="max-width:240px"></select>
 <button class="btn btn-primary btn-sm" onclick="generateSynthesePDF()">📄 Synthèse pour le chef (PDF)</button>
+<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="bilanMoisPDF()">🗓️ Bilan du mois (PDF)</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="genererRelance()">📣 Relancer les non évalués</button>
 <button class="btn btn-sm admin-seul" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="generateToutesFichesPDF()">🧾 Fiches individuelles (toutes)</button>
 <button class="btn btn-success btn-sm admin-seul" onclick="ouvrirBilanCampagne()">🏁 Fin de campagne : bilan</button>
@@ -2312,6 +2317,7 @@ async function chargerSessions(){
   try{
     if(navigator.onLine===false||!donneesChargees){renderSessions();return;} // hors ligne : sessions de la copie locale
     var r=await supabaseClient.from('sessions_icp').select('*').order('date');if(!r.error){sessionsIcp=r.data||[];sauverCache();}
+    await chargerInscriptions();
   }
   catch(e){console.warn("Sessions ICP :",e.message);}
   renderSessions();
@@ -2333,7 +2339,9 @@ function renderSessions(){
     html+='<div style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between">'
       +'<div><div style="font-size:13px;color:var(--muted)">Prochaine session · <b style="color:var(--primary)">'+quand+'</b></div>'
       +'<div style="font-family:var(--titre);font-size:24px;color:var(--text);margin-top:2px">'+escAttr(libelleSession(next))+'</div>'
-      +(next.note?'<div style="font-size:13px;color:var(--muted);margin-top:4px">'+escAttr(next.note)+'</div>':'')+'</div>'
+      +(next.note?'<div style="font-size:13px;color:var(--muted);margin-top:4px">'+escAttr(next.note)+'</div>':'')
+      +(function(){var L=inscritsDe(next.id);return '<div style="font-size:13px;margin-top:6px"><b style="color:var(--accent)">✍️ '+L.length+(next.places?' / '+next.places:'')+' inscrit'+(L.length>1?'s':'')+'</b>'
+        +(L.length?' : '+L.map(function(x){return escAttr(dfsNom(x.pompier_id))}).join(", "):' · chacun s\'inscrit depuis sa fiche')+'</div>'})()+'</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="genererRelance()">📣 Prévenir les pompiers</button>'+(isAdmin?'<button class="btn btn-sm" style="background:var(--surface2);color:var(--text);border:1px solid var(--border)" onclick="partagerVisuelSession()">🖼️ Visuel (image)</button>':'')+'</div></div>';
     html+='<details style="margin-top:12px"><summary style="cursor:pointer;color:var(--muted);font-size:13px"><b style="color:var(--text)">'+attendus.length+'</b> pompier(s) attendu(s) — tests encore à passer</summary>'
       +'<ul style="margin:8px 0 0 18px;font-size:13px;color:var(--muted);columns:2 260px">'+attendus.map(function(p){var m=testsManquants(p);
@@ -2347,7 +2355,7 @@ function renderSessions(){
     html+='<details style="margin-top:14px"'+(next?'':' open')+'><summary style="cursor:pointer;color:var(--accent);font-size:13px;font-weight:600">⚙️ Gérer les sessions</summary>'
       +'<div class="filters" style="margin-top:10px;align-items:center">'
       +'<input type="date" id="sesDate" style="width:auto"><input type="text" id="sesHeure" placeholder="Heure (ex. 9h00)" style="width:130px">'
-      +'<input type="text" id="sesLieu" placeholder="Lieu (ex. gymnase)" style="width:180px"><input type="text" id="sesNote" placeholder="Note (facultatif)" style="width:220px">'
+      +'<input type="text" id="sesLieu" placeholder="Lieu (ex. gymnase)" style="width:180px"><input type="number" id="sesPlaces" min="1" placeholder="Places (vide = illimité)" style="width:170px"><input type="text" id="sesNote" placeholder="Note (facultatif)" style="width:220px">'
       +'<button class="btn btn-success btn-sm" onclick="ajouterSession()">➕ Ajouter</button></div>'
       +sessionsAVenir().map(function(x){return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px"><span>'+escAttr(libelleSession(x))+'</span><button class="btn btn-danger btn-sm" onclick="supprimerSession('+x.id+')">🗑️</button></div>'}).join("")
       +'</details>';
@@ -2357,7 +2365,7 @@ function renderSessions(){
 async function ajouterSession(){
   var d=document.getElementById("sesDate").value;
   if(!d){alert("Choisissez une date.");return;}
-  var ligne={date:d,heure:document.getElementById("sesHeure").value.trim()||null,lieu:document.getElementById("sesLieu").value.trim()||null,note:document.getElementById("sesNote").value.trim()||null};
+  var ligne={date:d,heure:document.getElementById("sesHeure").value.trim()||null,lieu:document.getElementById("sesLieu").value.trim()||null,note:document.getElementById("sesNote").value.trim()||null,places:parseInt(document.getElementById("sesPlaces").value,10)||null};
   var r=await supabaseClient.from('sessions_icp').insert(ligne);
   if(r.error){alert("⚠️ "+r.error.message);return;}
   showToast("✅ Session ajoutée.","success");
@@ -3310,7 +3318,7 @@ function renderAccueilPerso(tab){
     if(d&&!dfsAVenir(d)){var M=dfsMonBilan(d,p.id);
       cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">'+(M.seances?"🔥":"💤")+'</i><span><small>Ma part du défi</small><b>'+(M.seances?dfsNum(M.v)+" "+dfsEsc(d.unite)+" · "+M.seances+" séance"+(M.seances>1?"s":""):"Pas encore de séance")+flammeHtml(p.id)+'</b></span></button>');}
     else if(d){cases.push('<button class="acc-case" onclick="switchTab(\'defis\')"><i class="em">⏳</i><span><small>Prochain défi</small><b>J-'+dfsJoursAvant(d)+' · '+dfsEsc(d.titre)+'</b></span></button>');}}catch(e){}
-  try{var s=prochaineSession();if(s)cases.push('<div class="acc-case"><i class="em">📅</i><span><small>Prochaine session ICP</small><b>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+'</b></span></div>');}catch(e){}
+  try{var s=prochaineSession();if(s)cases.push('<div class="acc-case"><i class="em">📅</i><span><small>Prochaine session ICP</small><b>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"short",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+(estInscrit(s.id,p.id)?" · ✔ inscrit":"")+'</b></span></div>');}catch(e){}
   el.innerHTML='<div class="accueil"><div class="acc-salut">'+avatarMini(p.id,initialesDe(p.id))+'<span>'+salut+' <b>'+escAttr(qui)+'</b> 👋</span></div><div class="acc-cases">'+cases.join("")+'</div></div>';
 }
 // ===== FLAMME DE RÉGULARITÉ, BRAVOS, MOT DU SERGENT SUR LE NIVEAU =====
@@ -3442,10 +3450,10 @@ function compteReboursIcpHtml(p,age){
   var t=new Date();t.setHours(12,0,0,0);var n=Math.round((new Date(s.date+"T12:00:00")-t)/864e5);if(n<0)return "";
   var L=TESTS_SYNTHESE.map(function(te){var v=p[te.field],niv=niveauTest(te,p.sexe,p.poids,age,v),o=objectifTest(te,p,age);
     return {t:te,niv:niv,o:o,rang:!v||String(v).trim()===""?1.5:niv==="1"?0:niv==="2"?1:niv==="3"?3:2}}).filter(function(x){return x.rang<3}).sort(function(a,b){return a.rang-b.rang}).slice(0,3);
-  return '<div class="rebours"><div class="rebours-j"><b>'+(n===0?"Jour J":"J-"+n)+'</b><small>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+'</small></div>'
+  return '<div class="rebours"><div class="rebours-j"><b>'+(n===0?"Jour J":"J-"+n)+'</b><small>'+new Date(s.date+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+(s.heure?" · "+escAttr(s.heure):"")+(s.lieu?" · "+escAttr(s.lieu):"")+'</small></div>'
     +'<div class="rebours-p"><div class="rebours-t">Prochaine session ICP'+(L.length?' : à travailler en priorité':'')+'</div>'
     +(L.length?L.map(function(x){var c=COULEURS_NIVEAU[x.niv];return '<div class="rebours-l"><i style="background:'+(c?c.hex:"var(--border)")+'"></i><span><b>'+x.t.label+'</b> '+(x.o?x.o.txt.replace(/^🎯 /,""):"pas encore passé")+'</span></div>'}).join("")
-      :'<div class="rebours-l"><span>Tout est au vert : on entretient jusqu\'au jour J 💪</span></div>')+'</div></div>';
+      :'<div class="rebours-l"><span>Tout est au vert : on entretient jusqu\'au jour J 💪</span></div>')+inscriptionHtml(s,p)+'</div></div>';
 }
 // Simulateur : « si je fais tant, je passe à quel niveau ? » (barèmes de l'âge, du sexe et du poids de la fiche)
 var ficheSimulee=null;
@@ -3736,6 +3744,75 @@ function badgesDefis(p){
   var ids={};mes.forEach(function(x){ids[x.id]=1});var nb=dfsBravos.filter(function(x){return ids[x.contrib_id]}).length;if(nb>=10)b.push("👏 "+nb+" bravos reçus");
   if(flammeDe(p.id)>=4)b.push("🔥 Un mois de régularité");
   return b;
+}
+// ===== INSCRIPTIONS AUX SESSIONS ICP (table inscriptions_icp ; places limitées par sessions_icp.places) =====
+var inscriptionsIcp=[],inscOccupe=false;
+async function chargerInscriptions(){
+  try{var r=await supabaseClient.from("inscriptions_icp").select("session_id,pompier_id");if(!r.error)inscriptionsIcp=r.data||[]}catch(e){}
+}
+function inscritsDe(sid){return inscriptionsIcp.filter(function(x){return x.session_id===sid})}
+function estInscrit(sid,pid){return inscriptionsIcp.some(function(x){return x.session_id===sid&&x.pompier_id===pid})}
+async function basculerInscription(sid,pid){
+  if(inscOccupe)return;inscOccupe=true;
+  var deja=estInscrit(sid,pid);
+  try{
+    var r=deja?await supabaseClient.from("inscriptions_icp").delete().eq("session_id",sid).eq("pompier_id",pid)
+              :await supabaseClient.from("inscriptions_icp").insert({session_id:sid,pompier_id:pid});
+    if(r.error)throw r.error;
+    if(deja)inscriptionsIcp=inscriptionsIcp.filter(function(x){return !(x.session_id===sid&&x.pompier_id===pid)});
+    else{inscriptionsIcp.push({session_id:sid,pompier_id:pid});vibrer();}
+    showToast(deja?"Désinscription enregistrée":"✅ Inscrit ! Le Sergent-Chef a noté ton nom.","success");
+  }catch(e){showToast(/complète/i.test(e.message||"")?"😬 Session complète : vois avec l'administrateur.":"Impossible : "+(e.message||e),"error")}
+  finally{inscOccupe=false}
+  renderFiche();renderSessions();renderAccueilPerso();
+}
+function inscriptionHtml(s,p){
+  var n=inscritsDe(s.id).length,ins=estInscrit(s.id,p.id),plein=s.places&&n>=s.places&&!ins;
+  var peut=isAdmin||monPompierId===p.id;
+  return '<div class="insc">'+(s.places?'<span class="insc-places'+(plein?' plein':'')+'">'+n+' / '+s.places+' places</span>':(n?'<span class="insc-places">'+n+' inscrit'+(n>1?'s':'')+'</span>':''))
+    +(peut?'<button class="insc-btn'+(ins?' on':'')+'"'+(plein?' disabled':'')+' onclick="basculerInscription('+s.id+','+p.id+')">'+(ins?'✔ Inscrit · se désinscrire':plein?'Complet':'S\'inscrire')+'</button>':'')+'</div>';
+}
+// ===== BILAN DU MOIS POUR LES CHEFS (PDF d'une page, chiffres collectifs uniquement) =====
+async function bilanMoisPDF(){
+  if(!dfsCharge)await chargerDefis(true);
+  var t=new Date(),y=t.getFullYear(),m=t.getMonth();
+  var deb=dfsIso(new Date(y,m,1)),fin=dfsIso(new Date(y,m+1,0));
+  var nomMois=new Date(y,m,15).toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  var lignes=syntheseLignes("__encours__"),r=syntheseResume(lignes);
+  var effectif=Math.max(lignes.length,(data&&data.length)||0,Object.keys(ANNUAIRE).length);
+  var contribMois=dfsContrib.filter(function(x){return x.date>=deb&&x.date<=fin});
+  var participants={};contribMois.forEach(function(x){participants[x.pompier_id]=1});
+  var defisMois=dfsListe.filter(function(d){return d.debut<=fin&&d.fin>=deb&&!dfsAVenir(d)});
+  var sess=(sessionsIcp||[]).filter(function(s){return s.date>=deb&&s.date<=fin});
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+  pdfEntete(doc,"BILAN DU MOIS","CIS Cruzy-Quarante — "+dfsTextePdf(nomMois));
+  var Y=44,cases=[[String(Object.keys(participants).length)+" / "+effectif,"ont participé à un défi"],[String(contribMois.length),"séances notées"],[r.tauxEvalues+" %","ont passé l'ICP (campagne)"],[String(sess.length),"session"+(sess.length>1?"s":"")+" ICP ce mois"]];
+  cases.forEach(function(c,i){var x=14+i*46;doc.setFillColor(245,240,235);doc.roundedRect(x,Y,42,30,3,3,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(17);doc.setTextColor(194,65,12);doc.text(c[0],x+21,Y+13,{align:"center"});
+    doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(87,83,78);doc.text(doc.splitTextToSize(c[1],38),x+21,Y+21,{align:"center"});});
+  Y+=42;
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(28,25,23);doc.text("Les défis du centre",14,Y);Y+=4;
+  if(defisMois.length){
+    doc.autoTable({startY:Y,head:[["Défi","Total du centre","Objectif","Participants","Statut"]],
+      body:defisMois.map(function(d){var S=dfsStats(d);return [dfsTextePdf(d.titre),dfsNum(S.total)+" "+dfsTextePdf(d.unite),dfsNum(d.objectif)+" "+dfsTextePdf(d.unite),String(S.classement.length),S.atteint?"Objectif atteint":d.fin<dfsIso(new Date())?"Terminé":Math.round(100*S.total/Number(d.objectif))+" %"]}),
+      headStyles:{fillColor:[28,25,23]},styles:{fontSize:9.5},margin:{left:14,right:14}});
+    Y=doc.lastAutoTable.finalY+10;
+  }else{doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("Aucun défi ce mois-ci.",14,Y+6);Y+=14;}
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("Condition physique (campagne en cours)",14,Y);Y+=6;
+  var tot=Math.max(1,r.cpt["1"]+r.cpt["2"]+r.cpt["3"]),x0=14,lw=182,cols=[["3",[22,163,74],"Optimale"],["2",[245,158,11],"Engagement"],["1",[220,38,38],"Vigilance"]];
+  cols.forEach(function(c){var w=lw*r.cpt[c[0]]/tot;if(w>0){doc.setFillColor(c[1][0],c[1][1],c[1][2]);doc.rect(x0,Y,w,8,"F");x0+=w;}});
+  Y+=14;doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(28,25,23);
+  doc.text(cols.map(function(c){return c[2]+" : "+r.cpt[c[0]]}).join("   ·   ")+"   ·   Non évalués : "+(lignes.length-r.evalues),14,Y);
+  Y+=6;doc.setFontSize(8.5);doc.setTextColor(120,113,108);doc.text("Effectifs par couleur uniquement : aucun résultat individuel ne figure dans ce bilan.",14,Y);
+  Y+=12;doc.setFont("helvetica","bold");doc.setFontSize(13);doc.setTextColor(28,25,23);doc.text("Sessions ICP",14,Y);Y+=7;
+  doc.setFont("helvetica","normal");doc.setFontSize(10);
+  var prochaines=(sessionsIcp||[]).filter(function(s){return s.date>fin}).slice(0,3);
+  (sess.length?sess:[]).forEach(function(s){doc.text("• "+dfsTextePdf(libelleSession(s))+" — "+inscritsDe(s.id).length+" inscrit(s)",16,Y);Y+=6});
+  if(!sess.length)doc.text("• Aucune session ce mois-ci.",16,Y),Y+=6;
+  if(prochaines.length){Y+=2;doc.setFont("helvetica","bold");doc.text("À venir :",16,Y);Y+=6;doc.setFont("helvetica","normal");prochaines.forEach(function(s){doc.text("• "+dfsTextePdf(libelleSession(s))+" — "+inscritsDe(s.id).length+" inscrit(s)",18,Y);Y+=6});}
+  doc.setFont("helvetica","italic");doc.setFontSize(9);doc.setTextColor(120,113,108);
+  doc.text("Le Sergent-Chef : « Chaque séance compte. Merci à tous ceux qui montrent l'exemple. »",105,286,{align:"center"});
+  doc.save("Bilan_"+nomMois.replace(/\s+/g,"_")+".pdf");
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
