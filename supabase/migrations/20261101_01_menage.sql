@@ -7,7 +7,7 @@ create table public.menage_taches (
   annee integer not null check (annee between 2020 and 2100),
   mois integer not null check (mois between 1 and 12),
   jour integer not null check (jour between 1 and 31),
-  mission text not null check (mission in ('aspirateur','sols','poussiere','materiel','autres')),
+  mission text not null check (mission in ('aspirateur','sols','poussiere','materiel','poubelle','machines','autres')),
   initiales text not null check (initiales ~ '^[A-ZÀ-Ý]{2,4}$'),
   detail text,
   created_at timestamptz not null default now(),
