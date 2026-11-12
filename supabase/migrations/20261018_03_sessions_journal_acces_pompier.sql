@@ -123,3 +123,14 @@ alter table public.defis_bravos enable row level security;
 
 -- 2026-11-12 : annuaire_icp() renvoie aussi le sexe (id, prenom, nom, grade, garde, sexe) pour accorder les grades
 -- et messages des défis (Mo Sisters) ; exécution réservée aux comptes connectés (authenticated, service_role).
+
+-- 2026-11-12 : cases personnelles (calendrier de l'Avent, défi du jour), retrouvées sur tous les téléphones
+create table if not exists public.cases_perso (
+  email text not null default lower(auth.jwt() ->> 'email'),
+  type text not null check (type in ('avent','defi_jour')),
+  jour date not null,
+  cree_le timestamptz not null default now(),
+  primary key (email, type, jour)
+);
+-- RLS : chacun lit, ajoute et retire uniquement ses propres cases (email du jeton) ; l'admin peut lire.
+-- Ajout refusé pour une date après demain (pas d'ouverture des cases futures du calendrier).

@@ -1657,7 +1657,8 @@ function proposerBrouillon(){
     markDirty();
     showToast("✅ Saisies récupérées : envoi en cours…","success");
 }
-window.addEventListener("online",function(){
+window.addEventListener("online",function(){if(casesChargees)chargerCases()});
+addEventListener("online",function(){
     if(!isAdmin)return;
     if(!donneesChargees){loadFromSupabase();return;}   // données de secours : on recharge (le brouillon sera proposé)
     if(dirty)saveToSupabase().then(function(ok){if(ok){dirty=false;updateDirtyFlag();showToast("✅ Réseau revenu : saisies envoyées.","success");}});
@@ -2063,6 +2064,7 @@ async function resoudreRole(){
     }
 }
 function showLoginScreen(){
+    try{CASES={avent:{},defi_jour:{}};casesChargees=false}catch(e){}
     fermerMenuCompte();
     isAdmin=false;
     misOnglets=[];SYNTHESE_PUBLIEE=null;
@@ -3369,18 +3371,63 @@ function dfsRecordHtml(d,pid){
 }
 // Défi du jour du Sergent-Chef : facultatif, juste pour le sourire, noté sur cet appareil seulement
 var DEFIS_DU_JOUR=["20 pompes avant le café","1 minute de gainage, sans regarder la montre","30 squats pendant que l'eau chauffe","Monte les escaliers deux fois au lieu d'une","10 minutes d'étirements ce soir","15 fentes de chaque jambe","Bois un grand verre d'eau à chaque heure pile","40 jumping jacks pour réveiller la machine","La chaise contre le mur : 45 secondes","10 burpees. Oui, dix. Non, pas neuf.","Marche 15 minutes après le repas","25 abdos avant la douche","Touche tes pieds jambes tendues, 5 fois 20 secondes","2 minutes de corde à sauter (ou sans corde, personne ne regarde)","12 pompes lentes : 3 secondes pour descendre","Gainage latéral : 30 secondes de chaque côté","50 montées de genoux sur place","Tiens en équilibre sur un pied en te brossant les dents","20 squats sautés","5 minutes de respiration calme avant de dormir","Porte tes courses sans poser les sacs","30 secondes de planche, 3 fois dans la journée"];
-function cleDefiJour(){return "icp_ddj_"+(emailConnecte||"x")+"_"+dfsIso(new Date())}
+// ===== CASES PERSO (calendrier de l'Avent, défi du jour) : enregistrées dans la base (table cases_perso),
+// pour les retrouver sur n'importe quel téléphone. Copie locale en secours (hors connexion) ; elle est
+// renvoyée à la base au retour du réseau.
+var CASES={avent:{},defi_jour:{}},casesChargees=false;
+function cleCasesLocales(){return "icp_cases_"+(emailConnecte||"x")}
+function casesLocales(){try{return JSON.parse(localStorage.getItem(cleCasesLocales())||'{"avent":{},"defi_jour":{},"attente":[]}')}catch(e){return {avent:{},defi_jour:{},attente:[]}}}
+function sauverCasesLocales(L){try{localStorage.setItem(cleCasesLocales(),JSON.stringify(L))}catch(e){}}
+function migrerAnciennesCases(L){
+  // reprend ce qui avait été noté avant (anciennes clés du téléphone), une seule fois
+  try{var em=emailConnecte||"x",an=new Date().getFullYear(),av=JSON.parse(localStorage.getItem("icp_avent_"+em+"_"+an)||"[]");
+    av.forEach(function(n){var j=an+"-12-"+String(n).padStart(2,"0");if(!L.avent[j]){L.avent[j]=1;L.attente.push(["avent",j,1])}});
+    localStorage.removeItem("icp_avent_"+em+"_"+an);
+    for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);
+      if(k&&k.indexOf("icp_ddj_"+em+"_")===0&&localStorage.getItem(k)==="1"){var j2=k.slice(("icp_ddj_"+em+"_").length);if(!L.defi_jour[j2]){L.defi_jour[j2]=1;L.attente.push(["defi_jour",j2,1])}}}
+  }catch(e){}
+  return L;
+}
+async function chargerCases(){
+  if(!emailConnecte||typeof supabaseClient==="undefined")return;
+  var L=migrerAnciennesCases(casesLocales());
+  CASES={avent:Object.assign({},L.avent),defi_jour:Object.assign({},L.defi_jour)};
+  try{
+    // d'abord on renvoie ce qui attendait (cases ouvertes hors connexion)
+    var reste=[];
+    for(var i=0;i<L.attente.length;i++){var a=L.attente[i];
+      var r=a[2]?await supabaseClient.from("cases_perso").upsert({type:a[0],jour:a[1]},{onConflict:"email,type,jour",ignoreDuplicates:true})
+               :await supabaseClient.from("cases_perso").delete().eq("type",a[0]).eq("jour",a[1]);
+      if(r.error)reste.push(a);}
+    L.attente=reste;
+    var q=await supabaseClient.from("cases_perso").select("type,jour").eq("email",emailConnecte);
+    if(!q.error){CASES={avent:{},defi_jour:{}};(q.data||[]).forEach(function(x){if(CASES[x.type])CASES[x.type][x.jour]=1});
+      L.attente.forEach(function(a){if(a[2])CASES[a[0]][a[1]]=1;else delete CASES[a[0]][a[1]]});
+      L.avent=CASES.avent;L.defi_jour=CASES.defi_jour;}
+  }catch(e){}
+  sauverCasesLocales(L);casesChargees=true;
+  renderAvent();renderMotSergent();
+}
+async function marquerCase(type,jour,on){
+  if(on)CASES[type][jour]=1;else delete CASES[type][jour];
+  var L=casesLocales();L[type]=CASES[type];
+  try{var r=on?await supabaseClient.from("cases_perso").upsert({type:type,jour:jour},{onConflict:"email,type,jour",ignoreDuplicates:true})
+              :await supabaseClient.from("cases_perso").delete().eq("type",type).eq("jour",jour);
+    if(r.error)throw r.error;}
+  catch(e){L.attente=(L.attente||[]).filter(function(a){return !(a[0]===type&&a[1]===jour)});L.attente.push([type,jour,on?1:0]);}
+  sauverCasesLocales(L);
+}
+function nbDefisJour(){return Object.keys(CASES.defi_jour).length}
 function defiDuJourHtml(){
-  var jour=Math.floor(Date.now()/864e5),txt=DEFIS_DU_JOUR[jour%DEFIS_DU_JOUR.length],fait=false,n=0;
-  try{fait=localStorage.getItem(cleDefiJour())==="1";n=parseInt(localStorage.getItem("icp_ddj_total_"+(emailConnecte||"x"))||"0",10)}catch(e){}
+  var jour=Math.floor(Date.now()/864e5),txt=DEFIS_DU_JOUR[jour%DEFIS_DU_JOUR.length],fait=!!CASES.defi_jour[dfsIso(new Date())],n=nbDefisJour();
   return '<div class="ddj'+(fait?' fait':'')+'" onclick="event.stopPropagation()"><span><small>Défi du jour'+(n?' · '+n+' relevé'+(n>1?'s':''):'')+'</small>'+dfsEsc(txt)+'</span>'
     +'<button onclick="cocherDefiJour()">'+(fait?'✔ Fait':'Je l\'ai fait')+'</button></div>';
 }
 function cocherDefiJour(){
-  var k=cleDefiJour(),kt="icp_ddj_total_"+(emailConnecte||"x");
-  try{var fait=localStorage.getItem(k)==="1",n=parseInt(localStorage.getItem(kt)||"0",10);
-    if(fait){localStorage.removeItem(k);localStorage.setItem(kt,String(Math.max(0,n-1)))}
-    else{localStorage.setItem(k,"1");localStorage.setItem(kt,String(n+1));vibrer();
+  var j=dfsIso(new Date()),fait=!!CASES.defi_jour[j],n=nbDefisJour();
+  marquerCase("defi_jour",j,!fait);
+  try{
+    if(!fait){vibrer();
       showToast("🎖️ « "+["C'est noté. Je suis presque impressionné.","Bien. Demain, on recommence.","Voilà. Ça, c'est du sérieux.","Fait ? Je te crois. Cette fois."][n%4]+" »","success");}
   }catch(e){}
   renderMotSergent();
@@ -3506,8 +3553,8 @@ var AVENT=[
 // ordre des cases mélangé (toujours le même), comme un vrai calendrier
 var AVENT_ORDRE=[14,3,21,8,1,17,11,24,6,19,2,13,22,9,16,5,20,12,7,23,10,18,4,15];
 function jourAvent(){var t=new Date();if(t.getMonth()===11)return Math.min(t.getDate(),25);return NOEL_ON?1:0}
-function cleAvent(){return "icp_avent_"+(emailConnecte||"x")+"_"+new Date().getFullYear()}
-function aventOuvertes(){try{return JSON.parse(localStorage.getItem(cleAvent())||"[]")}catch(e){return []}}
+function jourIsoAvent(n){return new Date().getFullYear()+"-12-"+String(n).padStart(2,"0")}
+function aventOuvertes(){var an=new Date().getFullYear()+"-12-";return Object.keys(CASES.avent).filter(function(k){return k.indexOf(an)===0}).map(function(k){return parseInt(k.slice(8),10)})}
 function renderAvent(tab){
   var el=document.getElementById("avent");if(!el)return;
   tab=tab||ongletCourant;
@@ -3538,7 +3585,7 @@ function caseAvent(n){
   var j=jourAvent();
   if(n>j){showToast("🔒 Pas avant le "+n+" décembre ! J'ai déjà vu des petits malins.","info");return}
   var ouv=aventOuvertes(),neuve=ouv.indexOf(n)===-1;
-  if(neuve){ouv.push(n);try{localStorage.setItem(cleAvent(),JSON.stringify(ouv))}catch(e){}vibrer();if(n===j)confettis("noel")}
+  if(neuve){marquerCase("avent",jourIsoAvent(n),true);vibrer();if(n===j)confettis("noel")}
   dessinerAvent(n);
 }
 // ----- Grand final du 24 décembre : le traîneau décolle -----
@@ -5680,6 +5727,7 @@ async function chargerDefis(force){
     if(b.error)throw b.error;
     dfsContrib=b.data||[];
     await chargerBravos();
+    if(!casesChargees)chargerCases();
   }catch(e){
     dfsErreur=/defis/i.test(e.message||"")
       ? "Les tables « defis » n'existent pas encore dans Supabase."
