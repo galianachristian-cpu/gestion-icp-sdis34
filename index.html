@@ -505,6 +505,26 @@ span.bravo.vu{cursor:default;opacity:.85}
 .util-barres div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px}
 .util-barres i{display:block;width:100%;max-width:34px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary))}
 .util-barres b{margin-top:3px}.util-barres small{color:var(--muted);white-space:nowrap}
+/* ===== DUELS, MUR DES PHOTOS ===== */
+.duel{padding:10px 12px;border-radius:12px;background:var(--pcard2,var(--surface2));border:1px solid var(--pline,var(--border));margin-bottom:8px}
+.duel.invit{background:linear-gradient(120deg,rgba(234,88,12,.22),rgba(251,191,36,.08));border-color:rgba(251,191,36,.55)}
+.duel.invit>span{display:block;font-size:14px;margin-bottom:8px}
+.duel-n{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px}
+.duel-n span{display:flex;align-items:center;gap:6px;min-width:0}.duel-n span.gagne b{color:var(--a2,#fbbf24)}
+.duel-n b{font-family:var(--titre);font-size:20px}.duel-n em{font-style:normal;font-weight:800;font-size:12px;color:var(--pmuted,var(--muted))}
+.duel-b{height:10px;border-radius:999px;margin:8px 0 4px;background:linear-gradient(90deg,#3b82f6,#3b82f6);overflow:hidden}
+.duel-b i{display:block;height:100%;background:linear-gradient(90deg,#ea580c,#fbbf24);transition:width .6s}
+.duel small{font-size:11.5px;color:var(--pmuted,var(--muted))}
+.mur{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:6px}
+.mur-ph{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--surface2)}
+.mur-ph img{width:100%;height:100%;object-fit:cover;cursor:pointer;display:block}
+.mur-ph span{position:absolute;left:0;right:0;bottom:0;padding:3px 6px;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.mur-ph.attente{outline:2px dashed #fbbf24}
+.mur-act{position:absolute;top:4px;right:4px;display:flex;gap:4px}
+.mur-act button{border:0;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;padding:3px 6px;cursor:pointer}
+.tv-photo{position:relative;padding:0;overflow:hidden;height:24vh;flex-shrink:0}
+.tv-photo img{width:100%;height:100%;object-fit:cover;display:block;animation:monte .8s both}
+.tv-photo span{position:absolute;left:0;right:0;bottom:0;padding:1vh 1vw;font-size:2.4vh;font-weight:800;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.8))}
 /* ===== DÉCO DE NOËL ===== */
 #guirlande{position:absolute;left:14px;right:14px;bottom:-11px;height:20px;pointer-events:none;z-index:2}
 .guirlande{position:relative;display:flex;justify-content:space-between;align-items:flex-start;height:20px;padding:0 4px}
@@ -2989,6 +3009,7 @@ function renderTV(){
     +(fil.length?fil.map(function(x){return '<div class="tv-l">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))+'<span class="n">'+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+'</span>'
       +'<span class="v"><b>+'+dfsNum(x.valeur)+'</b> '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span></div>'}).join("")
       :'<p class="tv-note">Aucune séance notée. Qui ouvre le bal ?</p>')+'</div>';
+  dernieres=tvPhotoHtml(d)+dernieres;
   var hs=pannesOuvertes();
   if(hs.length)dernieres+='<div class="tv-carte tv-hs"><div class="tv-sec">⚠️ Hors service</div>'+hs.map(function(p){return '<div class="tv-l"><span class="n">🔧 '+dfsEsc(p.machine)+'</span><span class="v">'+(p.description?dfsEsc(p.description).slice(0,40):'en attente de réparation')+'</span></div>'}).join("")+'</div>';
   var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
@@ -3960,6 +3981,99 @@ function utilisationHtml(){
     +'<div class="util-barres">'+semaines.map(function(s,i){return '<div><i style="height:'+Math.max(4,Math.round(100*s.n/max))+'%"></i><b>'+s.n+'</b><small>'+(i===semaines.length-1?"cette sem.":s.a.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}))+'</small></div>'}).join("")+'</div>'
     +'<p style="font-size:12px;color:var(--muted);margin:8px 0 14px">Personnes différentes connectées chaque semaine (hors administrateur et écran de la salle). « Installé » se remplit au fur et à mesure des prochaines connexions.</p>';
 }
+// ===== DUELS (un pompier en défie un autre sur le défi en cours, jusqu'au dimanche) =====
+var duels=[],duelOccupe=false;
+async function chargerDuels(){try{var r=await supabaseClient.from("duels").select("*").order("cree_le",{ascending:false}).limit(200);if(!r.error)duels=r.data||[]}catch(e){}}
+function scoreDuel(du,pid){var v=0;dfsContrib.forEach(function(x){if(x.defi_id===du.defi_id&&x.pompier_id===pid&&x.date>=du.debut&&x.date<=du.fin)v+=Number(x.valeur||0)});return v}
+function dimancheProchain(){var t=new Date();t.setHours(12,0,0,0);var j=t.getDay();t.setDate(t.getDate()+(j===0?7:7-j));return t}
+function duelsHtml(d){
+  var moi=dfsMoi(),t=dfsIso(new Date());
+  var L=duels.filter(function(x){return x.defi_id===d.id&&(x.statut==="accepte"||(x.statut==="propose"&&x.fin>=t))});
+  var enCours=L.filter(function(x){return x.statut==="accepte"&&x.fin>=t}),finis=L.filter(function(x){return x.statut==="accepte"&&x.fin<t}).slice(0,3);
+  var invit=moi?L.filter(function(x){return x.statut==="propose"&&x.adversaire===moi.id}):[];
+  var mesProp=moi?L.filter(function(x){return x.statut==="propose"&&x.challenger===moi.id}):[];
+  var u=dfsEsc(d.unite),pr=function(p){return dfsEsc(prenomDe(p))};
+  var h='<div class="pcard"><div class="sec">⚔️ Les duels</div>';
+  if(invit.length)h+=invit.map(function(x){return '<div class="duel invit"><span>🥊 <b>'+pr(x.challenger)+'</b> te défie jusqu\'à dimanche ! Qui fera le plus de '+u+' ?</span>'
+    +'<div class="prow"><button class="pbtn pri" onclick="repondreDuel('+x.id+',\'accepte\')">J\'accepte 💪</button><button class="pbtn" onclick="repondreDuel('+x.id+',\'refuse\')">Pas cette fois</button></div></div>'}).join("");
+  h+=enCours.length?enCours.map(function(x){var a=scoreDuel(x,x.challenger),b=scoreDuel(x,x.adversaire),tot=Math.max(1,a+b);
+      return '<div class="duel"><div class="duel-n"><span class="'+(a>b?'gagne':'')+'">'+avatarMini(x.challenger,initialesDe(x.challenger))+pr(x.challenger)+' <b>'+dfsNum(a)+'</b></span><em>VS</em><span class="'+(b>a?'gagne':'')+'"><b>'+dfsNum(b)+'</b> '+pr(x.adversaire)+avatarMini(x.adversaire,initialesDe(x.adversaire))+'</span></div>'
+        +'<div class="duel-b"><i style="width:'+Math.round(100*a/tot)+'%"></i></div><small>'+u+' · jusqu\'au '+new Date(x.fin+"T12:00:00").toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</small></div>'}).join("")
+    :(invit.length?'':'<p class="note" style="margin-top:0">Aucun duel en cours. Lance le premier : c\'est l\'heure de régler les comptes. Gentiment.</p>');
+  if(mesProp.length)h+='<p class="note">En attente de réponse : '+mesProp.map(function(x){return pr(x.adversaire)+' <button class="dfs-x" title="Annuler" onclick="repondreDuel('+x.id+',\'annule\')">✕</button>'}).join(" · ")+'</p>';
+  if(finis.length)h+='<p class="note">Derniers résultats : '+finis.map(function(x){var a=scoreDuel(x,x.challenger),b=scoreDuel(x,x.adversaire);
+      return a===b?pr(x.challenger)+' et '+pr(x.adversaire)+' : égalité':'🏆 <b>'+pr(a>b?x.challenger:x.adversaire)+'</b> bat '+pr(a>b?x.adversaire:x.challenger)+' ('+dfsNum(Math.max(a,b))+' à '+dfsNum(Math.min(a,b))+')'}).join(" · ")+'</p>';
+  if(moi&&d.actif&&!dfsAVenir(d)&&d.fin>=t){
+    var dejaPris={};L.forEach(function(x){if(x.challenger===moi.id)dejaPris[x.adversaire]=1;if(x.adversaire===moi.id)dejaPris[x.challenger]=1});
+    var choix=Object.keys(ANNUAIRE).length?Object.keys(ANNUAIRE).map(function(k){return ANNUAIRE[k]}):(data||[]);
+    choix=choix.filter(function(p){return p.id!==moi.id&&!dejaPris[p.id]}).sort(parNomPrenom);
+    if(choix.length)h+='<div class="prow" style="margin-top:10px"><select id="duelAdv" style="flex:1;min-width:140px"><option value="">Choisis ton adversaire…</option>'+choix.map(function(p){return '<option value="'+p.id+'">'+escAttr(p.prenom+" "+p.nom)+'</option>'}).join("")+'</select><button class="pbtn pri" onclick="lancerDuel('+d.id+')">🥊 Défier</button></div>';
+  }
+  return h+'</div>';
+}
+async function lancerDuel(defiId){
+  var moi=dfsMoi(),sel=document.getElementById("duelAdv"),adv=sel&&parseInt(sel.value,10);if(!moi||!adv||duelOccupe)return;
+  var d=dfsListe.filter(function(x){return x.id===defiId})[0],fin=dimancheProchain(),f=dfsIso(fin);if(d&&f>d.fin)f=d.fin;
+  duelOccupe=true;
+  try{var r=await supabaseClient.from("duels").insert({defi_id:defiId,challenger:moi.id,adversaire:adv,debut:dfsIso(new Date()),fin:f});if(r.error)throw r.error;
+    showToast("🥊 Défi lancé ! "+prenomDe(adv)+" va recevoir l'invitation.","success");await chargerDuels();renderDefis();}
+  catch(e){showToast("Impossible : "+(e.message||e),"error")}finally{duelOccupe=false}
+}
+async function repondreDuel(id,statut){
+  if(duelOccupe)return;duelOccupe=true;
+  var maj={statut:statut};if(statut==="accepte")maj.debut=dfsIso(new Date());
+  try{var r=await supabaseClient.from("duels").update(maj).eq("id",id);if(r.error)throw r.error;
+    showToast(statut==="accepte"?"⚔️ Duel accepté. Que le meilleur gagne !":statut==="refuse"?"Duel refusé. Le Sergent-Chef note ça dans un coin.":"Duel annulé","success");
+    if(statut==="accepte")confettis();await chargerDuels();renderDefis();}
+  catch(e){showToast("Impossible : "+(e.message||e),"error")}finally{duelOccupe=false}
+}
+// ===== MUR DES PHOTOS (photo d'une séance, validée par l'admin avant de s'afficher) =====
+var photosSeances=[];
+async function chargerPhotosSeances(){try{var r=await supabaseClient.from("photos_seances").select("id,contrib_id,pompier_id,image,valide,cree_le").order("cree_le",{ascending:false}).limit(60);if(!r.error)photosSeances=r.data||[]}catch(e){}}
+function photoDeContrib(cid){return photosSeances.filter(function(p){return p.contrib_id===cid})[0]}
+function ajouterPhotoSeance(cid){
+  var moi=dfsMoi();if(!moi)return;
+  var inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+  inp.onchange=function(){var f=inp.files&&inp.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){var img=new Image();img.onload=async function(){
+      var t=900,k=Math.min(1,t/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);var url=c.toDataURL("image/jpeg",.72);
+      try{var res=await supabaseClient.from("photos_seances").insert({contrib_id:cid,pompier_id:moi.id,image:url});if(res.error)throw res.error;
+        showToast("📸 Photo envoyée ! Elle s'affichera sur le mur une fois validée.","success");await chargerPhotosSeances();renderDefis();}
+      catch(e){showToast("Photo impossible : "+(e.message||e),"error")}};img.src=r.result};r.readAsDataURL(f)};
+  inp.click();
+}
+async function retirerPhotoSeance(id){
+  if(!confirm("Retirer cette photo ?"))return;
+  try{var r=await supabaseClient.from("photos_seances").delete().eq("id",id);if(r.error)throw r.error;await chargerPhotosSeances();renderDefis();renderTV()}catch(e){showToast("Impossible : "+(e.message||e),"error")}
+}
+async function validerPhotoSeance(id){
+  try{var r=await supabaseClient.from("photos_seances").update({valide:true}).eq("id",id);if(r.error)throw r.error;showToast("✅ Photo publiée sur le mur","success");await chargerPhotosSeances();renderDefis()}catch(e){showToast("Impossible : "+(e.message||e),"error")}
+}
+function voirPhotoSeance(id){
+  var p=photosSeances.filter(function(x){return x.id===id})[0];if(!p)return;
+  var m=document.getElementById("modalPanne");if(!m){m=document.createElement("div");m.id="modalPanne";m.className="modal-overlay";m.onclick=function(e){if(e.target===m)fermerPanne()};document.body.appendChild(m)}
+  var c=dfsContrib.filter(function(x){return x.id===p.contrib_id})[0];
+  m.innerHTML='<div class="modal"><h3>📸 '+dfsEsc(dfsNom(p.pompier_id))+'</h3><img src="'+p.image+'" alt="" style="width:100%;border-radius:12px"><p class="note">'+(c?'+'+dfsNum(c.valeur)+' · '+quandContrib(c):'')+'</p><div style="text-align:right;margin-top:10px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPanne()">Fermer</button></div></div>';
+  m.classList.remove("hidden");
+}
+function murPhotosHtml(d){
+  var ids={};dfsContrib.forEach(function(x){if(x.defi_id===d.id)ids[x.id]=1});
+  var L=photosSeances.filter(function(p){return ids[p.contrib_id]&&p.valide}),att=isAdmin?photosSeances.filter(function(p){return ids[p.contrib_id]&&!p.valide}):[];
+  if(!L.length&&!att.length)return "";
+  var h='<div class="pcard"><div class="sec">📸 Le mur</div>';
+  if(att.length)h+='<p class="note" style="margin-top:0"><b>À valider ('+att.length+')</b> : visibles par toi seul tant que tu ne les publies pas.</p><div class="mur">'+att.map(function(p){return '<div class="mur-ph attente"><img src="'+p.image+'" alt="" onclick="voirPhotoSeance('+p.id+')"><span>'+dfsEsc(prenomDe(p.pompier_id))+'</span><div class="mur-act"><button onclick="validerPhotoSeance('+p.id+')">✅</button><button onclick="retirerPhotoSeance('+p.id+')">🗑️</button></div></div>'}).join("")+'</div>';
+  if(L.length)h+='<div class="mur">'+L.slice(0,12).map(function(p){return '<div class="mur-ph"><img src="'+p.image+'" alt="" onclick="voirPhotoSeance('+p.id+')"><span>'+dfsEsc(prenomDe(p.pompier_id))+'</span>'+(isAdmin?'<div class="mur-act"><button onclick="retirerPhotoSeance('+p.id+')">🗑️</button></div>':'')+'</div>'}).join("")+'</div>';
+  return h+'</div>';
+}
+// Mode TV : une photo validée qui change toutes les 10 secondes
+function tvPhotoHtml(d){
+  var ids={};dfsContrib.forEach(function(x){if(x.defi_id===d.id)ids[x.id]=1});
+  var L=photosSeances.filter(function(p){return p.valide&&ids[p.contrib_id]});if(!L.length)return "";
+  var p=L[Math.floor(Date.now()/1e4)%L.length];
+  return '<div class="tv-carte tv-photo"><img src="'+p.image+'" alt=""><span>📸 '+dfsEsc(prenomDe(p.pompier_id))+'</span></div>';
+}
+setInterval(function(){if(document.body.classList.contains("tv-on")&&photosSeances.some(function(p){return p.valide}))renderTV()},10000);
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
   if(dfsAVenir(d))return;
@@ -6095,6 +6209,7 @@ async function chargerDefis(force){
     dfsContrib=b.data||[];
     await chargerBravos();
     await chargerPannes();
+    await chargerDuels();await chargerPhotosSeances();
     if(!casesChargees)chargerCases();
   }catch(e){
     dfsErreur=/defis/i.test(e.message||"")
@@ -6200,7 +6315,9 @@ function dfsCarte(d){
       +'<span class="note" style="margin:0">'+MB.seances+' séance'+(MB.seances>1?'s':'')+' · '+MB.jours+' jour'+(MB.jours>1?'s':'')+' · '+MB.part+' % du total du centre</span></div>'
       +'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button></div></div>';}
   if(d.par_garde)h+=dfsGardesHtml(d);
+  if(!dfsAVenir(d))h+=duelsHtml(d);
   if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
+  if(!dfsAVenir(d))h+=murPhotosHtml(d);
   // classement
   if(dfsAVenir(d)&&!S.classement.length)return h+(isAdmin?dfsAdminHtml(d):"");
   h+='<div class="pcard"><div class="sec">Qui a fait quoi</div>';
@@ -6275,6 +6392,7 @@ function dfsMesLignes(d,moi){
   return '<div class="dfs-hist">'+mine.map(function(x){
     return '<div class="dfs-hl"><span>'+new Date(x.date+"T00:00:00").toLocaleDateString("fr-FR")+'</span>'
       +'<b>+'+dfsNum(x.valeur)+'</b>'
+      +(function(){var ph=photoDeContrib(x.id);return ph?'<button class="dfs-x" title="'+(ph.valide?'Photo publiée':'Photo en attente de validation')+'" onclick="voirPhotoSeance('+ph.id+')">'+(ph.valide?'🖼️':'⏳')+'</button>':'<button class="dfs-x" title="Ajouter une photo de la séance" onclick="ajouterPhotoSeance('+x.id+')">📷</button>'})()
       +'<button class="dfs-x" title="Retirer" onclick="dfsRetirer('+x.id+')">✕</button></div>'}).join("")+'</div>';
 }
 

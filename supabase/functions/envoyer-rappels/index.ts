@@ -4,7 +4,7 @@
 // Défis du centre : prévient aussi tous les abonnés au départ d'un défi et quand le
 // centre franchit 25, 50, 75 et 100 %, puis les paliers bonus 150, 200, 250 %…
 // (une seule fois par palier, entre 8 h et 21 h 30). Session ICP : rappel à J-7 (une fois par session).
-// Machine en panne : alerte à l'administrateur dans le quart d'heure.
+// Machine en panne : alerte à l'administrateur dans le quart d'heure. Duel : l'adversaire est prévenu.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.47.10";
 import webpush from "npm:web-push@3.6.7";
@@ -172,7 +172,23 @@ Deno.serve(async (req: Request) => {
         }
       }
     }
-    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees, pannes: pannesEnvoyees });
+    // ----- Duels : l'adversaire est prévenu qu'on le défie (entre 8 h et 21 h 30) -----
+    let duelsEnvoyes = 0;
+    if (!essai && minutes >= 8 * 60 && minutes <= 21 * 60 + 30) {
+      const { data: nd } = await sb.from("duels").select("id,challenger,adversaire,defi_id").eq("notifie", false).eq("statut", "propose");
+      for (const du of nd ?? []) {
+        const { data: maj } = await sb.from("duels").update({ notifie: true }).eq("id", du.id).eq("notifie", false).select("id");
+        if (!maj || !maj.length) continue;
+        const { data: ch } = await sb.from("pompiers").select("prenom").eq("id", du.challenger).maybeSingle();
+        const charge = JSON.stringify({ titre: "🥊 On te défie !", corps: `${ch?.prenom ?? "Un collègue"} te lance un duel jusqu'à dimanche. Ouvre l'appli pour accepter… si tu oses.`, url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/" });
+        for (const a of (abos ?? []).filter((x: { pompier_id: number }) => x.pompier_id === du.adversaire)) {
+          try { await webpush.sendNotification({ endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } }, charge); envoyes++; }
+          catch (e) { const code = (e as { statusCode?: number }).statusCode; if (code === 404 || code === 410) { await sb.from("push_abos").delete().eq("id", a.id); retires++; } }
+        }
+        duelsEnvoyes++;
+      }
+    }
+    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees, pannes: pannesEnvoyees, duels: duelsEnvoyes });
   } catch (e) {
     return Response.json({ erreur: (e as Error).message }, { status: 500 });
   }

@@ -154,3 +154,14 @@ create table if not exists public.inscriptions_icp (
 -- mise à jour / suppression par l'admin. Alerte push (envoyer-rappels v11) aux fiches listées dans
 -- secrets_internes.alerte_pannes_pompiers.
 -- connexions_icp.installe : appli ouverte depuis l'écran d'accueil (noter_connexion(p_installe boolean default null)).
+
+-- ===== 13/11/2026 : duels et mur des photos (migration « duels_et_mur_photos ») =====
+-- duels : un pompier en défie un autre sur le défi en cours, jusqu'au dimanche.
+--   id, defi_id, challenger, adversaire (pompiers.id), debut, fin (date),
+--   statut propose / accepte / refuse / annule, notifie (push envoyé par envoyer-rappels), cree_le.
+--   RLS : lecture par les comptes connectés ; création seulement avec challenger = mon_pompier_id_icp() ;
+--   modification par l'un des deux participants ou l'admin ; suppression par l'admin.
+-- photos_seances : photo d'une séance (contrib), publiée sur le mur et la TV après validation de l'admin.
+--   id, contrib_id (unique), pompier_id, image (data URL JPEG, 400 000 caractères max), valide, cree_le.
+--   RLS : lecture des photos validées, des siennes, ou tout pour l'admin ; ajout de sa propre photo,
+--   sur sa propre séance, toujours valide = false ; validation par l'admin ; suppression par l'auteur ou l'admin.
