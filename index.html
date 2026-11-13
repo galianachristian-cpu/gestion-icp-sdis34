@@ -487,6 +487,24 @@ span.bravo.vu{cursor:default;opacity:.85}
 .insc-places{font-size:12px;font-weight:700;color:var(--muted)}.insc-places.plein{color:var(--warning)}
 .insc-btn{padding:7px 14px;border-radius:999px;border:0;background:linear-gradient(135deg,var(--rouge),var(--primary));color:#fff;font:800 11.5px Inter,sans-serif;cursor:pointer;white-space:nowrap}
 .insc-btn.on{background:#16a34a;color:#fff}.insc-btn:disabled{opacity:.6;cursor:default}
+/* ===== LA SALLE, PROGRAMMATION, UTILISATION ===== */
+.pannes{display:flex;flex-direction:column;gap:8px}
+.panne{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.5)}
+.panne-ic{font-size:22px}.panne-t{flex:1;min-width:0}.panne-t b{display:block;font-size:14.5px}.panne-t small{display:block;font-size:12px;color:var(--pmuted,var(--muted))}
+.panne-ph{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 8px;cursor:pointer}
+.prog summary{cursor:pointer;list-style-position:inside}.prog summary small{color:var(--muted);margin-left:6px}
+.prog-l{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--border);font-size:14px}
+.prog-m{width:58px;flex-shrink:0;font-family:var(--titre);color:var(--accent)}
+.prog-t{flex:1;min-width:0}.prog-t small{display:block;font-size:11.5px;color:var(--muted)}
+.prog-l.fait{opacity:.75}.prog-ok{color:var(--success);font-weight:800}
+.tv-hs{border-color:rgba(220,38,38,.6);background:rgba(127,29,29,.35)}
+.util-cases{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.util-cases div{padding:10px;border-radius:12px;background:var(--surface2);border:1px solid var(--border);text-align:center}
+.util-cases b{display:block;font-family:var(--titre);font-size:24px;color:var(--accent)}.util-cases small{font-size:12px;color:var(--muted)}
+.util-barres{display:flex;align-items:flex-end;gap:6px;height:130px;padding:6px 0 0}
+.util-barres div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px}
+.util-barres i{display:block;width:100%;max-width:34px;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--accent),var(--primary))}
+.util-barres b{margin-top:3px}.util-barres small{color:var(--muted);white-space:nowrap}
 /* ===== DÉCO DE NOËL ===== */
 #guirlande{position:absolute;left:14px;right:14px;bottom:-11px;height:20px;pointer-events:none;z-index:2}
 .guirlande{position:relative;display:flex;justify-content:space-between;align-items:flex-start;height:20px;padding:0 4px}
@@ -1479,6 +1497,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <div class="card">
 <div class="card-title">🕒 Connexions</div>
 <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Chaque ouverture de l'appli par un compte (pompier, chef ou équipe) est notée, au plus une fois par quart d'heure. Les vôtres ne sont pas comptées.</p>
+<div id="utilisation"></div>
 <div id="connexionsListe"><div class="squelette" style="min-height:60px"></div></div>
 </div>
 <div class="card">
@@ -1726,7 +1745,7 @@ async function loadFromSupabase() {
             await chargerAnnuaire();
             chargerPhotos().then(function(){if(PHOTOS&&Object.keys(PHOTOS).length){renderFiche();if(typeof renderDefis==="function"&&dfsCharge)renderDefis();}});
             if(tabAutorise("defis"))chargerDefis(true);
-            if(!isAdmin)supabaseClient.rpc('noter_connexion').then(function(){},function(){});
+            if(!isAdmin)supabaseClient.rpc('noter_connexion',{p_installe:!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone)}).then(function(){},function(){});
             renderAll();
             publierSyntheseDiffere();
             sauverCache();
@@ -1736,7 +1755,7 @@ async function loadFromSupabase() {
             updateSupabaseStatus(true, "Connecté — Aucune donnée distante");
             chargerHistoriqueDeReference();
             // Compte « écran de salle » : aucun pompier lisible, mais le défi, les prénoms et les photos oui
-            if(!isAdmin){await chargerAnnuaire();await chargerPhotos();if(tabAutorise("defis"))chargerDefis(true);supabaseClient.rpc('noter_connexion').then(function(){},function(){});}
+            if(!isAdmin){await chargerAnnuaire();await chargerPhotos();if(tabAutorise("defis"))chargerDefis(true);supabaseClient.rpc('noter_connexion',{p_installe:!!(window.matchMedia&&matchMedia('(display-mode: standalone)').matches||navigator.standalone)}).then(function(){},function(){});}
             renderAll();
             return false;
         }
@@ -2970,6 +2989,8 @@ function renderTV(){
     +(fil.length?fil.map(function(x){return '<div class="tv-l">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))+'<span class="n">'+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+'</span>'
       +'<span class="v"><b>+'+dfsNum(x.valeur)+'</b> '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span></div>'}).join("")
       :'<p class="tv-note">Aucune séance notée. Qui ouvre le bal ?</p>')+'</div>';
+  var hs=pannesOuvertes();
+  if(hs.length)dernieres+='<div class="tv-carte tv-hs"><div class="tv-sec">⚠️ Hors service</div>'+hs.map(function(p){return '<div class="tv-l"><span class="n">🔧 '+dfsEsc(p.machine)+'</span><span class="v">'+(p.description?dfsEsc(p.description).slice(0,40):'en attente de réparation')+'</span></div>'}).join("")+'</div>';
   var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
   el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+podium+dernieres+qr+'</div></div></div>';
 }
@@ -3813,6 +3834,131 @@ async function bilanMoisPDF(){
   doc.setFont("helvetica","italic");doc.setFontSize(9);doc.setTextColor(120,113,108);
   doc.text("Le Sergent-Chef : « Chaque séance compte. Merci à tous ceux qui montrent l'exemple. »",105,286,{align:"center"});
   doc.save("Bilan_"+nomMois.replace(/\s+/g,"_")+".pdf");
+}
+// ===== LA SALLE : MACHINES EN PANNE (table pannes) =====
+var MACHINES=["Rameur","SkiErg","Vélo / Assault","Tapis de course","Banc","Rack / barre","Haltères / kettlebells","Poulie / tirage","Sono / télé","Autre"];
+var pannes=[],pannesChargees=false,panneOccupe=false,pannePhoto=null;
+async function chargerPannes(){
+  try{var r=await supabaseClient.from("pannes").select("*").order("cree_le",{ascending:false}).limit(100);if(!r.error){pannes=r.data||[];pannesChargees=true}}catch(e){}
+}
+function pannesOuvertes(){return pannes.filter(function(p){return p.statut==="ouverte"})}
+function salleHtml(){
+  var L=pannesOuvertes(),rep=pannes.filter(function(p){return p.statut==="reparee"}).slice(0,3);
+  var h='<div class="pcard"><div class="sec">🔧 La salle</div>';
+  h+=L.length?'<div class="pannes">'+L.map(function(p){
+      return '<div class="panne"><span class="panne-ic">⚠️</span><span class="panne-t"><b>'+dfsEsc(p.machine)+' : HS</b><small>'+(p.description?dfsEsc(p.description)+' · ':'')+'signalé '+quandContrib({cree_le:p.cree_le})+'</small></span>'
+        +(p.photo?'<button class="panne-ph" onclick="voirPhotoPanne('+p.id+')" title="Voir la photo">📷</button>':'')
+        +(isAdmin?'<button class="pbtn" onclick="panneReparee('+p.id+')">✅ Réparé</button>':'')+'</div>'}).join("")+'</div>'
+    :'<p class="note" style="margin-top:0">✅ Tout fonctionne. Le Sergent-Chef est (presque) content.</p>';
+  h+='<div class="prow" style="margin-top:10px"><button class="pbtn" onclick="ouvrirPanne()">🔧 Signaler un problème</button></div>';
+  if(isAdmin&&rep.length)h+='<p class="note">Réparé récemment : '+rep.map(function(p){return dfsEsc(p.machine)}).join(", ")+'</p>';
+  return h+'</div>';
+}
+function ouvrirPanne(){
+  pannePhoto=null;
+  var m=document.getElementById("modalPanne");
+  if(!m){m=document.createElement("div");m.id="modalPanne";m.className="modal-overlay";m.onclick=function(e){if(e.target===m)fermerPanne()};document.body.appendChild(m)}
+  m.innerHTML='<div class="modal"><h3>🔧 Signaler un problème</h3>'
+    +'<div class="form-row"><label>Quelle machine ?</label><select id="panneMachine">'+MACHINES.map(function(x){return '<option>'+x+'</option>'}).join("")+'</select></div>'
+    +'<div class="form-row"><label>Qu\'est-ce qui ne va pas ? (facultatif)</label><input type="text" id="panneTexte" maxlength="200" placeholder="ex. la sangle du rameur est déchirée"></div>'
+    +'<div class="form-row"><button type="button" class="btn btn-sm" style="background:var(--surface2);color:var(--text)" onclick="photoPanne()">📷 Ajouter une photo</button> <span id="pannePhotoOk" style="font-size:13px;color:var(--success)"></span></div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPanne()">Annuler</button><button class="btn btn-danger" onclick="envoyerPanne()">Signaler</button></div></div>';
+  m.classList.remove("hidden");
+}
+function fermerPanne(){var m=document.getElementById("modalPanne");if(m)m.classList.add("hidden")}
+function photoPanne(){
+  var inp=document.createElement("input");inp.type="file";inp.accept="image/*";
+  inp.onchange=function(){var f=inp.files&&inp.files[0];if(!f)return;var r=new FileReader();
+    r.onload=function(){var img=new Image();img.onload=function(){
+      var t=720,k=Math.min(1,t/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);pannePhoto=c.toDataURL("image/jpeg",.72);
+      var ok=document.getElementById("pannePhotoOk");if(ok)ok.textContent="✓ photo ajoutée";};img.src=r.result};r.readAsDataURL(f)};
+  inp.click();
+}
+async function envoyerPanne(){
+  if(panneOccupe)return;panneOccupe=true;
+  var ligne={machine:document.getElementById("panneMachine").value,description:document.getElementById("panneTexte").value.trim()||null,photo:pannePhoto};
+  try{var r=await supabaseClient.from("pannes").insert(ligne);if(r.error)throw r.error;
+    fermerPanne();showToast("🔧 Signalé. Le Sergent-Chef transmet à la logistique (bon courage).","success");
+    await chargerPannes();renderDefis();renderTV();}
+  catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{panneOccupe=false}
+}
+async function panneReparee(id){
+  if(!isAdmin)return;
+  try{var r=await supabaseClient.from("pannes").update({statut:"reparee",repare_le:new Date().toISOString()}).eq("id",id);if(r.error)throw r.error;
+    showToast("✅ Machine remise en service","success");await chargerPannes();renderDefis();}
+  catch(e){showToast("Impossible : "+(e.message||e),"error")}
+}
+function voirPhotoPanne(id){
+  var p=pannes.filter(function(x){return x.id===id})[0];if(!p||!p.photo)return;
+  var m=document.getElementById("modalPanne");if(!m){ouvrirPanne();m=document.getElementById("modalPanne")}
+  m.innerHTML='<div class="modal"><h3>📷 '+dfsEsc(p.machine)+'</h3><img src="'+p.photo+'" alt="" style="width:100%;border-radius:12px"><p class="note">'+dfsEsc(p.description||"")+'</p><div style="text-align:right;margin-top:10px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerPanne()">Fermer</button></div></div>';
+  m.classList.remove("hidden");
+}
+// ===== PROGRAMMER LES DÉFIS DE L'ANNÉE (admin) =====
+// D'après le calendrier docs/calendrier-defis.md ; chaque défi démarre le 1er du mois, l'annonce sort 7 jours avant.
+var CALENDRIER_DEFIS=[
+ {m:1,titre:"Opération Galette",theme:"pompes",unite:"répétitions",objectif:10000,icone:"💪",couleur:"#fbbf24"},
+ {m:2,titre:"Saint-Valentin du gainage",theme:"gainage",unite:"minutes",objectif:1000,icone:"🛡️",couleur:"#f472b6"},
+ {m:3,titre:"Cap sur la Corse",theme:"rameur",unite:"km",objectif:330,icone:"🚣",couleur:"#22d3ee"},
+ {m:4,titre:"Le Poisson d'avril qui fuit",theme:"ski",unite:"km",objectif:150,icone:"⛷️",couleur:"#34d399"},
+ {m:5,titre:"Le Tour de l'Hérault",theme:"course",unite:"km",objectif:400,icone:"🏃",couleur:"#a78bfa"},
+ {m:6,titre:"L'Everest de la caserne",theme:"escaliers",unite:"étages",objectif:2950,icone:"🪜",couleur:"#ea580c"},
+ {m:7,titre:"1789 tractions",theme:"tractions",unite:"répétitions",objectif:1789,icone:"🧗",couleur:"#dc2626"},
+ {m:8,titre:"Opération Glaçon",theme:"rameur",unite:"km",objectif:200,icone:"🧊",couleur:"#22d3ee"},
+ {m:9,titre:"La rentrée des burpees",theme:"libre",unite:"burpees",objectif:5000,icone:"🎒",couleur:"#fbbf24"},
+ {m:10,titre:"Octobre rose",theme:"course",unite:"km",objectif:500,icone:"🎗️",couleur:"#f472b6"},
+ {m:11,titre:"Movember",theme:"Movember · santé des hommes",unite:"km",objectif:100,icone:"🚣",couleur:"#ea580c"},
+ {m:12,titre:"Aidons le Père Noël à skier",theme:"ski",unite:"km",objectif:100,icone:"⛷️",couleur:"#dc2626"}
+];
+function moisAVenir(){var t=new Date(),L=[];for(var i=1;i<=12;i++){var d=new Date(t.getFullYear(),t.getMonth()+i,1);L.push({an:d.getFullYear(),m:d.getMonth()+1})}return L}
+function defiDuMois(an,m){var deb=an+"-"+String(m).padStart(2,"0");return dfsListe.filter(function(d){return d.debut.slice(0,7)===deb})[0]||null}
+function programmeAnneeHtml(){
+  var noms=["janv.","févr.","mars","avril","mai","juin","juil.","août","sept.","oct.","nov.","déc."],L=moisAVenir(),libres=0;
+  var lignes=L.map(function(x){var exist=defiDuMois(x.an,x.m),c=CALENDRIER_DEFIS.filter(function(z){return z.m===x.m})[0];if(!exist)libres++;
+    return '<div class="prog-l'+(exist?' fait':'')+'"><span class="prog-m">'+noms[x.m-1]+' '+String(x.an).slice(2)+'</span><span class="prog-t">'+themeIc(c.theme,c.icone)+' '+dfsEsc(exist?exist.titre:c.titre)+'<small>'+(exist?'programmé · '+dfsNum(exist.objectif)+' '+dfsEsc(exist.unite):'objectif proposé : '+dfsNum(c.objectif)+' '+c.unite)+'</small></span>'
+      +(exist?'<span class="prog-ok">✓</span>':'<button class="pbtn" onclick="programmerDefi('+x.an+','+x.m+')">Programmer</button>')+'</div>'}).join("");
+  return '<details class="pcard prog"><summary><span class="sec" style="display:inline">📅 Programmer l\'année</span> <small>'+(12-libres)+' / 12 mois programmés</small></summary>'
+    +'<p class="note">Chaque défi démarre seul le 1er du mois. Les gars voient l\'annonce 7 jours avant et reçoivent la notification de départ. Tu peux ensuite modifier l\'objectif ou le titre comme d\'habitude.</p>'
+    +lignes+(libres?'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="programmerTout()">📅 Tout programmer ('+libres+')</button></div>':'')+'</details>';
+}
+async function programmerDefi(an,m,silencieux){
+  if(defiDuMois(an,m))return true;
+  var c=CALENDRIER_DEFIS.filter(function(z){return z.m===m})[0];
+  var titre=c.titre+(m>=11?" "+an:"");
+  var ligne={titre:titre,theme:c.theme,unite:c.unite,objectif:c.objectif,debut:an+"-"+String(m).padStart(2,"0")+"-01",fin:dfsIso(new Date(an,m,0)),recompense:null,icone:c.icone,couleur:c.couleur,par_garde:false};
+  try{var r=await supabaseClient.from("defis").insert(ligne);if(r.error)throw r.error;if(!silencieux){showToast("📅 "+c.titre+" programmé","success");await chargerDefis(true)}return true}
+  catch(e){showToast("Impossible : "+(e.message||e),"error");return false}
+}
+async function programmerTout(){
+  var L=moisAVenir().filter(function(x){return !defiDuMois(x.an,x.m)});
+  if(!confirm("Programmer "+L.length+" défi(s) d'un coup ? Ils démarreront tout seuls le 1er de chaque mois."))return;
+  for(var i=0;i<L.length;i++){if(!(await programmerDefi(L[i].an,L[i].m,true)))break}
+  showToast("📅 Année programmée","success");await chargerDefis(true);
+}
+// ===== TABLEAU DE BORD D'UTILISATION (admin, onglet Comptes) =====
+var pushAbosAdmin=[];
+async function chargerUtilisation(){
+  try{var r=await supabaseClient.from("push_abos").select("pompier_id,actif");if(!r.error)pushAbosAdmin=r.data||[]}catch(e){}
+}
+function utilisationHtml(){
+  var semaines=[],lundi=dfsLundi(0);
+  for(var i=7;i>=0;i--){var a=new Date(lundi);a.setDate(a.getDate()-7*i);var b=new Date(a);b.setDate(b.getDate()+7);
+    var qui={};connexionsRecentes.forEach(function(x){var q=new Date(x.quand);if(q>=a&&q<b)qui[x.email]=1});semaines.push({a:a,n:Object.keys(qui).length})}
+  var max=Math.max(1,Math.max.apply(null,semaines.map(function(s){return s.n})));
+  var comptes=(comptesCache||[]).filter(function(c){return ADMIN_EMAILS.indexOf(c.email)===-1&&c.email!=="salle@sdis34.fr"});
+  var jamais=comptes.filter(function(c){return !connexionsCache[c.email]}).length;
+  var inst={};connexionsRecentes.forEach(function(x){if(x.installe)inst[x.email]=1});
+  var rappels={};pushAbosAdmin.forEach(function(p){if(p.actif)rappels[p.pompier_id]=1});
+  var semaine=semaines[semaines.length-1].n;
+  return '<div class="util-cases">'
+    +'<div><b>'+semaine+'</b><small>connectés cette semaine</small></div>'
+    +'<div><b>'+(comptes.length-jamais)+' / '+comptes.length+'</b><small>se sont déjà connectés</small></div>'
+    +'<div><b>'+Object.keys(inst).length+'</b><small>ont installé l\'appli</small></div>'
+    +'<div><b>'+Object.keys(rappels).length+'</b><small>ont activé les rappels</small></div></div>'
+    +'<div class="util-barres">'+semaines.map(function(s,i){return '<div><i style="height:'+Math.max(4,Math.round(100*s.n/max))+'%"></i><b>'+s.n+'</b><small>'+(i===semaines.length-1?"cette sem.":s.a.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}))+'</small></div>'}).join("")+'</div>'
+    +'<p style="font-size:12px;color:var(--muted);margin:8px 0 14px">Personnes différentes connectées chaque semaine (hors administrateur et écran de la salle). « Installé » se remplit au fur et à mesure des prochaines connexions.</p>';
 }
 // Fête collective quand le centre franchit 25, 50, 75 ou 100 % (une fois par palier et par appareil)
 function feterPalierDefi(d,S){
@@ -5948,6 +6094,7 @@ async function chargerDefis(force){
     if(b.error)throw b.error;
     dfsContrib=b.data||[];
     await chargerBravos();
+    await chargerPannes();
     if(!casesChargees)chargerCases();
   }catch(e){
     dfsErreur=/defis/i.test(e.message||"")
@@ -5979,7 +6126,7 @@ function dfsAVenir(d){return !!d&&d.debut>dfsIso(new Date())}
 // Annoncé aux pompiers 7 jours avant le départ ; l'admin le voit dès sa création.
 function dfsVisibles(){
   var t=dfsIso(new Date()),rang=function(d){return dfsAVenir(d)?1:(d.actif&&d.fin>=t)?0:2};
-  return (isAdmin?dfsListe:dfsListe.filter(function(d){return !dfsAVenir(d)||dfsJoursAvant(d)<=7}))
+  return (isAdmin?dfsListe.filter(function(d){return !dfsAVenir(d)||dfsJoursAvant(d)<=45}):dfsListe.filter(function(d){return !dfsAVenir(d)||dfsJoursAvant(d)<=7}))
     .slice().sort(function(a,b){return (rang(a)-rang(b))||(rang(a)===2?b.fin.localeCompare(a.fin):a.debut.localeCompare(b.debut))});
 }
 function dfsJoursAvant(d){var j=new Date(d.debut+"T00:00:00"),t=new Date();t.setHours(0,0,0,0);return Math.round((j-t)/864e5)}
@@ -5996,7 +6143,7 @@ function renderDefis(){
   if(dfsErreur){box.innerHTML='<div class="pcard"><p style="color:#f87171">⚠️ '+dfsEsc(dfsErreur)+'</p></div>';return}
   if(dfsForm){box.innerHTML=dfsFormulaire();dfsEnterFx();return}
   var h="",L=dfsVisibles();
-  if(isAdmin) h+='<div class="dfs-barre"><button class="pbtn pri" onclick="dfsNouveau()">➕ Lancer un défi</button></div>';
+  if(isAdmin) h+='<div class="dfs-barre"><button class="pbtn pri" onclick="dfsNouveau()">➕ Lancer un défi</button></div>'+programmeAnneeHtml();
   if(!L.length){
     h+='<div class="pcard">'+etatVide("trophee","Pas de défi en cours",isAdmin?"Lance le premier : choisis un thème, un objectif et une récompense."
         :"Le prochain défi du centre arrive bientôt. En attendant, garde la forme : ton programme t'attend dans ta fiche 💪")+'</div>';
@@ -6008,7 +6155,7 @@ function renderDefis(){
         +'<i>'+(themeHumour(d)?iconeDefi(d).replace('ic-illu','ic-theme'):themeIc(d.theme,t.ic))+'</i>'+dfsEsc(d.titre)+'</button>'}).join("")+'</div>';
     h+=dfsCarte(L[dfsSel]);
   }
-  box.innerHTML=h;
+  box.innerHTML=h+(pannesChargees?salleHtml():'');
   dfsEnterFx();
 }
 function dfsVoir(i){dfsSel=i;renderDefis()}
@@ -7841,7 +7988,7 @@ function ongletsCoches(idPrefix){
 var connexionsCache={};var connexionsRecentes=[];
 async function chargerConnexions(){
   connexionsCache={};connexionsRecentes=[];
-  try{var r=await supabaseClient.from('connexions_icp').select('email,quand').order('quand',{ascending:false}).limit(3000);
+  try{var r=await supabaseClient.from('connexions_icp').select('email,quand,installe').order('quand',{ascending:false}).limit(3000);
     if(r.error)throw r.error;
     connexionsRecentes=(r.data||[]).filter(function(x){return ADMIN_EMAILS.indexOf(x.email)===-1});
     connexionsRecentes.forEach(function(x){var c=connexionsCache[x.email]||(connexionsCache[x.email]={derniere:x.quand,nb:0});c.nb++;});
@@ -7882,8 +8029,9 @@ async function renderComptes(){
     document.getElementById("compteOngletsBlock").style.display="";
     document.getElementById("comptesListe").innerHTML = '<p style="color:var(--muted)">Chargement...</p>';
     await chargerComptes();
-    await chargerConnexions();
+    await chargerConnexions();await chargerUtilisation();
     renderAccesPompiers(); renderConnexions();
+    var ut=document.getElementById("utilisation");if(ut)ut.innerHTML=utilisationHtml();
     await chargerMdpProvisoires(); renderIdentifiants();
     var equipe = comptesCache.map(function(c,i){return {c:c,i:i}}).filter(function(x){return !x.c.pompier_id});
     if(equipe.length === 0){

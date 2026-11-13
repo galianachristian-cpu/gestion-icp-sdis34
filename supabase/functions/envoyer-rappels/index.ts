@@ -4,6 +4,7 @@
 // Défis du centre : prévient aussi tous les abonnés au départ d'un défi et quand le
 // centre franchit 25, 50, 75 et 100 %, puis les paliers bonus 150, 200, 250 %…
 // (une seule fois par palier, entre 8 h et 21 h 30). Session ICP : rappel à J-7 (une fois par session).
+// Machine en panne : alerte à l'administrateur dans le quart d'heure.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.47.10";
 import webpush from "npm:web-push@3.6.7";
@@ -152,7 +153,26 @@ Deno.serve(async (req: Request) => {
         sessionsEnvoyees.push(se.id);
       }
     }
-    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees });
+    // ----- Machines en panne : alerte à l'administrateur (fiches listées dans secrets_internes) -----
+    let pannesEnvoyees = 0;
+    if (!essai) {
+      const { data: np } = await sb.from("pannes").select("id,machine,description").eq("notifie", false).eq("statut", "ouverte");
+      if (np && np.length) {
+        const { data: cfg } = await sb.from("secrets_internes").select("valeur").eq("nom", "alerte_pannes_pompiers").maybeSingle();
+        const ids = String(cfg?.valeur ?? "").split(",").map((x) => parseInt(x, 10)).filter((x) => !isNaN(x));
+        for (const pa of np) {
+          const { data: maj } = await sb.from("pannes").update({ notifie: true }).eq("id", pa.id).eq("notifie", false).select("id");
+          if (!maj || !maj.length) continue;
+          const charge = JSON.stringify({ titre: `🔧 ${pa.machine} : en panne`, corps: (pa.description ? pa.description + " — " : "") + "Signalé dans l'appli. La logistique compte sur toi.", url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/" });
+          for (const a of (abos ?? []).filter((x: { pompier_id: number }) => ids.includes(x.pompier_id))) {
+            try { await webpush.sendNotification({ endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } }, charge); envoyes++; }
+            catch (e) { const code = (e as { statusCode?: number }).statusCode; if (code === 404 || code === 410) { await sb.from("push_abos").delete().eq("id", a.id); retires++; } }
+          }
+          pannesEnvoyees++;
+        }
+      }
+    }
+    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees, pannes: pannesEnvoyees });
   } catch (e) {
     return Response.json({ erreur: (e as Error).message }, { status: 500 });
   }

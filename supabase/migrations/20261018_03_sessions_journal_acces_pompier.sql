@@ -147,3 +147,10 @@ create table if not exists public.inscriptions_icp (
 -- RLS : lecture par les comptes connectés ; inscription / désinscription de soi (mon_pompier_id_icp) ou par l'admin.
 -- Trigger verifier_inscription_icp : refus si la session est passée ou complète (places).
 -- envoyer-rappels v10 : notification « Session ICP dans 7 jours » à tous les abonnés, une fois (rappel_j7).
+
+-- 2026-11-13 : machines en panne + utilisation
+-- table pannes (machine, description, photo, signale_par = email du jeton, statut ouverte/reparee, notifie) ;
+-- RLS : lecture par les comptes connectés ; signalement par tout compte connecté (en son nom, statut ouverte) ;
+-- mise à jour / suppression par l'admin. Alerte push (envoyer-rappels v11) aux fiches listées dans
+-- secrets_internes.alerte_pannes_pompiers.
+-- connexions_icp.installe : appli ouverte depuis l'écran d'accueil (noter_connexion(p_installe boolean default null)).
