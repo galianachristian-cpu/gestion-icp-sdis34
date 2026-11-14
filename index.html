@@ -322,8 +322,9 @@ img.medaille{width:22px;height:30px;object-fit:contain;vertical-align:middle;fil
 .tva-t b{display:block;font-family:var(--titre);font-size:11vh;line-height:1;color:#fff}
 .tva-t span{display:block;font-size:4.6vh;color:#fafaf9;margin-top:1vh}.tva-t em{font-style:normal;color:#4ade80;font-weight:800}
 .tva-t i{display:block;font-size:2.6vh;color:#a8a29e;margin-top:1vh;font-style:normal}
-.tv-meteo{display:flex;align-items:center;gap:.7vw;margin-left:1.4vw;flex-shrink:1;min-width:0;padding:.8vh 1.2vw;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--border)}
-.tv-meteo .ic{font-size:3.4vh}.tv-meteo b{font-family:var(--titre);font-size:3.6vh}.tv-meteo small{font-size:1.7vh;color:var(--muted);max-width:11vw;line-height:1.2}
+.tv-mvs{display:flex;gap:1.2vw}.tv-meteo{display:flex;flex-direction:column;align-items:center;gap:.2vh;border-radius:2vh!important;margin-left:1.4vw;flex-shrink:1;min-width:0;padding:.8vh 1.2vw;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+.tv-mv{display:flex;align-items:center;gap:.4vw}.tv-mv em{font-style:normal;font-size:1.6vh;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.tv-meteo .ic{font-size:3vh}.tv-meteo b{font-family:var(--titre);font-size:3.2vh}.tv-meteo small{font-size:1.6vh;color:var(--muted);white-space:nowrap;line-height:1.2}
 .tv-fete{display:flex;align-items:center;gap:1.2vw;border-color:rgba(251,191,36,.6)!important;background:linear-gradient(135deg,rgba(236,72,153,.22),rgba(251,191,36,.12))!important}
 .tv-fete.mois{background:linear-gradient(135deg,rgba(251,191,36,.25),rgba(234,88,12,.12))!important}
 .tv-fete-ic{font-size:6vh;animation:radioPulse 1.6s ease-in-out infinite}.tv-fete small{display:block;font-size:2vh;color:#fbbf24;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
@@ -3205,20 +3206,28 @@ document.addEventListener("click",function(e){
   if(!document.body.classList.contains("tv-on")||!tvEstNuit())return;
   tvReveil=Date.now()+30*60e3;tvNuitAvant=false;e.stopPropagation();renderTV();
 },true);
-// ----- Météo (Open-Meteo, gratuit, sans clé) -----
+// ----- Météo de Cruzy et de Quarante (Open-Meteo, gratuit, sans clé, un seul appel pour les deux) -----
+var METEO_LIEUX=[{nom:"Cruzy",lat:43.357,lon:2.941},{nom:"Quarante",lat:43.348,lon:3.001}];
 var meteo=null,meteoT=0;
 async function chargerMeteo(){
   if(Date.now()-meteoT<25*60e3)return;meteoT=Date.now();var avant=!!meteo;
-  try{var r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=43.36&longitude=2.94&current=temperature_2m,weather_code,wind_speed_10m&timezone=Europe%2FParis");
-    var j=await r.json();if(j&&j.current){meteo=j.current;if(!avant)renderTV()}}catch(e){}
+  try{var r=await fetch("https://api.open-meteo.com/v1/forecast?latitude="+METEO_LIEUX.map(function(l){return l.lat}).join(",")+"&longitude="+METEO_LIEUX.map(function(l){return l.lon}).join(",")+"&current=temperature_2m,weather_code,wind_speed_10m&timezone=Europe%2FParis");
+    var j=await r.json();var L=Array.isArray(j)?j:[j];
+    var M=L.map(function(x,i){return x&&x.current?{nom:METEO_LIEUX[i].nom,c:x.current}:null}).filter(Boolean);
+    if(M.length){meteo=M;if(!avant)renderTV()}}catch(e){}
+}
+function meteoIcone(c){var h=new Date().getHours(),nuit=h>=19||h<7;return c===0?(nuit?"🌙":"☀️"):c<=2?(nuit?"🌙":"🌤️"):c===3?"☁️":c<=48?"🌫️":c<=67?"🌧️":c<=77?"❄️":c<=82?"🌦️":"⛈️"}
+function meteoConseil(){
+  // le conseil suit le temps le plus contraignant des deux villages
+  var pire=meteo.reduce(function(a,m){return m.c.weather_code>a.c.weather_code?m:a},meteo[0]).c,t=Math.round(meteo.reduce(function(s,m){return s+m.c.temperature_2m},0)/meteo.length);
+  var c=pire.weather_code,v=Math.max.apply(null,meteo.map(function(m){return m.c.wind_speed_10m||0})),h=new Date().getHours(),nuit=h>=19||h<7;
+  return c>=95?"Orage : on s'entraîne à l'abri !":(c>=51&&c<=67)||(c>=80&&c<=82)?"Pluie : rameur et SkiErg au sec !":c>=71&&c<=77?"Neige : on reste au chaud !"
+    :t>=30?"Chaleur : hydratation obligatoire !":v>=40?"Vent fort : la course attendra":t<=5?"Ça pique : échauffement long !":c<=3&&t>=8&&t<=25&&!nuit?"Temps parfait pour courir dehors !":"Bonne séance !";
 }
 function meteoHtml(court){
-  if(!meteo)return "";var c=meteo.weather_code,t=Math.round(meteo.temperature_2m),v=meteo.wind_speed_10m||0,h=new Date().getHours(),nuit=h>=19||h<7;
-  var ic=c===0?(nuit?"🌙":"☀️"):c<=2?(nuit?"🌙":"🌤️"):c===3?"☁️":c<=48?"🌫️":c<=67?"🌧️":c<=77?"❄️":c<=82?"🌦️":"⛈️";
-  var msg=c>=95?"Orage : on s'entraîne à l'abri !":(c>=51&&c<=67)||(c>=80&&c<=82)?"Pluie : rameur et SkiErg au sec !":c>=71&&c<=77?"Neige : on reste au chaud !"
-    :t>=30?"Chaleur : hydratation obligatoire !":v>=40?"Vent fort : la course attendra":t<=5?"Ça pique : échauffement long !":c<=3&&t>=8&&t<=25&&!nuit?"Temps parfait pour courir dehors !":"Bonne séance !";
-  if(court)return ic+" "+t+" °C · "+msg;
-  return '<div class="tv-meteo"><span class="ic">'+ic+'</span><b>'+t+'°</b><small>'+msg+'</small></div>';
+  if(!meteo||!meteo.length)return "";
+  if(court)return meteo.map(function(m){return m.nom+" "+meteoIcone(m.c.weather_code)+" "+Math.round(m.c.temperature_2m)+" °C"}).join(" · ");
+  return '<div class="tv-meteo"><div class="tv-mvs">'+meteo.map(function(m){return '<span class="tv-mv"><em>'+m.nom+'</em><span class="ic">'+meteoIcone(m.c.weather_code)+'</span><b>'+Math.round(m.c.temperature_2m)+'°</b></span>'}).join("")+'</div><small>'+meteoConseil()+'</small></div>';
 }
 // Cartes « fête » sur la TV (anniversaire, pompier du mois)
 function fetesTvHtml(){
