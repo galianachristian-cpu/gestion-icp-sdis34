@@ -312,6 +312,27 @@ img.medaille{width:22px;height:30px;object-fit:contain;vertical-align:middle;fil
 /* ===== MODE TV (salle de sport) ===== */
 #modeTV{position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% -10%,rgba(234,88,12,.28),transparent 60%),var(--bg);color:var(--text);overflow:hidden;cursor:default}
 #modeTV.hidden{display:none}
+#tvAlerte{position:fixed;inset:0;z-index:9700;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;background:rgba(0,0,0,.5);transition:opacity .4s}
+#tvAlerte.on{opacity:1;animation:tvaFin 8s forwards}
+@keyframes tvaFin{0%,88%{opacity:1}100%{opacity:0}}
+.tva{display:flex;align-items:center;gap:3vw;padding:4vh 4vw;border-radius:4vh;background:linear-gradient(135deg,#9a3412,#1c1917 70%);border:.4vh solid #fbbf24;box-shadow:0 0 8vh rgba(251,191,36,.45);transform:scale(.6);animation:tvaPop .7s cubic-bezier(.2,1.6,.4,1) forwards;max-width:84vw}
+@keyframes tvaPop{to{transform:scale(1)}}
+.tva-av .avatar-mini{width:20vh!important;height:20vh!important;font-size:8vh!important;border-width:.5vh!important}
+.tva-t small{display:block;font-size:3vh;color:#fbbf24;text-transform:uppercase;letter-spacing:.1em;font-weight:800}
+.tva-t b{display:block;font-family:var(--titre);font-size:11vh;line-height:1;color:#fff}
+.tva-t span{display:block;font-size:4.6vh;color:#fafaf9;margin-top:1vh}.tva-t em{font-style:normal;color:#4ade80;font-weight:800}
+.tva-t i{display:block;font-size:2.6vh;color:#a8a29e;margin-top:1vh;font-style:normal}
+.tv-meteo{display:flex;align-items:center;gap:.7vw;margin-left:1.4vw;flex-shrink:1;min-width:0;padding:.8vh 1.2vw;border-radius:99px;background:rgba(255,255,255,.05);border:1px solid var(--border)}
+.tv-meteo .ic{font-size:3.4vh}.tv-meteo b{font-family:var(--titre);font-size:3.6vh}.tv-meteo small{font-size:1.7vh;color:var(--muted);max-width:11vw;line-height:1.2}
+.tv-fete{display:flex;align-items:center;gap:1.2vw;border-color:rgba(251,191,36,.6)!important;background:linear-gradient(135deg,rgba(236,72,153,.22),rgba(251,191,36,.12))!important}
+.tv-fete.mois{background:linear-gradient(135deg,rgba(251,191,36,.25),rgba(234,88,12,.12))!important}
+.tv-fete-ic{font-size:6vh;animation:radioPulse 1.6s ease-in-out infinite}.tv-fete small{display:block;font-size:2vh;color:#fbbf24;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.tv-fete b{display:block;font-family:var(--titre);font-size:4vh;line-height:1.1}.tv-fete em{display:block;font-style:normal;font-size:2vh;color:var(--muted)}
+.tv-nuit{background:#000;position:relative}.tv-nuit-c{position:absolute;color:#57534e;transition:all 2s}
+.tv-nuit .tv-heure{font-size:14vh;color:#78716c;margin:0}.tv-nuit p{font-size:2.8vh;margin:.6vh 0}.tv-nuit small{font-size:1.8vh;color:#44403c}
+.pcard.fete{display:flex;gap:12px;align-items:center;border-color:rgba(251,191,36,.5);background:linear-gradient(135deg,rgba(236,72,153,.14),rgba(251,191,36,.08))}
+.pcard.fete.mois{background:linear-gradient(135deg,rgba(251,191,36,.16),rgba(234,88,12,.08))}
+.fete-ic{font-size:34px}.pcard.fete b{display:block;font-size:16px}.pcard.fete small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
 .tv-radio{display:flex;align-items:center;gap:.5vw;margin-left:auto}
 .tv-radio+.tv-heure{margin-left:1.6vw}.tv-noel+.tv-radio{margin-left:1.6vw}
 .tv-radio button{font-family:inherit;color:var(--text);cursor:pointer;border:1px solid var(--border);background:rgba(255,255,255,.05)}
@@ -334,7 +355,7 @@ body.tv-on{overflow:hidden}
 .tv{height:100vh;display:flex;flex-direction:column;padding:2.2vh 2.4vw;gap:2vh;box-sizing:border-box}
 .tv-haut{display:flex;align-items:center;gap:1.4vw}
 .tv-logo{width:6.5vh;height:6.5vh;object-fit:contain}
-.tv-centre{font-family:var(--titre);font-size:3.4vh;letter-spacing:.1em}.tv-centre b{color:var(--accent)}
+.tv-centre{font-family:var(--titre);font-size:3.4vh;letter-spacing:.1em;white-space:nowrap}.tv-centre b{color:var(--accent)}
 .tv-jour{color:var(--muted);font-size:2.1vh;text-transform:capitalize}
 .tv-heure{margin-left:auto;font-family:var(--titre);font-size:6vh;font-weight:700;font-variant-numeric:tabular-nums}
 .tv-x{background:none;border:1px solid var(--border);color:var(--muted);border-radius:50%;width:4.4vh;height:4.4vh;font-size:2vh;cursor:pointer;opacity:.35}
@@ -1596,6 +1617,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <datalist id="listeGrades"><option value="SAP 2CL"><option value="SAP 1CL"><option value="CPL"><option value="CCH"><option value="SGT"><option value="SCH"><option value="ADJ"><option value="ADC"><option value="LTN"><option value="CNE"><option value="CDT"><option value="LCL"><option value="COL"></datalist>
 <label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0 10px;font-size:13px;cursor:pointer"><input type="checkbox" id="editConfidentiel" style="margin-top:2px;min-width:16px"><span>🔒 <b>Résultats confidentiels</b> : visibles seulement par la personne et par vous (cachés aux comptes d'équipe et aux autres chefs)</span></label>
 <div class="form-row"><label>Garde (pour les défis par garde)</label><input type="text" id="editGarde" list="listeGardes" placeholder="ex. A, B…" maxlength="20"></div>
+<div class="form-row"><label>Anniversaire (jour/mois, sans l'année)</label><input type="text" id="editAnniv" placeholder="ex. 14/03" maxlength="5" inputmode="numeric"></div>
 <datalist id="listeGardes"></datalist>
 <div class="form-row"><label>Fonction (facultatif)</label><input type="text" id="editFonction" placeholder="ex. Chef de centre" maxlength="40"></div>
 <div class="form-row"><label>Nom</label><input type="text" id="editNom"></div>
@@ -2216,20 +2238,23 @@ function deletePompier(id){if(!confirm("Supprimer ce pompier ?"))return;data=dat
 function showAddPompier(){document.getElementById("modalAdd").classList.remove("hidden")}
 function ouvrirModifPompier(id){
   if(!isAdmin)return;var p=data.find(function(x){return x.id===id});if(!p)return;
-  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editFonction").value=p.fonction||"";document.getElementById("editGarde").value=p.garde||"";remplirListeGardes();document.getElementById("editConfidentiel").checked=!!p.confidentiel;document.getElementById("editNom").value=p.nom||"";
+  document.getElementById("editId").value=id;document.getElementById("editGrade").value=p.grade||"";document.getElementById("editFonction").value=p.fonction||"";document.getElementById("editGarde").value=p.garde||"";document.getElementById("editAnniv").value=p.anniv?p.anniv.slice(3)+"/"+p.anniv.slice(0,2):"";remplirListeGardes();document.getElementById("editConfidentiel").checked=!!p.confidentiel;document.getElementById("editNom").value=p.nom||"";
   document.getElementById("editPrenom").value=p.prenom||"";document.getElementById("editAnnee").value=p.annee||"";
   document.getElementById("editSexe").value=p.sexe==="F"?"F":"M";document.getElementById("editPoids").value=p.poids||"";
   document.getElementById("modalEdit").classList.remove("hidden");
 }
 function fermerModifPompier(){document.getElementById("modalEdit").classList.add("hidden")}
+function lireAnniv(v){v=String(v||"").trim();if(!v)return null;var m=v.match(/^(\d{1,2})\s*[\/.\- ]\s*(\d{1,2})$/);if(!m)return false;var j=+m[1],mo=+m[2];if(mo<1||mo>12||j<1||j>new Date(2024,mo,0).getDate())return false;return String(mo).padStart(2,"0")+"-"+String(j).padStart(2,"0")}
 function validerModifPompier(){
   var p=data.find(function(x){return x.id===parseInt(document.getElementById("editId").value)});if(!p)return;
   var nom=cleanName(document.getElementById("editNom").value),prenom=cleanName(document.getElementById("editPrenom").value);
   var annee=parseInt(document.getElementById("editAnnee").value);
   if(!nom||!prenom){alert("Renseignez le nom et le prénom");return}
   if(!annee||annee<1940||annee>ANNEE_COURANTE-15){alert("Année de naissance invalide");return}
+  var an=lireAnniv(document.getElementById("editAnniv").value);if(an===false){alert("Anniversaire : écris le jour et le mois, par exemple 14/03");return}
   p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.garde=normGarde(document.getElementById("editGarde").value);p.confidentiel=document.getElementById("editConfidentiel").checked;p.sexe=document.getElementById("editSexe").value;
   p.poids=document.getElementById("editPoids").value;
+  p.anniv=an;
   p.luc_niv=p.luc_perf?evalTest("luc",p.sexe,getAge(p.annee),p.luc_perf):"";
   markDirty();fermerModifPompier();renderSaisie();renderDashboard();
   showToast("✅ Fiche de "+prenom+" "+nom+" modifiée","success");
@@ -2971,9 +2996,10 @@ function ouvrirModeTV(){
   if(!el){el=document.createElement("div");el.id="modeTV";el.addEventListener("click",function(e){if(!e.target.closest(".tv-x"))tvPleinEcran()});document.body.appendChild(el);}
   el.classList.remove("hidden");document.body.classList.add("tv-on");
   tvPleinEcran();tvGarderAllume();renderTV();
-  if(radioVoulue()&&radioEtat==='off')radioJouer();
+  tvNuitAvant=null;tvNuitTic();chargerMeteo();
+  if(radioVoulue()&&radioEtat==='off'&&!tvEstNuit())radioJouer();
   clearInterval(tvTimer);clearInterval(tvHorloge);
-  tvTimer=setInterval(function(){Promise.resolve(chargerDefis(true)).then(renderTV,renderTV)},60000);
+  tvTimer=setInterval(function(){Promise.resolve(chargerDefis(true)).then(renderTV,renderTV)},30000);
   tvHorloge=setInterval(function(){var h=document.querySelector("#modeTV .tv-heure");if(h)h.textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})},15000);
 }
 function fermerModeTV(){
@@ -3038,6 +3064,170 @@ document.addEventListener("keydown",function(e){
   else if(e.key==="MediaPlay"){if(radioEtat!=="joue")radioJouer()}
   else if(e.key==="MediaPause"||e.key==="MediaStop"){radioCouper()}
 });
+// ===== LA VIE DE LA SALLE (mode TV) : alerte séance, Sergent-Chef au micro, mode nuit, météo, anniversaires, pompier du mois =====
+var EXCLUS_TITRES=[15]; // l'admin participe pour l'esprit de corps, mais ne compte pas pour les titres
+var SGT_BASE="audio/sergent/";
+var SGT_NOMS="adrien,alain,aubin,bastien,carlos,christian,christophe,cindy,claude,corentin,damien,denis,dorian,fabien,florian,hugo,ismail,jean-francois,jerome,jessica,jonathan,jose,julie,juliette,laura,lionnel,lou,luc,ludovic,manon,marilyne,marion,martha,mathis,melissa,michel,nathan,nicolas,romain,romane,sylvain".split(",");
+function slugNom(n){return String(n||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
+function sgtNom(pid){var s=slugNom(prenomDe(pid));return SGT_NOMS.indexOf(s)!==-1?"noms/"+s:null}
+function hmMaintenant(d){d=d||new Date();return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}
+function personnes(){var L=Object.keys(ANNUAIRE).map(function(k){return ANNUAIRE[k]});(data||[]).forEach(function(p){if(!ANNUAIRE[p.id])L.push(p)});return L}
+function annivDe(pid){var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];return p&&p.anniv?p.anniv:null}
+function annivsDuJour(){var t=new Date(),k=String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0");return personnes().filter(function(p){return p.anniv===k})}
+// Pompier (ou pompière) du mois : le plus de jours d'entraînement le mois précédent, tous défis confondus
+function pompierDuMois(ref){
+  var t=ref||new Date(),a=new Date(t.getFullYear(),t.getMonth()-1,1),b=new Date(t.getFullYear(),t.getMonth(),0),A=dfsIso(a),B=dfsIso(b),par={};
+  dfsContrib.forEach(function(x){if(x.date<A||x.date>B||EXCLUS_TITRES.indexOf(x.pompier_id)!==-1)return;
+    var o=par[x.pompier_id]||(par[x.pompier_id]={pid:x.pompier_id,j:{},n:0});o.j[x.date]=1;o.n++});
+  var L=Object.keys(par).map(function(k){return {pid:par[k].pid,jours:Object.keys(par[k].j).length,n:par[k].n}}).sort(function(x,y){return (y.jours-x.jours)||(y.n-x.n)});
+  if(!L.length)return null;
+  return {pid:L[0].pid,jours:L[0].jours,n:L[0].n,mois:a.toLocaleDateString("fr-FR",{month:"long"}),an:a.getFullYear(),dauphin:L[1]||null};
+}
+function titreDuMois(pid){return sexeDe(pid)==="F"?"Pompière du mois":"Pompier du mois"}
+function deMois(m){return /^[aeiou]/i.test(m)?"d'"+m:"de "+m}
+function moisTitreVisible(){return new Date().getDate()<=7}
+// Carte « fêtes du jour » en haut de l'onglet Défis
+function fetesHtml(){
+  var h="",A=annivsDuJour(),M=(moisTitreVisible()||isAdmin)?pompierDuMois():null;
+  if(A.length)h+='<div class="pcard fete"><span class="fete-ic">🎂</span><div><b>Joyeux anniversaire '+A.map(function(p){return dfsEsc(p.prenom)}).join(" et ")+' !</b><small>Le Sergent-Chef offre la séance du jour. Pensez à le souhaiter 🎉</small></div></div>';
+  if(M&&(moisTitreVisible()||isAdmin))h+='<div class="pcard fete mois"><span class="fete-ic">🏅</span><div><b>'+titreDuMois(M.pid)+' '+deMois(M.mois)+' : '+dfsEsc(dfsNom(M.pid))+'</b><small>'+M.jours+' jour'+(M.jours>1?'s':'')+' d\'entraînement en '+M.mois+'. La régularité, ça paie.'+(isAdmin&&!moisTitreVisible()?' (visible par tous du 1er au 7 du mois)':'')+'</small>'
+    +(isAdmin?'<div class="prow" style="margin-top:8px"><button class="pbtn pri" onclick="afficheDuMois()">🖼️ Affiche WhatsApp</button></div>':'')+'</div></div>';
+  return h;
+}
+async function afficheDuMois(){
+  var M=pompierDuMois();if(!M)return;showToast("Création de l'affiche…","info");
+  try{await document.fonts.load("700 80px Oswald");await document.fonts.load("700 30px Inter");}catch(e){}
+  var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d"),OR="#fbbf24",BL="#fafaf9",GR="#a8a29e",F=sexeDe(M.pid)==="F";
+  var rg=g.createRadialGradient(W/2,H*.38,30,W/2,H*.38,H*.85);rg.addColorStop(0,"#9a3412");rg.addColorStop(1,"#0c0a09");g.fillStyle=rg;g.fillRect(0,0,W,H);
+  g.save();g.translate(W/2,520);g.fillStyle="rgba(251,191,36,.10)";for(var i=0;i<20;i++){g.rotate(Math.PI/10);g.beginPath();g.moveTo(0,0);g.lineTo(1500,0);g.lineTo(1500*Math.cos(.11),1500*Math.sin(.11));g.closePath();g.fill()}g.restore();
+  g.textAlign="center";g.fillStyle=GR;g.font="700 34px Oswald, sans-serif";g.fillText("CIS CRUZY-QUARANTE",W/2,92);
+  g.fillStyle=OR;g.font="700 120px Oswald, sans-serif";g.fillText(F?"POMPIÈRE":"POMPIER",W/2,220);
+  g.fillStyle=BL;g.font="700 76px Oswald, sans-serif";g.fillText(("du mois "+deMois(M.mois).replace(/^de |^d'/,function(x){return x})).toUpperCase(),W/2,305);
+  var med=await chargerImageCarte("img/defis/medaille-or.webp");if(med){g.save();g.shadowColor="rgba(0,0,0,.6)";g.shadowBlur=30;g.drawImage(med,W/2-150,350,300,410);g.restore()}
+  var nom=dfsNom(M.pid);g.fillStyle=BL;g.font="700 "+(nom.length>18?80:96)+"px Oswald, sans-serif";g.fillText(nom.toUpperCase(),W/2,870);
+  g.fillStyle=OR;g.font="700 46px Inter, sans-serif";g.fillText(M.jours+" jours d'entraînement en "+M.mois,W/2,945);
+  g.fillStyle=GR;g.font="600 32px Inter, sans-serif";g.fillText("On récompense la régularité, pas les muscles.",W/2,1000);
+  var sg=await chargerImageCarte("img/mascotte/grand/sergent-fier.webp");if(sg)g.drawImage(sg,40,1010,300,300);
+  g.textAlign="left";g.fillStyle="#fff";rectArrondi(g,350,1080,670,120,24);g.fill();g.beginPath();g.moveTo(360,1150);g.lineTo(300,1170);g.lineTo(370,1185);g.fill();
+  g.fillStyle="#1c1917";g.font="700 30px Inter, sans-serif";g.fillText("« Respect total. Et le mois prochain,",380,1130);g.fillText("je veux de la concurrence ! »",380,1172);
+  g.textAlign="center";g.fillStyle=GR;g.font="700 22px Oswald, sans-serif";g.fillText("LE SERGENT-CHEF · SDIS 34",W/2,H-24);
+  var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});if(blob)diffuserImage(blob,"Pompier_du_mois_"+M.mois+".png",titreDuMois(M.pid));
+}
+// ----- Le haut-parleur du Sergent-Chef -----
+var sgtFile=[],sgtOcc=false,sgtA=null,sgtGarde=null,radioVolTimer=null;
+function radioDucker(bas){
+  if(!radioAudio)return;clearInterval(radioVolTimer);var cible=bas?0.15:1;
+  radioVolTimer=setInterval(function(){var v=radioAudio.volume,p=bas?-0.08:0.05;v=Math.max(0,Math.min(1,v+p));if((bas&&v<=cible)||(!bas&&v>=cible)){v=cible;clearInterval(radioVolTimer)}radioAudio.volume=v},40);
+}
+function tvSonPossible(){return document.body.classList.contains("tv-on")&&!tvEstNuit()}
+function sgtDire(seq){if(!tvSonPossible()||!seq||sgtFile.length>3)return;sgtFile.push(seq);if(!sgtOcc)sgtSuivant()}
+function sgtSuivant(){
+  var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);return}
+  sgtOcc=true;radioDucker(true);if(!sgtA){sgtA=new Audio();sgtA.preload="auto"}
+  var i=0,a=sgtA;
+  var joue=function(){clearTimeout(sgtGarde);if(i>=seq.length){setTimeout(sgtSuivant,700);return}
+    var c=seq[i++];a.onended=function(){setTimeout(joue,c==="clairon"?250:110)};a.onerror=function(){joue()};
+    sgtGarde=setTimeout(joue,20000);a.src=SGT_BASE+c+".mp3";
+    var p=a.play();if(p&&p.catch)p.catch(function(e){if(e&&e.name==="NotAllowedError"){clearTimeout(sgtGarde);sgtFile=[];sgtOcc=false;radioDucker(false)}else joue()})};
+  setTimeout(joue,radioEtat==="joue"?600:0);
+}
+function hasard(n,graine){return graine===undefined?Math.floor(Math.random()*n):((graine%n)+n)%n}
+// ----- Alerte séance en direct -----
+var tvVus=null,tvAlerteFile=[],tvAlerteOcc=false;
+function tvVerifNouveautes(){
+  var ids={};dfsContrib.forEach(function(x){ids[x.id]=1});
+  if(tvVus===null){tvVus=ids;return}
+  var nv=dfsContrib.filter(function(x){return !tvVus[x.id]&&(Date.now()-new Date(x.cree_le||(x.date+"T12:00:00")).getTime())<30*60e3});
+  tvVus=ids;nv.slice(0,3).reverse().forEach(function(x){tvAlerteFile.push(x)});if(!tvAlerteOcc)tvAlerteSuivante();
+}
+function tvAlerteSuivante(){
+  var x=tvAlerteFile.shift(),el=document.getElementById("tvAlerte");
+  if(!x){tvAlerteOcc=false;if(el)el.classList.remove("on");return}
+  tvAlerteOcc=true;var d=dfsListe.filter(function(z){return z.id===x.defi_id})[0]||{unite:"",titre:""};
+  if(!el){el=document.createElement("div");el.id="tvAlerte";document.body.appendChild(el)}
+  el.innerHTML='<div class="tva"><div class="tva-av">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))+'</div><div class="tva-t"><small>🔥 Nouvelle séance</small><b>'+dfsEsc(prenomDe(x.pompier_id))+'</b>'
+    +'<span>vient d\'ajouter <em>+'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+'</em></span><i>'+dfsEsc(d.titre)+'</i></div></div>';
+  el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+  try{if(!tvEstNuit())confettis()}catch(e){}
+  var n=sgtNom(x.pompier_id);sgtDire(n?["clairon",n,"seance-"+(1+hasard(5))]:["clairon","seance-0"]);
+  setTimeout(tvAlerteSuivante,8000);
+}
+// ----- Le micro : quelques annonces par jour, jamais la nuit -----
+var SGT_CRENEAUX=["09:15","10:45","12:30","14:30","16:15","17:45","19:15","20:45"];
+function sgtAnnonce(i,forceType){
+  var t=new Date(),jour=Math.floor((t-new Date(t.getFullYear(),0,0))/864e5),d=dfsDefiDuBandeau(),A=annivsDuJour();
+  if(!forceType&&A.length&&(i%3===0)){var s=["clairon"];A.slice(0,2).forEach(function(p,k){var n=sgtNom(p.id);if(n){s.push(k?"anniv-intro":"anniv-intro",n)}});if(s.length>1){s.push("anniv-fin");return sgtDire(s)}}
+  if(!forceType&&moisTitreVisible()&&t.getDate()<=3&&(i===1||i===5)){var M=pompierDuMois(),nm=M&&sgtNom(M.pid);if(nm)return sgtDire(["clairon","mois-intro",nm,sexeDe(M.pid)==="F"?"mois-fin-f":"mois-fin-m"])}
+  var types=["etat","tete","duel","general"],type=forceType||types[(i+jour)%4],seq=null;
+  if(type==="anniv"&&A.length){var nA=sgtNom(A[0].id);if(nA)seq=["clairon","anniv-intro",nA,"anniv-fin"]}
+  if(type==="mois"){var M2=pompierDuMois(),n2=M2&&sgtNom(M2.pid);if(n2)seq=["clairon","mois-intro",n2,sexeDe(M2.pid)==="F"?"mois-fin-f":"mois-fin-m"]}
+  if(type==="duel"&&d){var td=dfsIso(t),L=duels.filter(function(x){return x.defi_id===d.id&&x.statut==="accepte"&&x.fin>=td&&x.debut<=td});
+    if(L.length){var du=L[hasard(L.length,jour)],a=scoreDuel(du,du.challenger),b=scoreDuel(du,du.adversaire);
+      if(a===b)seq=["clairon","duel-egal"];else{var g=a>b?du.challenger:du.adversaire,p=a>b?du.adversaire:du.challenger,ng=sgtNom(g),np=sgtNom(p);if(ng&&np)seq=["clairon","duel-intro",ng,"duel-mene",np,"duel-fin-"+(1+hasard(2))]}}}
+  if(type==="tete"&&d&&!dfsAVenir(d)){var pod=dfsPodium(d,0).filter(function(o){return EXCLUS_TITRES.indexOf(o.pid)===-1}),nt=pod[0]&&sgtNom(pod[0].pid);if(nt)seq=["clairon","tete-intro",nt,"tete-fin"]}
+  if(!seq&&(type==="etat"||type==="duel"||type==="tete")&&d){
+    var S=dfsStats(d),deb=new Date(d.debut+"T00:00:00"),fin=new Date(d.fin+"T23:59:59"),att=100*Math.min(1,Math.max(0,(t-deb)/(fin-deb)));
+    var e=dfsAVenir(d)?"avenir":S.atteint?"atteint":S.pct>=att?"avance":"retard";
+    seq=["clairon",estNoel(d)&&e!=="avenir"&&jour%2?"noel-1":e+"-"+(e==="avenir"?1:1+hasard(2,jour+i))];}
+  if(!seq)seq=["clairon","general-"+(1+hasard(7,jour*3+i))];
+  sgtDire(seq);
+}
+function sgtTic(){
+  if(!tvSonPossible())return;var n=new Date(),hm=hmMaintenant(n),j=dfsIso(n);
+  SGT_CRENEAUX.forEach(function(c,i){
+    var p=c.split(":"),fin=new Date(n);fin.setHours(+p[0],+p[1]+10,0,0);var finHm=hmMaintenant(fin);
+    if(hm<c||hm>=finHm)return;var k=j+" "+c,deja="";try{deja=localStorage.getItem("icp_sgt_dernier")||""}catch(e){}
+    if(deja>=k)return;try{localStorage.setItem("icp_sgt_dernier",k)}catch(e){}
+    sgtAnnonce(i);
+  });
+}
+// ----- Mode nuit : 22 h – 6 h, écran sombre et radio coupée (OK sur la télécommande = 30 min de répit) -----
+var tvReveil=0,tvNuitAvant=null;
+function tvEstNuit(){var h=new Date().getHours();return (h>=22||h<6)&&Date.now()>tvReveil}
+function tvNuitTic(){
+  if(!document.body.classList.contains("tv-on"))return;var nuit=tvEstNuit();
+  if(tvNuitAvant===null){tvNuitAvant=nuit;if(nuit&&radioEtat!=="off"){radioCouper();radioMemo(true)}return}
+  if(nuit===tvNuitAvant)return;tvNuitAvant=nuit;
+  if(nuit){if(radioEtat!=="off"){radioCouper();radioMemo(true)}sgtFile=[];try{sgtA&&sgtA.pause()}catch(e){}}
+  else if(radioVoulue()&&radioEtat==="off")radioJouer();
+  renderTV();
+}
+function tvNuitHtml(now){
+  var x=10+Math.floor(now.getMinutes()/10)*12,y=8+(now.getHours()%4)*14;
+  return '<div class="tv tv-nuit"><div class="tv-nuit-c" style="left:'+x+'%;top:'+y+'%"><div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
+    +'<p>🌙 Extinction des feux. La salle se repose.</p>'+(meteo?'<p class="m">'+meteoHtml(true)+'</p>':'')+'<small>Appuie sur OK pour rallumer 30 minutes</small></div></div>';
+}
+document.addEventListener("keydown",function(e){
+  if(!document.body.classList.contains("tv-on")||!tvEstNuit())return;
+  tvReveil=Date.now()+30*60e3;tvNuitAvant=false;e.preventDefault();e.stopImmediatePropagation();renderTV();
+},true);
+document.addEventListener("click",function(e){
+  if(!document.body.classList.contains("tv-on")||!tvEstNuit())return;
+  tvReveil=Date.now()+30*60e3;tvNuitAvant=false;e.stopPropagation();renderTV();
+},true);
+// ----- Météo (Open-Meteo, gratuit, sans clé) -----
+var meteo=null,meteoT=0;
+async function chargerMeteo(){
+  if(Date.now()-meteoT<25*60e3)return;meteoT=Date.now();var avant=!!meteo;
+  try{var r=await fetch("https://api.open-meteo.com/v1/forecast?latitude=43.36&longitude=2.94&current=temperature_2m,weather_code,wind_speed_10m&timezone=Europe%2FParis");
+    var j=await r.json();if(j&&j.current){meteo=j.current;if(!avant)renderTV()}}catch(e){}
+}
+function meteoHtml(court){
+  if(!meteo)return "";var c=meteo.weather_code,t=Math.round(meteo.temperature_2m),v=meteo.wind_speed_10m||0,h=new Date().getHours(),nuit=h>=19||h<7;
+  var ic=c===0?(nuit?"🌙":"☀️"):c<=2?(nuit?"🌙":"🌤️"):c===3?"☁️":c<=48?"🌫️":c<=67?"🌧️":c<=77?"❄️":c<=82?"🌦️":"⛈️";
+  var msg=c>=95?"Orage : on s'entraîne à l'abri !":(c>=51&&c<=67)||(c>=80&&c<=82)?"Pluie : rameur et SkiErg au sec !":c>=71&&c<=77?"Neige : on reste au chaud !"
+    :t>=30?"Chaleur : hydratation obligatoire !":v>=40?"Vent fort : la course attendra":t<=5?"Ça pique : échauffement long !":c<=3&&t>=8&&t<=25&&!nuit?"Temps parfait pour courir dehors !":"Bonne séance !";
+  if(court)return ic+" "+t+" °C · "+msg;
+  return '<div class="tv-meteo"><span class="ic">'+ic+'</span><b>'+t+'°</b><small>'+msg+'</small></div>';
+}
+// Cartes « fête » sur la TV (anniversaire, pompier du mois)
+function fetesTvHtml(){
+  var h="",A=annivsDuJour(),M=moisTitreVisible()?pompierDuMois():null;
+  if(A.length)h+='<div class="tv-carte tv-fete"><span class="tv-fete-ic">🎂</span><div><small>Joyeux anniversaire !</small><b>'+A.map(function(p){return dfsEsc(p.prenom)}).join(" & ")+'</b></div></div>';
+  if(M)h+='<div class="tv-carte tv-fete mois"><span class="tv-fete-ic">🏅</span><div><small>'+titreDuMois(M.pid)+' '+deMois(M.mois)+'</small><b>'+dfsEsc(dfsNom(M.pid))+'</b><em>'+M.jours+' jours d\'entraînement</em></div></div>';
+  return h;
+}
+setInterval(function(){if(!document.body.classList.contains("tv-on"))return;tvNuitTic();sgtTic();chargerMeteo()},30000);
 // Quand l'écran est plus petit que prévu (barre du navigateur de la TV), on rétrécit pour que tout tienne
 function tvAjuster(){
   document.querySelectorAll("#modeTV .tv-defi,#modeTV .tv-d").forEach(function(el){
@@ -3049,8 +3239,9 @@ window.addEventListener("resize",function(){if(document.body.classList.contains(
 function renderTV(){
   var el=document.getElementById("modeTV");if(!el||el.classList.contains("hidden"))return;
   var now=new Date(),d=dfsDefiDuBandeau();
+  if(tvEstNuit()){el.innerHTML=tvNuitHtml(now);return}
   var haut=(NOEL_ON?'<div class="tv-guirlande">'+guirlandeHtml(40)+'</div>':'')+'<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
-    +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'
+    +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'+meteoHtml()
     +(NOEL_ON&&joursAvantNoel()<=31?'<span class="tv-noel">🎄 '+(joursAvantNoel()===0?"Joyeux Noël !":"J-"+joursAvantNoel()+" avant Noël")+'</span>':'')
     +radioHtml()+'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
     +'<button class="tv-x" onclick="fermerModeTV()" title="Quitter le mode TV">✕</button></div>';
@@ -3090,14 +3281,14 @@ function renderTV(){
   var hs=pannesOuvertes();
   if(hs.length)dernieres+='<div class="tv-carte tv-hs"><div class="tv-sec">⚠️ Hors service</div>'+hs.map(function(p){return '<div class="tv-l"><span class="n">🔧 '+dfsEsc(p.machine)+'</span><span class="v">'+(p.description?dfsEsc(p.description).slice(0,40):'en attente de réparation')+'</span></div>'}).join("")+'</div>';
   var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
-  el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+podium+dernieres+qr+'</div></div></div>';
+  el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+fetesTvHtml()+podium+dernieres+qr+'</div></div></div>';
   tvAjuster();
 }
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
   renderMotSergent();renderAccueilPerso();renderAvent();
   try{var tf=document.getElementById('tab-fiche');if(tf&&!tf.classList.contains('hidden')&&!document.querySelector('#tab-fiche .vitrine'))renderFiche()}catch(e){}
-  if(document.body.classList.contains("tv-on")){renderTV();return}
+  if(document.body.classList.contains("tv-on")){tvVerifNouveautes();renderTV();return}
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
   if(!ajoutTraite&&/[?&]ajout\b/.test(location.search)){
     ajoutTraite=true;
@@ -6336,6 +6527,7 @@ function renderDefis(){
   if(dfsErreur){box.innerHTML='<div class="pcard"><p style="color:#f87171">⚠️ '+dfsEsc(dfsErreur)+'</p></div>';return}
   if(dfsForm){box.innerHTML=dfsFormulaire();dfsEnterFx();return}
   var h="",L=dfsVisibles();
+  h+=fetesHtml();
   if(isAdmin) h+='<div class="dfs-barre"><button class="pbtn pri" onclick="dfsNouveau()">➕ Lancer un défi</button></div>'+programmeAnneeHtml();
   if(!L.length){
     h+='<div class="pcard">'+etatVide("trophee","Pas de défi en cours",isAdmin?"Lance le premier : choisis un thème, un objectif et une récompense."

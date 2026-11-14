@@ -1,6 +1,6 @@
 // Service worker de Gestion ICP : rend l'appli installable et accélère les
 // ouvertures suivantes. Les données (Supabase) ne passent JAMAIS par le cache.
-const VERSION = 'icp-v82';
+const VERSION = 'icp-v83';
 const COQUILLE = ['./', 'index.html', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
@@ -20,6 +20,7 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.hostname.endsWith('supabase.co')) return; // données : toujours en direct
+  if (url.pathname.includes('/audio/') || req.headers.has('range')) return; // sons : lus en direct (requêtes partielles)
 
   // Page : réseau d'abord (pour avoir toujours la dernière version), cache si hors ligne.
   if (req.mode === 'navigate') {

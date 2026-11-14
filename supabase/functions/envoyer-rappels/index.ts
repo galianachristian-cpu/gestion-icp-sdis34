@@ -5,6 +5,7 @@
 // centre franchit 25, 50, 75 et 100 %, puis les paliers bonus 150, 200, 250 %…
 // (une seule fois par palier, entre 8 h et 21 h 30). Session ICP : rappel à J-7 (une fois par session).
 // Machine en panne : alerte à l'administrateur dans le quart d'heure. Duel : l'adversaire est prévenu.
+// Anniversaire : tout le centre est prévenu à 8 h.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.47.10";
 import webpush from "npm:web-push@3.6.7";
@@ -188,7 +189,29 @@ Deno.serve(async (req: Request) => {
         duelsEnvoyes++;
       }
     }
-    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees, pannes: pannesEnvoyees, duels: duelsEnvoyes });
+    // ----- Anniversaires : à 8 h, tout le centre est prévenu (une fois par jour) -----
+    let anniversaires = 0;
+    if (!essai && minutes >= 8 * 60 && minutes < 9 * 60) {
+      const { data: dj } = await sb.from("secrets_internes").select("valeur").eq("nom", "dernier_anniv").maybeSingle();
+      if ((dj?.valeur ?? "") !== aujourdhui) {
+        if (dj) await sb.from("secrets_internes").update({ valeur: aujourdhui }).eq("nom", "dernier_anniv");
+        else await sb.from("secrets_internes").insert({ nom: "dernier_anniv", valeur: aujourdhui });
+        const { data: fetes } = await sb.from("pompiers").select("id,prenom").eq("anniv", `${parts.month}-${parts.day}`);
+        if (fetes && fetes.length) {
+          const noms = fetes.map((f: { prenom: string }) => f.prenom).join(" et ");
+          for (const a of abos ?? []) {
+            const lui = fetes.find((f: { id: number }) => f.id === a.pompier_id);
+            const charge = JSON.stringify(lui
+              ? { titre: `🎂 Joyeux anniversaire ${lui.prenom} !`, corps: "Tout le centre pense à toi. Le Sergent-Chef t'offre la séance du jour (il ne le dira qu'une fois).", url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/" }
+              : { titre: `🎂 Anniversaire : ${noms}`, corps: "Pensez à le souhaiter ! Le Sergent-Chef a déjà sorti le clairon.", url: "https://galianachristian-cpu.github.io/gestion-icp-sdis34/" });
+            try { await webpush.sendNotification({ endpoint: a.endpoint, keys: { p256dh: a.p256dh, auth: a.auth } }, charge); envoyes++; }
+            catch (e) { const code = (e as { statusCode?: number }).statusCode; if (code === 404 || code === 410) { await sb.from("push_abos").delete().eq("id", a.id); retires++; } }
+          }
+          anniversaires = fetes.length;
+        }
+      }
+    }
+    return Response.json({ heure: `${parts.hour}:${parts.minute}`, jour, abonnes: (abos ?? []).length, concernes: vus, envoyes, retires, defis: defisEnvoyes, sessions: sessionsEnvoyees, pannes: pannesEnvoyees, duels: duelsEnvoyes, anniversaires });
   } catch (e) {
     return Response.json({ erreur: (e as Error).message }, { status: 500 });
   }

@@ -165,3 +165,10 @@ create table if not exists public.inscriptions_icp (
 --   id, contrib_id (unique), pompier_id, image (data URL JPEG, 400 000 caractères max), valide, cree_le.
 --   RLS : lecture des photos validées, des siennes, ou tout pour l'admin ; ajout de sa propre photo,
 --   sur sa propre séance, toujours valide = false ; validation par l'admin ; suppression par l'auteur ou l'admin.
+
+-- ===== 14/11/2026 : anniversaires (migration « anniversaires ») =====
+-- pompiers.anniv : jour et mois de naissance au format MM-JJ (sans l'année), facultatif, saisi par l'admin.
+-- annuaire_icp() renvoie désormais aussi anniv (les comptes connectés voient la date de l'anniversaire).
+-- La fonction envoyer-rappels prévient tout le centre à 8 h ; le jour déjà traité est noté dans
+-- secrets_internes (ligne nom = 'dernier_anniv'). La colonne secrets_internes.dernier_anniv ajoutée
+-- par la même migration n'est pas utilisée.

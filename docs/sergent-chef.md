@@ -80,3 +80,11 @@ Textes pour ChatGPT ou Canva (joindre la planche de référence) :
 - **Fier** : « … même tenue de Noël. Grand sourire, clin d'œil, pouce levé, une guirlande lumineuse autour du cou. Fond transparent (PNG), aucun texte. »
 - **La fête** : « … même tenue de Noël. Bouche ouverte qui crie de joie, les deux poings levés, flocons de neige et paquets cadeaux qui volent autour. Fond transparent (PNG), aucun texte. »
 - **Fatigué** : « … même tenue de Noël. Il bâille, yeux mi-clos, une tasse de chocolat chaud fumante à la main, des Z de sommeil au-dessus du bonnet. Fond transparent (PNG), aucun texte. »
+
+## Sa voix (TV de la salle)
+
+Messages enregistrés dans `audio/sergent/` (voix Henri, durcie : `--rate=+10% --pitch=-14Hz` puis filtre ffmpeg).
+- `clairon.mp3` avant chaque annonce ; la radio baisse pendant qu'il parle.
+- `noms/<prénom>.mp3` : un fichier par prénom du centre. **Nouveau prénom** : enregistrer le fichier et l'ajouter à `SGT_NOMS` (index.html), sinon il dit une phrase sans prénom.
+- `seance-*` (après une séance), `avance/retard/atteint/avenir/noel/general-*` (points de situation), `duel-*`, `tete-*`, `anniv-*`, `mois-*`.
+- Annonces vers 9 h 15, 10 h 45, 12 h 30, 14 h 30, 16 h 15, 17 h 45, 19 h 15 et 20 h 45. Jamais entre 22 h et 6 h (mode nuit).
