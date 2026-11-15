@@ -88,3 +88,12 @@ Messages enregistrés dans `audio/sergent/` (voix Henri, durcie : `--rate=+10% -
 - `noms/<prénom>.mp3` : un fichier par prénom du centre. **Nouveau prénom** : enregistrer le fichier et l'ajouter à `SGT_NOMS` (index.html), sinon il dit une phrase sans prénom.
 - `seance-*` (après une séance), `avance/retard/atteint/avenir/noel/general-*` (points de situation), `duel-*`, `tete-*`, `anniv-*`, `mois-*`.
 - Annonces vers 9 h 15, 10 h 45, 12 h 30, 14 h 30, 16 h 15, 17 h 45, 19 h 15 et 20 h 45. Jamais entre 22 h et 6 h (mode nuit).
+
+## Paliers bonus (après l'objectif)
+
+Chaque palier bonus (150 %, 200 %, 250 %, 300 %) a un décor sur la piste, un badge pour les participants
+et une annonce vocale sur la TV (`audio/sergent/bonus-*.mp3`). Liste dans `PALIERS_BONUS` (index.html) :
+- Movember : 🐬 Dauphin du centre, 🏴‍☠️ Pirate du rameur, 🏝️ Trésor de l'île, 🐋 Légende des mers
+- Noël : 🛷 Traîneau volant, 🌙 Cap sur la lune, ⭐ Étoile filante, 🪐 Hors galaxie
+- Autres défis : 🥉 🥈 🥇 💎
+Pour de vraies illustrations plus tard : remplacer l'émoji par une image dans `PALIERS_BONUS`.

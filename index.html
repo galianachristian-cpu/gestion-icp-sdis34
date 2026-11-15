@@ -445,6 +445,10 @@ body.tv-on{overflow:hidden}
 .sergent-bulle span{font-size:14px;line-height:1.4;font-style:italic}
 .sergent-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer}
 /* ===== OBJECTIF BONUS, VITRINE DES DÉFIS ===== */
+.j-bdec{position:absolute;bottom:3px;transform:translateX(-50%);font-size:26px;line-height:1;z-index:2;pointer-events:auto;filter:grayscale(1) brightness(.75);opacity:.6;transition:all .4s}
+.j-bdec.atteint{filter:none;opacity:1;animation:jBdec 2.4s ease-in-out infinite}.j-bdec.cible{font-size:30px;opacity:.85;filter:grayscale(.6) drop-shadow(0 0 6px rgba(251,191,36,.8))}
+@keyframes jBdec{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
+.tva.bonus{background:linear-gradient(135deg,#a16207,#1c1917 70%)}.tva-emo{font-size:20vh;line-height:1;animation:radioPulse 1.2s ease-in-out infinite}
 .j-zone{position:absolute;top:0;bottom:0;right:0;border-radius:0 999px 999px 0;background:repeating-linear-gradient(45deg,rgba(251,191,36,.30) 0 8px,rgba(251,191,36,.10) 8px 16px);border-left:2px dashed #fbbf24}
 .j-zl{position:absolute;top:calc(100% + 6px);transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:.14em;color:#fbbf24;white-space:nowrap;pointer-events:none}
 .j-lab{position:absolute;top:calc(100% + 5px);transform:translateX(-50%);font-size:11.5px;font-weight:800;white-space:nowrap;color:#fbbf24;pointer-events:none}
@@ -3146,14 +3150,22 @@ function hasard(n,graine){return graine===undefined?Math.floor(Math.random()*n):
 var tvVus=null,tvAlerteFile=[],tvAlerteOcc=false;
 function tvVerifNouveautes(){
   var ids={};dfsContrib.forEach(function(x){ids[x.id]=1});
-  if(tvVus===null){tvVus=ids;return}
+  if(tvVus===null){tvVus=ids;paliersNouveaux("tv");return}
   var nv=dfsContrib.filter(function(x){return !tvVus[x.id]&&(Date.now()-new Date(x.cree_le||(x.date+"T12:00:00")).getTime())<30*60e3});
-  tvVus=ids;nv.slice(0,3).reverse().forEach(function(x){tvAlerteFile.push(x)});if(!tvAlerteOcc)tvAlerteSuivante();
+  tvVus=ids;nv.slice(0,3).reverse().forEach(function(x){tvAlerteFile.push(x)});
+  var fd=paliersNouveaux("tv");if(fd)tvAlerteFile.push({fete:true,d:fd.d,n:fd.n});
+  if(!tvAlerteOcc&&tvAlerteFile.length)tvAlerteSuivante();
 }
 function tvAlerteSuivante(){
   var x=tvAlerteFile.shift(),el=document.getElementById("tvAlerte");
   if(!x){tvAlerteOcc=false;if(el)el.classList.remove("on");return}
-  tvAlerteOcc=true;var d=dfsListe.filter(function(z){return z.id===x.defi_id})[0]||{unite:"",titre:""};
+  tvAlerteOcc=true;
+  if(x.fete){if(!el){el=document.createElement("div");el.id="tvAlerte";document.body.appendChild(el)}
+    var pb=palierBonus(x.d,x.n-1),km=Number(x.d.objectif)*(1+x.n/2);
+    el.innerHTML='<div class="tva bonus"><div class="tva-emo">'+pb[0]+'</div><div class="tva-t"><small>🏅 Palier bonus franchi</small><b>'+dfsNum(km)+' '+dfsEsc(x.d.unite)+' !</b><span>Badge débloqué : <em>'+dfsEsc(pb[1])+'</em></span><i>'+dfsEsc(x.d.titre)+' · bravo à tout le centre</i></div></div>';
+    el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+    try{if(!tvEstNuit())confettis(estMovember(x.d)?"moustache":estNoel(x.d)?"flocon":null)}catch(e){}
+    sgtDire(["clairon",pb[2]]);setTimeout(tvAlerteSuivante,9000);return}var d=dfsListe.filter(function(z){return z.id===x.defi_id})[0]||{unite:"",titre:""};
   if(!el){el=document.createElement("div");el.id="tvAlerte";document.body.appendChild(el)}
   el.innerHTML='<div class="tva"><div class="tva-av">'+avatarMini(x.pompier_id,initialesDe(x.pompier_id))+'</div><div class="tva-t"><small>🔥 Nouvelle séance</small><b>'+dfsEsc(prenomDe(x.pompier_id))+'</b>'
     +'<span>vient d\'ajouter <em>+'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+'</em></span><i>'+dfsEsc(d.titre)+'</i></div></div>';
@@ -3161,6 +3173,17 @@ function tvAlerteSuivante(){
   try{if(!tvEstNuit())confettis()}catch(e){}
   var n=sgtNom(x.pompier_id);sgtDire(n?["clairon",n,"seance-"+(1+hasard(5))]:["clairon","seance-0"]);
   setTimeout(tvAlerteSuivante,8000);
+}
+// Palier bonus franchi depuis la dernière visite de cet appareil ? (la première fois, on note sans fêter)
+function paliersNouveaux(ou){
+  var d=dfsDefiDuBandeau();if(!d||dfsAVenir(d))return null;var n=nbPaliersBonus(d,dfsStats(d).total),k="icp_bonus_"+ou+"_"+d.id,vu=null;
+  try{vu=localStorage.getItem(k);localStorage.setItem(k,String(n))}catch(e){return null}
+  return vu!==null&&n>Number(vu)?{d:d,n:n}:null;
+}
+function feteBonusAppli(){
+  if(document.body.classList.contains("tv-on")||estEcran())return;var f=paliersNouveaux("app");if(!f)return;
+  var pb=palierBonus(f.d,f.n-1);setTimeout(function(){try{confettis(estMovember(f.d)?"moustache":estNoel(f.d)?"flocon":null)}catch(e){}
+    showToast(pb[0]+" Palier bonus "+dfsNum(Number(f.d.objectif)*(1+f.n/2))+" "+f.d.unite+" franchi ! Badge « "+pb[1]+" » débloqué","success")},800);
 }
 // ----- Le micro : quelques annonces par jour, jamais la nuit -----
 var SGT_CRENEAUX=["09:15","10:45","12:30","14:30","16:15","17:45","19:15","20:45"];
@@ -3305,6 +3328,7 @@ function apresChargementDefis(){
   renderMotSergent();renderAccueilPerso();renderAvent();
   try{var tf=document.getElementById('tab-fiche');if(tf&&!tf.classList.contains('hidden')&&!document.querySelector('#tab-fiche .vitrine'))renderFiche()}catch(e){}
   if(document.body.classList.contains("tv-on")){tvVerifNouveautes();renderTV();return}
+  feteBonusAppli();
   if(!tvAuto&&(estEcran()||/[?&]tv\b/.test(location.search))){tvAuto=true;ouvrirModeTV();return}
   if(!ajoutTraite&&/[?&]ajout\b/.test(location.search)){
     ajoutTraite=true;
@@ -3547,6 +3571,13 @@ function dfsBonus(d,S){
   var n=Math.max(3,Math.floor(S.total/(obj/2))+1),cible=n*obj/2,depart=cible-obj/2;
   return {cible:cible,depart:depart,pct:Math.max(0,Math.min(100,Math.round(100*(S.total-depart)/(obj/2)))),rang:n-2,fini:d.fin<dfsIso(new Date())};
 }
+// Paliers bonus : un décor, un badge et une annonce du Sergent-Chef par palier (150 %, 200 %, 250 %…)
+var PALIERS_BONUS={
+ movember:[["🐬","Dauphin du centre","bonus-dauphin"],["🏴‍☠️","Pirate du rameur","bonus-pirate"],["🏝️","Trésor de l'île","bonus-ile"],["🐋","Légende des mers","bonus-baleine"]],
+ noel:[["🛷","Traîneau volant","bonus-traineau"],["🌙","Cap sur la lune","bonus-lune"],["⭐","Étoile filante","bonus-etoile"],["🪐","Hors galaxie","bonus-galaxie"]],
+ autre:[["🥉","Bonus bronze","bonus-gen"],["🥈","Bonus argent","bonus-gen"],["🥇","Bonus or","bonus-gen"],["💎","Bonus diamant","bonus-gen"]]};
+function palierBonus(d,i){var L=PALIERS_BONUS[themeHumour(d)||"autre"];return L[Math.max(0,Math.min(i,L.length-1))]}
+function nbPaliersBonus(d,total){var o=Number(d.objectif);return o>0&&total>=o*1.5?Math.floor((total-o)/(o/2)+1e-9):0}
 // Contenu d'une jauge de défi. Objectif atteint : la piste s'allonge jusqu'au palier bonus,
 // le phare (ou la maison) devient un point de passage et une zone dorée mène à la médaille.
 function jaugeContenu(d,S,avenir,attendu){
@@ -3557,9 +3588,10 @@ function jaugeContenu(d,S,avenir,attendu){
   var h='<span class="j-zone" style="left:'+x+'%"></span><span class="j-zl" style="left:'+((x+97)/2)+'%">ZONE BONUS</span>'
     +'<i style="width:'+pos+'%;background:linear-gradient(90deg,var(--c),#f97316 '+coupe+'%,#fbbf24 '+coupe+'%,#fde047)"></i>'
     +bateauHtml(d,S.pct,bn)+[25,50,75].map(function(p){return '<s style="left:'+p*k+'%"></s>'}).join("");
-  for(var q=obj*1.5;q<=B.depart+1e-9;q+=obj/2)h+='<s class="j-ok" style="left:'+100*q/B.cible+'%"></s>';
-  return h+'<span class="j-med" style="left:97%"><img src="img/defis/medaille-or.webp" alt="" draggable="false"></span>'
-    +'<span class="j-lab ok" style="left:'+x+'%">✅ '+dfsNum(obj)+' '+u+'</span><span class="j-lab" style="left:97%">🏅 '+dfsNum(B.cible)+' '+u+'</span>';
+  for(var q=obj*1.5,i=0;q<=B.cible+1e-9;q+=obj/2,i++){var fin=q>=B.cible-1e-9,pb=palierBonus(d,i),ok=S.total>=q-1e-9;
+    if(!fin)h+='<s class="j-ok" style="left:'+100*q/B.cible+'%"></s>';
+    h+='<span class="j-bdec'+(ok?' atteint':'')+(fin?' cible':'')+'" style="left:'+(fin?97:100*q/B.cible)+'%" title="'+escAttr(pb[1])+'">'+pb[0]+'</span>';}
+  return h+'<span class="j-lab ok" style="left:'+x+'%">✅ '+dfsNum(obj)+' '+u+'</span><span class="j-lab" style="left:97%">'+palierBonus(d,nbPaliersBonus(d,B.cible)-1)[0]+' '+dfsNum(B.cible)+' '+u+'</span>';
 }
 function pctAffiche(d,S){return S.atteint?Math.round(100*S.total/Number(d.objectif)):S.pct}
 function dfsBonusHtml(d,S,cls){
@@ -4083,6 +4115,8 @@ function badgesDefis(p){
   var nd={};mes.forEach(function(x){nd[x.defi_id]=1});if(Object.keys(nd).length>=3)b.push("🏅 "+Object.keys(nd).length+" défis");
   var ids={};mes.forEach(function(x){ids[x.id]=1});var nb=dfsBravos.filter(function(x){return ids[x.contrib_id]}).length;if(nb>=10)b.push("👏 "+nb+" bravos reçus");
   if(flammeDe(p.id)>=4)b.push("🔥 Un mois de régularité");
+  Object.keys(nd).forEach(function(id){var d=dfsListe.filter(function(x){return String(x.id)===id})[0];if(!d)return;
+    var n=nbPaliersBonus(d,dfsStats(d).total);for(var i=0;i<n;i++){var pb=palierBonus(d,i);b.push(pb[0]+" "+pb[1])}});
   return b;
 }
 // ===== INSCRIPTIONS AUX SESSIONS ICP (table inscriptions_icp ; places limitées par sessions_icp.places) =====
