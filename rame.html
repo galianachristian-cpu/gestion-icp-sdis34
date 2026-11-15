@@ -129,6 +129,12 @@ const matCasque=new THREE.MeshStandardMaterial({color:0xd6d3d1,metalness:.8,roug
 const matBois=new THREE.MeshStandardMaterial({color:0xd4a373,roughness:.6});
 const matMarine=new THREE.MeshStandardMaterial({color:0x1e3a5f,roughness:.6});
 
+// Matériaux « cartoon » (3 tons) et contours noirs épais, comme les dessins du Sergent-Chef
+const tons=new THREE.DataTexture(new Uint8Array([90,90,90,255,175,175,175,255,255,255,255,255]),3,1);tons.minFilter=tons.magFilter=THREE.NearestFilter;tons.needsUpdate=true;
+const toon=c=>new THREE.MeshToonMaterial({color:c,gradientMap:tons,toneMapped:false});
+const T={rouge:toon(0xd92323),jaune:toon(0xfacc15),marine:toon(0x1e2f57),peau:toon(0xe8a57c),brun:toon(0x5a3214),noir:toon(0x1a1a1a),blanc:toon(0xffffff),argent:toon(0xd9dde3),or:toon(0xf2b52a)};
+const matContour=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});
+function contour(m,k,cyl){const c=new THREE.Mesh(m.geometry,matContour);c.scale.set(k,cyl?1.0:k,k);c.userData.contour=true;m.add(c);return c}
 // Bateau d'aviron (skiff) + rameur, orienté vers -z (la proue)
 function fabriquerBateau(fantome){
   const g=new THREE.Group();
@@ -139,25 +145,53 @@ function fabriquerBateau(fantome){
   // portants (riggers)
   for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.85,6),matNoir);p.rotation.z=Math.PI/2;p.position.set(s*0.42,0.40,0.6);g.add(p)}
   const cale=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.16,0.04),matNoir);cale.position.set(0,0.26,1.12);cale.rotation.x=-0.6;g.add(cale);
-  // rameur (face à la poupe, +z)
+  // ===== Le Sergent-Chef en 3D (style cartoon, contours noirs), face à la poupe (+z) =====
   const rameur=new THREE.Group();g.add(rameur);
   const siege=new THREE.Group();rameur.add(siege);
-  const bassin=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.14,0.28),matMarine);bassin.position.y=0.3;siege.add(bassin);
+  const M=(geo,mat,parent,c=1.05)=>{const m=new THREE.Mesh(geo,mat);parent.add(m);if(c)contour(m,c);return m};
+  // short bleu marine à liseré rouge
+  M(new THREE.BoxGeometry(0.36,0.16,0.3),T.marine,siege).position.y=0.3;
+  for(const s of[-1,1]){const l=M(new THREE.BoxGeometry(0.012,0.12,0.3),T.rouge,siege,0);l.position.set(s*0.182,0.3,0)}
   const tronc=new THREE.Group();tronc.position.y=0.36;siege.add(tronc);
-  const torse=new THREE.Mesh(new THREE.CapsuleGeometry(0.17,0.42,6,14),matRouge);torse.position.y=0.32;tronc.add(torse);
-  const bande=new THREE.Mesh(new THREE.CylinderGeometry(0.176,0.176,0.07,18),matJaune);bande.position.y=0.36;tronc.add(bande);
-  const tete=new THREE.Mesh(new THREE.SphereGeometry(0.13,18,14),matPeau);tete.position.y=0.78;tronc.add(tete);
-  const casque=new THREE.Mesh(new THREE.SphereGeometry(0.15,18,10,0,Math.PI*2,0,Math.PI/2),matCasque);casque.position.y=0.8;tronc.add(casque);
-  const visiere=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.02,6,20,Math.PI),new THREE.MeshStandardMaterial({color:0xfbbf24,metalness:.7,roughness:.3}));visiere.position.set(0,0.8,0.02);visiere.rotation.x=-Math.PI/2.3;tronc.add(visiere);
-  const moustache=new THREE.Mesh(new THREE.TorusGeometry(0.06,0.018,6,12,Math.PI),matNoir);moustache.position.set(0,0.73,0.12);moustache.rotation.z=Math.PI;tronc.add(moustache);
+  // buste de costaud : pectoraux, ventre, bande jaune
+  const torse=M(new THREE.SphereGeometry(1,24,18),T.rouge,tronc,1.04);torse.scale.set(0.28,0.3,0.2);torse.position.set(0,0.4,0.01);
+  const ventre=M(new THREE.SphereGeometry(1,20,14),T.rouge,tronc,1.05);ventre.scale.set(0.22,0.2,0.17);ventre.position.set(0,0.16,0);
+  const bande=M(new THREE.SphereGeometry(1,24,8),T.jaune,tronc,0);bande.scale.set(0.283,0.045,0.205);bande.position.set(0,0.42,0.012);
+  // cou et tête
+  M(new THREE.CylinderGeometry(0.075,0.09,0.12,14),T.peau,tronc).position.y=0.7;
+  const tete=new THREE.Group();tete.position.set(0,0.86,0.02);tronc.add(tete);
+  M(new THREE.SphereGeometry(0.165,24,18),T.peau,tete,1.06);
+  const machoire=M(new THREE.SphereGeometry(1,18,12),T.peau,tete,0);machoire.scale.set(0.13,0.09,0.12);machoire.position.set(0,-0.07,0.04);
+  M(new THREE.SphereGeometry(0.035,12,10),T.peau,tete,0).position.set(0,-0.01,0.16);           // nez
+  for(const s of[-1,1]){
+    const oeil=M(new THREE.SphereGeometry(0.03,12,10),T.blanc,tete,0);oeil.position.set(s*0.055,0.025,0.135);
+    M(new THREE.SphereGeometry(0.015,8,8),T.noir,tete,0).position.set(s*0.055,0.025,0.162);
+    const sourcil=M(new THREE.BoxGeometry(0.08,0.022,0.03),T.brun,tete,0);sourcil.position.set(s*0.055,0.07,0.145);sourcil.rotation.z=-s*0.35; // sourcils froncés
+    // moustache en guidon, pointes recourbées vers le haut
+    const c=new THREE.CatmullRomCurve3([new THREE.Vector3(0,-0.045,0.165),new THREE.Vector3(s*0.06,-0.06,0.158),new THREE.Vector3(s*0.12,-0.07,0.13),new THREE.Vector3(s*0.165,-0.04,0.1),new THREE.Vector3(s*0.17,0.0,0.085)]);
+    M(new THREE.TubeGeometry(c,20,0.032,10,false),T.brun,tete,1.1);
+    const bout=M(new THREE.SphereGeometry(0.032,10,8),T.brun,tete,0);bout.position.set(s*0.17,0.0,0.085);
+  }
+  const bouche=M(new THREE.BoxGeometry(0.09,0.03,0.02),T.blanc,tete,0);bouche.position.set(0,-0.095,0.135); // sourire déterminé, dents serrées
+  // casque argent : bombe, bande rouge, bord, visière dorée, couvre-nuque noir
+  const bombe=M(new THREE.SphereGeometry(0.19,24,14,0,Math.PI*2,0,Math.PI/2),T.argent,tete,1.05);bombe.position.y=0.04;bombe.scale.set(1,0.95,1.08);
+  const crete=M(new THREE.TorusGeometry(0.19,0.025,8,24,Math.PI),T.rouge,tete,0);crete.position.y=0.04;crete.rotation.y=Math.PI/2;crete.scale.set(1.08,0.95,1);
+  M(new THREE.CylinderGeometry(0.215,0.215,0.018,28),T.argent,tete,1.04).position.y=0.045;
+  const visiere=M(new THREE.CylinderGeometry(0.2,0.215,0.065,24,1,true,-0.85,1.7),T.or,tete,0);visiere.position.set(0,0.085,0.012);visiere.rotation.x=-0.18;visiere.material.side=THREE.DoubleSide;
+  const nuque=M(new THREE.CylinderGeometry(0.2,0.23,0.16,20,1,true,Math.PI-1.1,2.2),T.noir,tete,0);nuque.position.y=-0.03;nuque.material.side=THREE.DoubleSide;
   // membres articulés (placés à chaque image par cinématique inverse)
-  const seg=(r,m)=>{const x=new THREE.Mesh(new THREE.CylinderGeometry(r,r*0.9,1,10),m);g.add(x);return x};
-  const rot=(r,m)=>{const x=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),m);g.add(x);return x};
+  const seg=(r,m,c=true)=>{const x=new THREE.Mesh(new THREE.CylinderGeometry(r,r*0.85,1,14),m);g.add(x);if(c)contour(x,1+0.022/r,true);return x};
+  const rot=(r,m,c=true)=>{const x=new THREE.Mesh(new THREE.SphereGeometry(r,14,12),m);g.add(x);if(c)contour(x,1+0.02/r);return x};
+  const chaussure=()=>{const p=new THREE.Group();g.add(p);
+    const semelle=M(new THREE.BoxGeometry(0.12,0.03,0.28),T.blanc,p,0);semelle.position.y=-0.045;
+    M(new THREE.BoxGeometry(0.12,0.08,0.27),T.noir,p,1.06);
+    const bandeR=M(new THREE.BoxGeometry(0.125,0.025,0.2),T.rouge,p,0);bandeR.position.set(0,0.0,0.02);
+    const chaussette=M(new THREE.CylinderGeometry(0.06,0.06,0.07,12),T.noir,p,0);chaussette.position.set(0,0.07,-0.07);return p};
   const membres=[];
   for(const s of[-1,1])membres.push({s,
-    bras:seg(0.052,matRouge),avant:seg(0.045,matPeau),coude:rot(0.05,matPeau),main:rot(0.055,matPeau),epaule:rot(0.07,matRouge),
-    cuisse:seg(0.08,matMarine),tibia:seg(0.06,matPeau),genou:rot(0.075,matMarine),pied:new THREE.Mesh(new THREE.BoxGeometry(0.11,0.08,0.26),matNoir)});
-  membres.forEach(m=>g.add(m.pied));
+    epaule:rot(0.12,T.rouge),bras:seg(0.095,T.peau),coude:rot(0.08,T.peau),avant:seg(0.075,T.peau),
+    poignet:(()=>{const x=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.08,14),T.noir);g.add(x);return x})(),main:rot(0.078,T.peau),
+    cuisse:seg(0.11,T.marine),genou:rot(0.09,T.peau),tibia:seg(0.08,T.peau),pied:chaussure()});
   // rames
   const rames=[];
   for(const s of[-1,1]){
@@ -166,7 +200,7 @@ function fabriquerBateau(fantome){
     const pale=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.02,0.2),matRouge);pale.position.x=s*(3.8-0.9-0.25);pivot.add(pale);
     rames.push({pivot,s});
   }
-  if(fantome){g.traverse(o=>{if(o.isMesh){o.material=new THREE.MeshStandardMaterial({color:0x67e8f9,transparent:true,opacity:.38,emissive:0x0e7490,emissiveIntensity:.6,depthWrite:false})}})}
+  if(fantome){g.traverse(o=>{if(o.isMesh&&o.userData.contour){o.visible=false;return}if(o.isMesh){o.material=new THREE.MeshStandardMaterial({color:0x67e8f9,transparent:true,opacity:.38,emissive:0x0e7490,emissiveIntensity:.6,depthWrite:false})}})}
   return {g,siege,tronc,rames,membres};
 }
 const bateau=fabriquerBateau(false);scene.add(bateau.g);
@@ -245,7 +279,7 @@ function ditSergent(t){const s=document.getElementById('sergent');document.getEl
 const PHRASES={devant:["Le fantôme mange ton écume ! Continue !","Voilà ! C'est comme ça qu'on rame !","Je ne dis pas que je suis fier… mais je suis fier."],derriere:["Le fantôme se moque de toi. Pousse sur les jambes !","Plus vite, moussaillon !","Allonge ! Jambes, dos, bras !"],mi:["Mi-parcours ! Le phare t'attend.","La moitié ! L'autre moitié, c'est pour la gloire."]};
 
 // ===================== ANIMATION =====================
-const cams=['poursuite','cote','drone','tv'];let cam=0,camT=0;
+const cams=['poursuite','cote','grosplan','drone','tv'];let cam=0,camT=0;
 const vCam=new THREE.Vector3(),vVise=new THREE.Vector3();
 let derniere=performance.now(),fpsN=0,fpsT=0,dernierPhrase=0,phaseCoup=0,miDit=false;
 function demarrer(){document.getElementById('accueil').classList.add('cache');etat.enCours=true;etat.objectif=+document.getElementById('choixObj').value;etat.fantPace=+document.getElementById('choixFant').value;
@@ -281,10 +315,11 @@ function boucle(t){
   eau.material.uniforms.time.value+=dt*(0.55+etat.vitesse*0.05);
   // caméra
   camT+=dt;if(cams[cam]==='tv'&&camT>14){camT=0}
-  const mode=cams[cam]==='tv'?['poursuite','cote','drone'][Math.floor(tps/14)%3]:cams[cam];
+  const mode=cams[cam]==='tv'?['poursuite','cote','grosplan','drone'][Math.floor(tps/12)%4]:cams[cam];
   const bz=bateau.g.position.z;
   if(mode==='poursuite'){vCam.set(4.2,2.3,bz+9.5);vVise.set(0,0.6,bz-5)}
   else if(mode==='cote'){vCam.set(9,1.4,bz-1);vVise.set(0,0.7,bz-1.5)}
+  else if(mode==='grosplan'){vCam.set(2.4,1.55,bz+2.6);vVise.set(0,0.95,bz+0.1)}
   else {vCam.set(-14,16,bz+18);vVise.set(0,0,bz-14)}
   camera.position.lerp(vCam,Math.min(1,dt*2.2));
   const cible=camera.userData.vise||(camera.userData.vise=vVise.clone());cible.lerp(vVise,Math.min(1,dt*3));camera.lookAt(cible);
@@ -308,11 +343,11 @@ function ikMembres(B){
     const r=B.rames.find(x=>x.s===m.s);
     // main sur la poignée de la rame du même côté
     _T.set(-m.s*0.72,0.02,0);r.pivot.localToWorld(_T);B.g.worldToLocal(_T);
-    _S.set(m.s*0.2,0.56,0.02);B.tronc.localToWorld(_S);B.g.worldToLocal(_S);
+    _S.set(m.s*0.27,0.58,0.02);B.tronc.localToWorld(_S);B.g.worldToLocal(_S);
     _P.set(m.s*1,-0.5,-0.9);deuxOs(_S,_T,0.38,0.38,_P,_J,_H);
-    poser(m.bras,_S,_J);poser(m.avant,_J,_H);m.coude.position.copy(_J);m.main.position.copy(_H);m.epaule.position.copy(_S);
+    poser(m.bras,_S,_J);poser(m.avant,_J,_H);m.coude.position.copy(_J);m.main.position.copy(_H);m.epaule.position.copy(_S);m.poignet.position.lerpVectors(_J,_H,0.86);m.poignet.quaternion.copy(m.avant.quaternion);
     // pied calé sur la barre, genou qui monte quand le siège avance
-    _hip.set(m.s*0.1,0.36,0);B.siege.localToWorld(_hip);B.g.worldToLocal(_hip);
+    _hip.set(m.s*0.11,0.34,0);B.siege.localToWorld(_hip);B.g.worldToLocal(_hip);
     _foot.set(m.s*0.1,0.3,1.08);_P.set(m.s*0.25,1,0.3);
     deuxOs(_hip,_foot,0.6,0.58,_P,_J,_H);poser(m.cuisse,_hip,_J);poser(m.tibia,_J,_H);m.genou.position.copy(_J);m.pied.position.copy(_foot).add(_d.set(0,-0.03,0.05));
   });
@@ -356,7 +391,7 @@ function finir(){if(etat.fini)return;etat.fini=true;
 let qualiteMax=3,qualiteFixe=false;
 document.getElementById('btnSimu').onclick=()=>{etat.source='simu';demarrer()};
 document.getElementById('btnPM5').onclick=connecterPM5;
-document.getElementById('btnCam').onclick=()=>{cam=(cam+1)%cams.length;camT=0;ditSergent('Caméra : '+['poursuite','de côté','drone','TV (automatique)'][cam])};
+document.getElementById('btnCam').onclick=()=>{cam=(cam+1)%cams.length;camT=0;ditSergent('Caméra : '+['poursuite','de côté','gros plan','drone','TV (automatique)'][cam])};
 document.getElementById('btnPlus').onclick=()=>{simuForce=Math.min(1,simuForce+.12)};
 document.getElementById('btnMoins').onclick=()=>{simuForce=Math.max(0,simuForce-.12)};
 document.getElementById('btnFin').onclick=()=>{if(etat.enCours)finir()};
@@ -367,7 +402,7 @@ if(q.has('tv')){cam=3}
 placerPhare();appliquerQualite();redim();
 camera.position.set(4.2,2.3,9.5);
 requestAnimationFrame(boucle);
-window.__rame={etat};
+window.__rame={etat,camera,renderer,scene,bateau};
 </script>
 </body>
 </html>
