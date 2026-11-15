@@ -3717,19 +3717,16 @@ document.addEventListener("DOMContentLoaded",function(){var m=document.getElemen
   m.textContent=L[Math.floor(Date.now()/864e5)%L.length];});
 // ===== ACCUEIL PERSONNALISÉ (comptes reliés à un pompier) =====
 // « Bonjour Hugo » + son niveau, sa part du défi et la prochaine session ICP, en haut de la fiche.
-// Chacun peut donner son anniversaire (jour et mois) depuis son accueil, ou dire « non merci »
+// Chacun donne son anniversaire (jour et mois) depuis son accueil : la carte reste tant que ce n'est pas fait
 function annivPersoHtml(p){
-  var non=false;try{non=localStorage.getItem("icp_anniv_non_"+p.id)==="1"}catch(e){}
   if(p.anniv)return '<div class="acc-anniv ok">🎂 Ton anniversaire : <b>'+new Date(2024,+p.anniv.slice(0,2)-1,+p.anniv.slice(3)).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b> <button class="lien" onclick="annivPersoEditer()">modifier</button></div>';
-  if(non)return "";
   return '<div class="acc-anniv"><div><b>🎂 Ton anniversaire ?</b><small>Jour et mois seulement. Le jour J, le Sergent-Chef te le souhaite sur la TV de la salle et tout le centre est prévenu.</small></div>'
-    +'<div class="acc-anniv-f"><input type="text" id="annivPerso" class="anniv-in" placeholder="JJ/MM" maxlength="5" inputmode="numeric" onkeydown="if(event.key===\'Enter\')annivPersoOk()"><button class="btn btn-sm btn-success acc-ok" onclick="annivPersoOk()">OK</button><button class="btn btn-sm acc-non" style="background:var(--surface2);color:var(--text)" onclick="annivPersoNon()">Non merci</button></div></div>';
+    +'<div class="acc-anniv-f"><input type="text" id="annivPerso" class="anniv-in" placeholder="JJ/MM" maxlength="5" inputmode="numeric" onkeydown="if(event.key===\'Enter\')annivPersoOk()"><button class="btn btn-sm btn-success acc-ok" onclick="annivPersoOk()">OK</button></div></div>';
 }
-function annivPersoEditer(){var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(!p)return;var v=prompt("Ton anniversaire (jour/mois, ex. 14/03). Laisse vide pour le retirer.",p.anniv?p.anniv.slice(3)+"/"+p.anniv.slice(0,2):"");if(v===null)return;annivPersoEnvoyer(v)}
+function annivPersoEditer(){var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(!p)return;var v=prompt("Ton anniversaire (jour/mois, ex. 14/03).",p.anniv?p.anniv.slice(3)+"/"+p.anniv.slice(0,2):"");if(v===null)return;annivPersoEnvoyer(v)}
 function annivPersoOk(){var el=document.getElementById("annivPerso");if(el)annivPersoEnvoyer(el.value)}
-function annivPersoNon(){try{localStorage.setItem("icp_anniv_non_"+monPompierId,"1")}catch(e){}renderAccueilPerso()}
 async function annivPersoEnvoyer(v){
-  var an=lireAnniv(v);if(an===false){showToast("Écris le jour et le mois, par exemple 14/03","error");return}
+  var an=lireAnniv(v);if(an===false||!an){showToast("Écris le jour et le mois, par exemple 14/03","error");return}
   try{var r=await supabaseClient.rpc("definir_mon_anniv",{p_anniv:an});if(r.error)throw r.error;
     var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(p)p.anniv=an;if(ANNUAIRE[monPompierId])ANNUAIRE[monPompierId].anniv=an;
     showToast(an?"🎂 C'est noté ! Le Sergent-Chef a mis un rappel. Il n'oublie jamais rien.":"Anniversaire retiré","success");renderAccueilPerso();}
