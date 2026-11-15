@@ -76,13 +76,13 @@ html,body{margin:0;height:100%;background:#0b1d2e;color:var(--txt);font-family:I
 </div>
 <div class="panneau" id="accueil"><div class="boite">
   <h1>🚣 RAME EN <b>DIRECT</b></h1>
-  <p>Relie ton téléphone au rameur (écran <b>PM5</b>, Bluetooth activé dans <i>More Options → Turn Wireless ON</i>) et rame sur la Méditerranée. Ton bateau avance au rythme de tes coups de rame.</p>
+  <p>Relie ton téléphone à la machine : écran <b>Concept2 PM5</b> (Bluetooth activé dans <i>Autres options → Sans fil</i>) ou rameur « connecté » compatible Kinomap / Zwift. Puis rame sur la Méditerranée. Ton bateau avance au rythme de tes coups de rame.</p>
   <div class="ligne">
     <label>Objectif <select id="choixObj"><option value="500">500 m</option><option value="1000">1 000 m</option><option value="2000" selected>2 000 m (test ICP)</option><option value="5000">5 000 m</option></select></label>
     <label>Personnage <select id="choixPerso"><option value="h">👨‍🚒 Sergent-Chef</option><option value="f">👩‍🚒 Sergente-Chef</option></select></label>
     <label>Fantôme <select id="choixFant"><option value="135">2:15 /500 m</option><option value="125" selected>2:05 /500 m</option><option value="115">1:55 /500 m</option><option value="105">1:45 /500 m</option></select></label>
   </div>
-  <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter le rameur</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
+  <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter la machine</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
   <div class="etat" id="etat"></div>
 </div></div>
 <div class="panneau cache" id="fin"><div class="boite" id="finBoite"></div></div>
@@ -333,8 +333,11 @@ async function connecterPM5(){
   const e=document.getElementById('etat');
   if(!navigator.bluetooth){e.innerHTML='Ce navigateur ne sait pas se connecter en Bluetooth. Sur iPhone, ouvre cette page dans l\'appli gratuite <b>Bluefy</b>. Sur Android, utilise <b>Chrome</b>.';return}
   try{e.textContent='Recherche du rameur…';
-    const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'PM5'}],optionalServices:[PM5.service]});
-    e.textContent='Connexion à '+dev.name+'…';const srv=await (await dev.gatt.connect()).getPrimaryService(PM5.service);
+    // Concept2 (PM5) ou machine « connectée » standard (Bluetooth FTMS : Kinomap, Zwift…)
+    const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'PM5'},{services:[0x1826]}],optionalServices:[PM5.service,0x1826]});
+    e.textContent='Connexion à '+(dev.name||'la machine')+'…';const gatt=await dev.gatt.connect();
+    if(!/^PM5/.test(dev.name||'')){await connecterFTMS(gatt,dev);return}
+    const srv=await gatt.getPrimaryService(PM5.service);
     try{const t=await srv.getCharacteristic(PM5.taux);await t.writeValue(new Uint8Array([3]))}catch(x){} // 100 ms si possible
     const ecoute=async(uuid,f)=>{const c=await srv.getCharacteristic(uuid);c.addEventListener('characteristicvaluechanged',ev=>f(ev.target.value));await c.startNotifications()};
     await ecoute(PM5.general,v=>{etat.temps=(v.getUint8(0)|v.getUint8(1)<<8|v.getUint8(2)<<16)/100;pm5DistReelle=(v.getUint8(3)|v.getUint8(4)<<8|v.getUint8(5)<<16)/10;pm5Derniere=performance.now()});
@@ -343,6 +346,29 @@ async function connecterPM5(){
     dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume le Bluetooth du PM5 !")});
     etat.source='pm5';document.getElementById('qui').textContent='Relié à '+dev.name;demarrer();
   }catch(x){e.textContent='Connexion impossible : '+(x.message||x)}
+}
+
+// Rameur standard FTMS (service 0x1826, données 0x2AD1 « Rower Data »)
+async function connecterFTMS(gatt,dev){
+  const srv=await gatt.getPrimaryService(0x1826),c=await srv.getCharacteristic(0x2AD1);
+  c.addEventListener('characteristicvaluechanged',ev=>{const v=ev.target.value;let i=2;const f=v.getUint16(0,true);
+    const u8=()=>v.getUint8(i++),u16=()=>{const x=v.getUint16(i,true);i+=2;return x},s16=()=>{const x=v.getInt16(i,true);i+=2;return x},u24=()=>{const x=v.getUint8(i)|v.getUint8(i+1)<<8|v.getUint8(i+2)<<16;i+=3;return x};
+    try{
+      if(!(f&1)){etat.spm=u8()/2;u16()}            // cadence (0,5 coup/min) et nombre de coups
+      if(f&2)u8();                                  // cadence moyenne
+      if(f&4){pm5DistReelle=u24();pm5Derniere=performance.now()} // distance totale (m)
+      if(f&8){const p=u16();if(p>0&&p<3600){etat.pace=p;etat.vitesse=500/p}else etat.vitesse=0} // rythme /500 m (s)
+      if(f&16)u16();                                // rythme moyen
+      if(f&32)etat.watts=Math.max(0,s16());         // puissance instantanée
+      if(f&64)s16();if(f&128)s16();                 // puissance moyenne, résistance
+      if(f&256){u16();u16();u8()}                   // calories
+      if(f&512)u8();if(f&1024)u8();                 // pouls, MET
+      if(f&2048){etat.temps=u16();etat.ftmsTemps=true} // temps écoulé (s)
+    }catch(x){}
+  });
+  await c.startNotifications();
+  dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume son Bluetooth !")});
+  etat.source='pm5';etat.ftms=true;document.getElementById('qui').textContent='Relié à '+(dev.name||'la machine');demarrer();
 }
 
 // ===================== SERGENT-CHEF =====================
@@ -365,7 +391,8 @@ function boucle(t){
   fpsN++;fpsT+=dt;if(fpsT>2.5){const fps=fpsN/fpsT;if(!qualiteFixe&&fps<40&&qualite>0){qualite--;appliquerQualite()}else if(fps>57&&qualite<3&&qualiteMax>qualite){qualite++;appliquerQualite()}fpsN=0;fpsT=0}
   if(etat.enCours&&!etat.fini){
     if(etat.source==='simu'){etat.temps+=dt;simuler(dt)}
-    else{ // PM5 : on lisse la distance entre deux mesures pour garder la fluidité
+    else{if(etat.ftms&&!etat.ftmsTemps)etat.temps+=dt; // machine sans chrono : on compte nous-mêmes
+      // PM5 : on lisse la distance entre deux mesures pour garder la fluidité
       pm5DistAff+=etat.vitesse*dt;if(pm5DistReelle>pm5DistAff+3||pm5DistReelle<pm5DistAff-3)pm5DistAff=pm5DistReelle;else pm5DistAff+=(pm5DistReelle-pm5DistAff)*Math.min(1,dt*2);etat.distance=Math.max(etat.distance,pm5DistAff)}
     if(etat.distance>=etat.objectif){etat.distance=etat.objectif;finir()}
   }
