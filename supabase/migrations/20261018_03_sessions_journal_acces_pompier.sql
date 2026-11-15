@@ -172,3 +172,9 @@ create table if not exists public.inscriptions_icp (
 -- La fonction envoyer-rappels prévient tout le centre à 8 h ; le jour déjà traité est noté dans
 -- secrets_internes (ligne nom = 'dernier_anniv'). La colonne secrets_internes.dernier_anniv ajoutée
 -- par la même migration n'est pas utilisée.
+
+-- ===== 15/11/2026 : chacun saisit son anniversaire (migration « mon_anniversaire ») =====
+-- definir_mon_anniv(p_anniv text) : SECURITY DEFINER, met à jour pompiers.anniv de la fiche reliée
+-- au compte connecté (mon_pompier_id_icp()), format MM-JJ ou null. Refusé sans fiche reliée et pour anon.
+-- L'appli de l'admin n'envoie plus anniv dans l'enregistrement global (upsert) : seuls les anniversaires
+-- qu'il a modifiés partent, un par un, pour ne jamais écraser une date saisie par la personne.
