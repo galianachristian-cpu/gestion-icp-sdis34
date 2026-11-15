@@ -178,3 +178,9 @@ create table if not exists public.inscriptions_icp (
 -- au compte connecté (mon_pompier_id_icp()), format MM-JJ ou null. Refusé sans fiche reliée et pour anon.
 -- L'appli de l'admin n'envoie plus anniv dans l'enregistrement global (upsert) : seuls les anniversaires
 -- qu'il a modifiés partent, un par un, pour ne jamais écraser une date saisie par la personne.
+
+-- ===== 15/11/2026 : chacun saisit sa date de naissance complète (migration « ma_date_de_naissance ») =====
+-- definir_ma_naissance(p_anniv text, p_annee integer) : SECURITY DEFINER, met à jour anniv (MM-JJ) et
+-- annee (1940 à année courante - 15) de la fiche reliée au compte connecté. Refusé sans fiche et pour anon.
+-- L'appli de l'admin n'envoie plus ni anniv ni annee dans l'upsert global : seuls les champs qu'il a
+-- modifiés (fiche, tableau, ajout, import) partent ensuite, ligne par ligne.

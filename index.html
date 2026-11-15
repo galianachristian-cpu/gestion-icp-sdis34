@@ -1875,9 +1875,9 @@ async function saveToSupabase() {
         // clé `id` (upsert). On ne vide plus toute la table au préalable, donc un
         // échec en cours de route (réseau, colonne manquante, conflit) ne détruit
         // plus les données déjà en base.
-        // L'anniversaire peut être saisi par la personne elle-même : on ne l'écrase jamais
-        // avec une copie ancienne ; seuls ceux modifiés ici sont envoyés, à part.
-        const sansAnniv = data.map(function(p){ const c = Object.assign({}, p); delete c.anniv; return c; });
+        // La date de naissance (jour/mois et année) peut être saisie par la personne elle-même :
+        // on ne l'écrase jamais avec une copie ancienne ; seules celles modifiées ici partent, à part.
+        const sansAnniv = data.map(function(p){ const c = Object.assign({}, p); delete c.anniv; delete c.annee; return c; });
         let { error } = await supabaseClient
             .from('pompiers')
             .upsert(sansAnniv, { onConflict: 'id' });
@@ -1893,12 +1893,16 @@ async function saveToSupabase() {
             if (!error) console.warn('⚠️ FC repos / FC Max / historique non sauvegardés : colonnes absentes dans Supabase.');
         }
         if (error) throw error;
-        for (const id of Object.keys(annivTouches)) {
+        const aEnvoyer = Object.assign({}, annivTouches, anneeTouches);
+        for (const id of Object.keys(aEnvoyer)) {
             const p = data.find(function(x){ return String(x.id) === id; });
-            if (!p) continue;
-            const r = await supabaseClient.from('pompiers').update({ anniv: p.anniv || null }).eq('id', p.id);
+            if (!p) { delete annivTouches[id]; delete anneeTouches[id]; continue; }
+            const maj = {};
+            if (annivTouches[id]) maj.anniv = p.anniv || null;
+            if (anneeTouches[id]) maj.annee = p.annee || null;
+            const r = await supabaseClient.from('pompiers').update(maj).eq('id', p.id);
             if (r.error) throw r.error;
-            delete annivTouches[id];
+            delete annivTouches[id]; delete anneeTouches[id];
         }
         // Supprimer en base les pompiers retirés localement (id absent de `data`).
         // Fait APRÈS l'upsert : si ce nettoyage échoue, aucune saisie n'est perdue.
@@ -2291,7 +2295,7 @@ function validerModifPompier(){
   if(!nom||!prenom){alert("Renseignez le nom et le prénom");return}
   if(!annee||annee<1940||annee>ANNEE_COURANTE-15){alert("Année de naissance invalide");return}
   var an=lireAnniv(document.getElementById("editAnniv").value);if(an===false){alert("Anniversaire : écris le jour et le mois, par exemple 14/03");return}
-  p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.garde=normGarde(document.getElementById("editGarde").value);p.confidentiel=document.getElementById("editConfidentiel").checked;p.sexe=document.getElementById("editSexe").value;
+  if(p.annee!==annee)anneeTouches[p.id]=1;p.nom=nom;p.prenom=prenom;p.annee=annee;p.grade=cleanName(document.getElementById("editGrade").value).toUpperCase()||null;p.fonction=cleanName(document.getElementById("editFonction").value)||null;p.garde=normGarde(document.getElementById("editGarde").value);p.confidentiel=document.getElementById("editConfidentiel").checked;p.sexe=document.getElementById("editSexe").value;
   p.poids=document.getElementById("editPoids").value;
   if((p.anniv||null)!==an)annivTouches[p.id]=1;p.anniv=an;
   p.luc_niv=p.luc_perf?evalTest("luc",p.sexe,getAge(p.annee),p.luc_perf):"";
@@ -2299,7 +2303,7 @@ function validerModifPompier(){
   showToast("✅ Fiche de "+prenom+" "+nom+" modifiée","success");
 }
 function closeModal(){document.getElementById("modalAdd").classList.add("hidden")}
-function addPompier(){var nom=cleanName(document.getElementById("newNom").value);var prenom=cleanName(document.getElementById("newPrenom").value);var annee=parseInt(document.getElementById("newAnnee").value);var sexe=document.getElementById("newSexe").value;var poids=document.getElementById("newPoids").value;if(!nom||!prenom){alert("Renseignez le nom et prénom");return}var email=(document.getElementById("newEmail").value||"").trim().toLowerCase();if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){alert("Email invalide (vous pouvez le laisser vide).");return}var nouvelId=nextId;data.push({id:nextId++,confidentiel:false,nom:nom,prenom:prenom,annee:annee,sexe:sexe,poids:poids,rameur_temps:"",luc_niv:"",luc_perf:"",souplesse:"",pompes:"",tractions:"",fc_repos:"",fc_max:"",historique:""});markDirty();closeModal();document.getElementById("newNom").value="";document.getElementById("newPrenom").value="";document.getElementById("newEmail").value="";renderSaisie();renderDashboard();if(email)creerAccesApresAjout(nouvelId,email)}
+function addPompier(){var nom=cleanName(document.getElementById("newNom").value);var prenom=cleanName(document.getElementById("newPrenom").value);var annee=parseInt(document.getElementById("newAnnee").value);var sexe=document.getElementById("newSexe").value;var poids=document.getElementById("newPoids").value;if(!nom||!prenom){alert("Renseignez le nom et prénom");return}var email=(document.getElementById("newEmail").value||"").trim().toLowerCase();if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){alert("Email invalide (vous pouvez le laisser vide).");return}var nouvelId=nextId;data.push({id:(anneeTouches[nextId]=1,nextId++),confidentiel:false,nom:nom,prenom:prenom,annee:annee,sexe:sexe,poids:poids,rameur_temps:"",luc_niv:"",luc_perf:"",souplesse:"",pompes:"",tractions:"",fc_repos:"",fc_max:"",historique:""});markDirty();closeModal();document.getElementById("newNom").value="";document.getElementById("newPrenom").value="";document.getElementById("newEmail").value="";renderSaisie();renderDashboard();if(email)creerAccesApresAjout(nouvelId,email)}
 // Le compte est relié à la fiche : on enregistre d'abord le pompier en base
 async function creerAccesApresAjout(id,email){
   clearTimeout(autosaveTimer);
@@ -3460,11 +3464,11 @@ function ouvrirAnnivs(){
     +'<button class="btn btn-success" onclick="saveAll();fermerAnnivs()">💾 Enregistrer</button></div></div>';
   m.classList.remove("hidden");
 }
-var annivTouches={};
+var annivTouches={},anneeTouches={};
 function majAnniv(pid,el){
   var p=data.find(function(x){return x.id===pid});if(!p)return;var r=lireNaissance(el.value);
   if(r===false){el.classList.add("faux");showToast("Date invalide : ex. 14/03 ou 14/03/1985","error");return}
-  el.classList.remove("faux");p.anniv=r.anniv;annivTouches[pid]=1;var ageChange=r.annee&&r.annee!==p.annee;if(r.annee)p.annee=r.annee;
+  el.classList.remove("faux");p.anniv=r.anniv;annivTouches[pid]=1;var ageChange=r.annee&&r.annee!==p.annee;if(r.annee){p.annee=r.annee;anneeTouches[pid]=1}
   el.value=r.anniv?dateNaissanceTxt(p):"";markDirty();if(ageChange&&el.closest("#saisieBody"))renderSaisie();
   var c=document.getElementById("annivCpt");if(c)c.textContent=data.filter(function(x){return x.anniv}).length+" / "+data.length;
 }
@@ -3726,17 +3730,17 @@ document.addEventListener("DOMContentLoaded",function(){var m=document.getElemen
 // « Bonjour Hugo » + son niveau, sa part du défi et la prochaine session ICP, en haut de la fiche.
 // Chacun donne son anniversaire (jour et mois) depuis son accueil : la carte reste tant que ce n'est pas fait
 function annivPersoHtml(p){
-  if(p.anniv)return '<div class="acc-anniv ok">🎂 Ton anniversaire : <b>'+new Date(2024,+p.anniv.slice(0,2)-1,+p.anniv.slice(3)).toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</b> <button class="lien" onclick="annivPersoEditer()">modifier</button></div>';
-  return '<div class="acc-anniv"><div><b>🎂 Ton anniversaire ?</b><small>Jour et mois seulement. Le jour J, le Sergent-Chef te le souhaite sur la TV de la salle et tout le centre est prévenu.</small></div>'
-    +'<div class="acc-anniv-f"><input type="text" id="annivPerso" class="anniv-in" placeholder="JJ/MM" maxlength="5" inputmode="numeric" oninput="masqueDate(this,1)" onkeydown="if(event.key===\'Enter\')annivPersoOk()"><button class="btn btn-sm btn-success acc-ok" onclick="annivPersoOk()">OK</button></div></div>';
+  if(p.anniv&&p.annee)return '<div class="acc-anniv ok">🎂 Ta date de naissance : <b>'+new Date(p.annee,+p.anniv.slice(0,2)-1,+p.anniv.slice(3)).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})+'</b> <button class="lien" onclick="annivPersoEditer()">modifier</button></div>';
+  return '<div class="acc-anniv"><div><b>🎂 Ta date de naissance ?</b><small>Elle sert à ta tranche d\'âge pour les barèmes ICP. Le jour J, le Sergent-Chef te souhaite ton anniversaire sur la TV de la salle (sans dire ton âge, promis).</small></div>'
+    +'<div class="acc-anniv-f"><input type="text" id="annivPerso" class="anniv-in" placeholder="JJ/MM/AAAA" maxlength="10" inputmode="numeric" oninput="masqueDate(this)" value="'+(p.anniv?p.anniv.slice(3)+'/'+p.anniv.slice(0,2)+'/':'')+'" onkeydown="if(event.key===\'Enter\')annivPersoOk()"><button class="btn btn-sm btn-success acc-ok" onclick="annivPersoOk()">OK</button></div></div>';
 }
-function annivPersoEditer(){var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(!p)return;var v=prompt("Ton anniversaire (jour/mois, ex. 14/03).",p.anniv?p.anniv.slice(3)+"/"+p.anniv.slice(0,2):"");if(v===null)return;annivPersoEnvoyer(v)}
+function annivPersoEditer(){var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(!p)return;var v=prompt("Ta date de naissance (ex. 14/03/1985).",dateNaissanceTxt(p));if(v===null)return;annivPersoEnvoyer(v)}
 function annivPersoOk(){var el=document.getElementById("annivPerso");if(el)annivPersoEnvoyer(el.value)}
 async function annivPersoEnvoyer(v){
-  var an=lireAnniv(v);if(an===false||!an){showToast("Écris le jour et le mois, par exemple 14/03","error");return}
-  try{var r=await supabaseClient.rpc("definir_mon_anniv",{p_anniv:an});if(r.error)throw r.error;
-    var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(p)p.anniv=an;if(ANNUAIRE[monPompierId])ANNUAIRE[monPompierId].anniv=an;
-    showToast(an?"🎂 C'est noté ! Le Sergent-Chef a mis un rappel. Il n'oublie jamais rien.":"Anniversaire retiré","success");renderAccueilPerso();}
+  var r0=lireNaissance(v);if(!r0||!r0.anniv||!r0.annee){showToast("Écris ta date complète, par exemple 14/03/1985","error");return}
+  try{var r=await supabaseClient.rpc("definir_ma_naissance",{p_anniv:r0.anniv,p_annee:r0.annee});if(r.error)throw r.error;
+    var p=(data||[]).filter(function(x){return x.id===monPompierId})[0];if(p){p.anniv=r0.anniv;p.annee=r0.annee}if(ANNUAIRE[monPompierId])ANNUAIRE[monPompierId].anniv=r0.anniv;
+    showToast("🎂 C'est noté ! Le Sergent-Chef a mis un rappel. Il n'oublie jamais rien.","success");renderAccueilPerso();try{renderFiche()}catch(e){}}
   catch(e){showToast("Impossible : "+(e.message||e),"error")}
 }
 function renderAccueilPerso(tab){
@@ -8011,7 +8015,7 @@ function togglePPA(i){var el=document.getElementById("ppaDetail"+i);el.classList
 function renderPPA(){var html="";ppaData.forEach(function(e,i){html+='<div class="card" style="cursor:pointer;margin-bottom:12px" onclick="togglePPA('+i+')">';html+='<div style="display:flex;justify-content:space-between;align-items:center">';html+='<div><b style="color:var(--accent)">'+e.titre+'</b><div style="color:var(--muted);font-size:13px;margin-top:2px">'+e.sous+'</div></div>';html+='<span style="color:var(--muted);font-size:20px">▾</span></div>';html+='<div id="ppaDetail'+i+'" class="hidden" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;line-height:1.6" onclick="event.stopPropagation()">'+e.detail+'</div>';html+="</div>"});document.getElementById("ppaEtapes").innerHTML=html}
 function renderExport(){document.getElementById("exportArea").value=JSON.stringify(data,null,2)}
 function copyExport(){var a=document.getElementById("exportArea");a.select();document.execCommand("copy");alert("📋 JSON copié !")}
-function importData(){try{var txt=document.getElementById("exportArea").value;var parsed=JSON.parse(txt);if(Array.isArray(parsed)&&parsed.length>0&&parsed[0].nom){parsed.forEach(function(p){p.nom=cleanName(p.nom);p.prenom=cleanName(p.prenom)});data=parsed;nextId=Math.max.apply(Math,data.map(function(p){return p.id}))+1;markDirty();alert("✅ Importé ! Pensez à cliquer sur « Enregistrer ».");renderAll()}else alert("❌ Format invalide")}catch(e){alert("❌ Erreur: "+e.message)}}
+function importData(){try{var txt=document.getElementById("exportArea").value;var parsed=JSON.parse(txt);if(Array.isArray(parsed)&&parsed.length>0&&parsed[0].nom){parsed.forEach(function(p){p.nom=cleanName(p.nom);p.prenom=cleanName(p.prenom)});data=parsed;data.forEach(function(p){annivTouches[p.id]=1;anneeTouches[p.id]=1});nextId=Math.max.apply(Math,data.map(function(p){return p.id}))+1;markDirty();alert("✅ Importé ! Pensez à cliquer sur « Enregistrer ».");renderAll()}else alert("❌ Format invalide")}catch(e){alert("❌ Erreur: "+e.message)}}
 
 
 // ===== PDF — zones cardio =====
