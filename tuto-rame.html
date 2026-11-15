@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connecter la machine · Rame en direct</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+:root{--rouge:#c81e1e;--or:#f2b52a;--encre:#1c1917;--gris:#57534e;--fond:#fafaf9}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--encre);background:#e7e5e4}
+.page{max-width:820px;margin:16px auto;background:var(--fond);border-radius:18px;padding:28px 30px 22px;box-shadow:0 6px 30px rgba(0,0,0,.12)}
+.tete{display:flex;align-items:center;gap:18px;border-bottom:4px solid var(--rouge);padding-bottom:14px}
+.tete img{width:96px;height:auto}
+h1{font-family:Oswald,sans-serif;font-size:34px;margin:0;letter-spacing:.02em;line-height:1.05}h1 b{color:var(--rouge)}
+.tete p{margin:4px 0 0;color:var(--gris);font-weight:700}
+.qr{margin-left:auto;text-align:center;font-size:11px;font-weight:800;color:var(--gris)}.qr svg{width:112px;height:112px;display:block}
+h2{font-family:Oswald,sans-serif;font-size:21px;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+h2 span{background:var(--rouge);color:#fff;border-radius:8px;padding:2px 9px;font-size:15px}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.carte{background:#fff;border:2px solid #e7e5e4;border-radius:14px;padding:12px 14px}
+.carte.pm5{border-color:#c9b037}.carte.heu{border-color:#3b6fb6}
+.carte h3{margin:0 0 6px;font-size:16px}
+ol{margin:0;padding-left:20px}li{margin:5px 0;line-height:1.35;font-size:14.5px}
+.tel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tel .carte p{margin:0;font-size:14.5px;line-height:1.4}
+.astuce{margin-top:14px;background:#fff7e0;border:2px dashed var(--or);border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.45}
+.astuce b{color:var(--rouge)}
+.pied{margin-top:14px;display:flex;justify-content:space-between;color:var(--gris);font-size:12px;font-weight:700}
+kbd{font-family:inherit;background:#1c1917;color:#fff;border-radius:6px;padding:1px 7px;font-size:13px;white-space:nowrap}
+.imp{text-align:center;margin:10px}.imp button{font:800 15px Inter;border:0;border-radius:12px;padding:10px 18px;background:var(--rouge);color:#fff;cursor:pointer}
+@media (max-width:640px){.deux,.tel{grid-template-columns:1fr}.qr{display:none}h1{font-size:27px}.page{padding:18px}}
+@media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none;border-radius:0;padding:12mm 12mm 8mm}.imp{display:none}@page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<div class="imp"><button onclick="print()">🖨️ Imprimer l'affiche</button></div>
+<div class="page">
+  <div class="tete">
+    <img src="img/mascotte/grand/sergent-fier.webp" alt="">
+    <div><h1>🚣 RAME EN <b>DIRECT</b><br>connecter la machine</h1><p>Ton bateau avance sur la mer au rythme de tes coups de rame.</p></div>
+    <div class="qr"><div id="qr"></div>Scanne pour ouvrir</div>
+  </div>
+
+  <h2><span>1</span> Ton téléphone</h2>
+  <div class="tel">
+    <div class="carte"><h3>🤖 Android</h3><p>Ouvre le lien avec <b>Chrome</b>. Active le <b>Bluetooth</b> et la <b>localisation</b> (Android en a besoin pour trouver la machine).</p></div>
+    <div class="carte"><h3>🍏 iPhone</h3><p>Safari ne sait pas encore se connecter en Bluetooth à une page web. Installe l'appli gratuite <b>Bluefy</b> (App Store) et ouvre le lien <b>dans Bluefy</b>. Active le Bluetooth.</p></div>
+  </div>
+
+  <h2><span>2</span> La machine</h2>
+  <div class="deux">
+    <div class="carte heu"><h3>🚣 Le rameur (écran Heubozen)</h3><ol>
+      <li>Donne <b>quelques coups de rame</b> : l'écran s'allume.</li>
+      <li>Vérifie qu'<b>aucune autre appli</b> (Kinomap, Zwift…) n'est reliée au rameur : une seule connexion à la fois.</li>
+      <li>Dans l'appli, appuie sur <kbd>🔗 Connecter la machine</kbd>.</li>
+      <li>Choisis le rameur dans la liste, puis <b>Associer</b>.</li>
+      <li>Rame : ton bateau part !</li></ol></div>
+    <div class="carte pm5"><h3>🎿 Le SkiErg (écran Concept2 PM5)</h3><ol>
+      <li>Appuie sur <kbd>Menu</kbd> pour réveiller l'écran.</li>
+      <li>Va dans <b>Autres options</b>, puis active le <b>sans-fil</b> (Wireless / Connecter).</li>
+      <li>Dans l'appli, appuie sur <kbd>🔗 Connecter la machine</kbd>.</li>
+      <li>Choisis <b>« PM5 … »</b> dans la liste, puis <b>Associer</b>.</li>
+      <li>Sur le PM5, choisis <b>Ramer</b> et tire : c'est parti !</li></ol></div>
+  </div>
+
+  <h2><span>3</span> Pendant la séance</h2>
+  <div class="carte"><ol>
+    <li>Choisis ton <b>objectif</b> (500 m à 5 000 m), ton <b>personnage</b> et le <b>fantôme</b> à battre.</li>
+    <li>Garde le téléphone <b>près de la machine</b> (sur le support) et l'écran allumé.</li>
+    <li>À l'arrivée au phare, tes mètres comptent pour le <b>défi du centre</b>.</li></ol></div>
+
+  <div class="astuce">🎖️ <b>Ça ne marche pas ?</b> Éteins et rallume le Bluetooth du téléphone, rame 10 secondes pour réveiller la machine, puis réessaie.
+  Si la machine <b>n'apparaît jamais</b> dans la liste, ce modèle n'a peut-être pas le Bluetooth : préviens l'admin. En attendant, l'appli marche aussi en <b>simulation</b>.<br>
+  <i>« Pas de Bluetooth ? Pas d'excuse. On rame quand même. » — Le Sergent-Chef</i></div>
+
+  <div class="pied"><span>CIS CRUZY-QUARANTE · SDIS 34</span><span id="lien"></span></div>
+</div>
+<script>
+const url='https://galianachristian-cpu.github.io/gestion-icp-sdis34/rame.html';
+document.getElementById('lien').textContent=url.replace(/^https?:\/\//,'');
+try{const q=qrcode(0,'M');q.addData(url);q.make();document.getElementById('qr').innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){}
+</script>
+</body>
+</html>
