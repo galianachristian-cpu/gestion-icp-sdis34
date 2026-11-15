@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1d2e">
+<title>Rame en direct · ICP Cruzy-Quarante</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--or:#fbbf24;--rouge:#dc2626;--txt:#fafaf9;--muet:#cbd5e1;--fond:rgba(8,20,32,.62)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b1d2e;color:var(--txt);font-family:Inter,system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+#scene{position:fixed;inset:0;display:block;width:100%;height:100%}
+.hud{position:fixed;pointer-events:none;inset:0;padding:max(14px,2.2vh) max(16px,2.4vw)}
+.haut{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.carte{background:var(--fond);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:10px 16px}
+.titre{font-family:Oswald,sans-serif;letter-spacing:.08em;font-size:clamp(14px,2.2vh,22px)}.titre b{color:var(--or)}
+.titre small{display:block;font-family:Inter;letter-spacing:0;color:var(--muet);font-size:clamp(11px,1.5vh,15px);margin-top:2px}
+.dist{text-align:right}.dist b{font-family:Oswald,sans-serif;font-size:clamp(40px,9vh,110px);line-height:.95;display:block}
+.dist em{font-style:normal;color:var(--muet);font-size:clamp(12px,1.9vh,20px)}
+.bas{position:absolute;left:max(16px,2.4vw);right:max(16px,2.4vw);bottom:max(14px,2.2vh);display:flex;flex-direction:column;gap:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{text-align:center;padding:8px 6px}.stat small{display:block;color:var(--muet);font-size:clamp(10px,1.5vh,15px);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.stat b{font-family:Oswald,sans-serif;font-size:clamp(22px,4.6vh,52px);line-height:1.05}
+.prog{height:12px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;position:relative}
+.prog i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#ea580c,var(--or));border-radius:99px}
+.prog u{position:absolute;top:-3px;bottom:-3px;width:4px;border-radius:2px;background:#67e8f9;box-shadow:0 0 8px #67e8f9}
+.fantome{font-weight:800;font-size:clamp(13px,2vh,22px)}.fantome.devant{color:#4ade80}.fantome.derriere{color:#f87171}
+.sergent{position:absolute;left:max(16px,2.4vw);top:clamp(80px,14vh,150px);display:flex;align-items:center;gap:10px;max-width:min(460px,70vw);opacity:0;transform:translateY(-8px);transition:all .5s}
+.sergent.on{opacity:1;transform:none}.sergent img{width:clamp(48px,8vh,84px);height:auto;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
+.sergent span{background:#fff;color:#1c1917;font-weight:800;border-radius:16px;padding:8px 12px;font-size:clamp(13px,2vh,20px)}
+.cmd{position:fixed;right:max(16px,2.4vw);top:clamp(96px,17vh,180px);display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+.cmd button,.panneau button{font-family:Inter;font-weight:800;border:1px solid rgba(255,255,255,.2);background:var(--fond);color:var(--txt);border-radius:12px;padding:9px 12px;cursor:pointer;font-size:14px;backdrop-filter:blur(6px)}
+.cmd button.pri,.panneau button.pri{background:linear-gradient(135deg,#ea580c,#dc2626);border-color:transparent}
+.panneau{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(3,10,18,.55);pointer-events:auto;z-index:5}
+.panneau.cache{display:none}
+.boite{max-width:520px;width:calc(100% - 32px);background:rgba(10,24,38,.92);border:1px solid rgba(255,255,255,.15);border-radius:22px;padding:22px}
+.boite h1{font-family:Oswald,sans-serif;margin:0 0 6px;font-size:28px;letter-spacing:.04em}.boite h1 b{color:var(--or)}
+.boite p{color:var(--muet);margin:6px 0 14px;line-height:1.45;font-size:14.5px}
+.boite .ligne{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.boite label{font-size:13px;color:var(--muet);font-weight:700;display:flex;align-items:center;gap:8px}
+.boite select{background:#0f2537;color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:8px}
+.etat{font-size:13px;color:var(--muet);margin-top:8px}
+.qualite{position:fixed;left:8px;bottom:6px;font-size:10px;color:rgba(255,255,255,.35);pointer-events:none}
+@media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.cmd{top:auto;bottom:178px}}
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="hud">
+  <div class="haut">
+    <div class="carte titre">🚣 RAME EN <b>DIRECT</b><small id="qui">Mode simulation</small></div>
+    <div class="carte dist"><b id="dist">0</b><em>mètres · objectif <span id="obj">2 000</span> m</em></div>
+  </div>
+  <div class="sergent" id="sergent"><img src="img/mascotte/sergent-chef-buste.webp" alt=""><span id="sergentTxt"></span></div>
+  <div class="bas">
+    <div class="carte" style="padding:10px 14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="fantome" id="fantome">👻 Fantôme : à égalité</span><span style="color:var(--muet);font-weight:700" id="temps">0:00</span></div>
+      <div class="prog"><i id="progI" style="width:0"></i><u id="progG" style="left:0"></u></div>
+    </div>
+    <div class="stats">
+      <div class="carte stat"><small>Rythme /500 m</small><b id="pace">–:––</b></div>
+      <div class="carte stat"><small>Coups / min</small><b id="spm">0</b></div>
+      <div class="carte stat"><small>Puissance</small><b id="watts">0 W</b></div>
+      <div class="carte stat"><small>Vitesse</small><b id="kmh">0 km/h</b></div>
+    </div>
+  </div>
+</div>
+<div class="cmd">
+  <button id="btnCam" title="Changer de caméra (touche C)">🎥 Caméra</button>
+  <button id="btnPlus" title="Accélérer (flèche haut)">⏫ Plus fort</button>
+  <button id="btnMoins" title="Ralentir (flèche bas)">⏬ Moins fort</button>
+  <button id="btnFin">🏁 Terminer</button>
+</div>
+<div class="panneau" id="accueil"><div class="boite">
+  <h1>🚣 RAME EN <b>DIRECT</b></h1>
+  <p>Relie ton téléphone au rameur (écran <b>PM5</b>, Bluetooth activé dans <i>More Options → Turn Wireless ON</i>) et rame sur la Méditerranée. Ton bateau avance au rythme de tes coups de rame.</p>
+  <div class="ligne">
+    <label>Objectif <select id="choixObj"><option value="500">500 m</option><option value="1000">1 000 m</option><option value="2000" selected>2 000 m (test ICP)</option><option value="5000">5 000 m</option></select></label>
+    <label>Fantôme <select id="choixFant"><option value="135">2:15 /500 m</option><option value="125" selected>2:05 /500 m</option><option value="115">1:55 /500 m</option><option value="105">1:45 /500 m</option></select></label>
+  </div>
+  <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter le rameur</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
+  <div class="etat" id="etat"></div>
+</div></div>
+<div class="panneau cache" id="fin"><div class="boite" id="finBoite"></div></div>
+<div class="qualite" id="qualite"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { Water } from 'three/addons/objects/Water.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+
+// ===================== RENDU =====================
+const canvas=document.getElementById('scene');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.42;
+let qualite=3;const PR_MAX=Math.min(window.devicePixelRatio||1,2);
+function appliquerQualite(){renderer.setPixelRatio(qualite>=3?PR_MAX:qualite===2?Math.min(PR_MAX,1.25):qualite===1?0.85:0.65);redim();document.getElementById('qualite').textContent='qualité '+['très basse','basse','moyenne','haute'][qualite]}
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(52,1,0.5,20000);
+function redim(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+addEventListener('resize',redim);
+
+// Ciel et soleil de fin d'après-midi
+const sky=new Sky();sky.scale.setScalar(10000);scene.add(sky);
+const su=sky.material.uniforms;su.turbidity.value=2.2;su.rayleigh.value=1.1;su.mieCoefficient.value=0.004;su.mieDirectionalG.value=0.86;
+const soleil=new THREE.Vector3().setFromSphericalCoords(1,THREE.MathUtils.degToRad(90-16),THREE.MathUtils.degToRad(205));
+su.sunPosition.value.copy(soleil);
+const pmrem=new THREE.PMREMGenerator(renderer);const rtEnv=pmrem.fromScene(sky);scene.environment=rtEnv.texture;
+const lumSoleil=new THREE.DirectionalLight(0xffe2b0,2.2);lumSoleil.position.copy(soleil).multiplyScalar(500);scene.add(lumSoleil);
+scene.add(new THREE.HemisphereLight(0xbfd8ff,0x223344,0.6));
+scene.fog=new THREE.Fog(0xa9c6dc,3000,14000);
+
+// La mer
+const eauNormales=new THREE.TextureLoader().load('img/rame/waternormals.jpg',t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping});
+const eau=new Water(new THREE.PlaneGeometry(40000,40000),{textureWidth:1024,textureHeight:1024,waterNormals:eauNormales,sunDirection:soleil.clone(),sunColor:0xfff1d6,waterColor:0x003049,distortionScale:2.0,fog:true,alpha:1});
+eau.rotation.x=-Math.PI/2;eau.material.uniforms.size.value=2.2;scene.add(eau);
+
+// ===================== DÉCOR =====================
+const matBlanc=new THREE.MeshStandardMaterial({color:0xf5f5f4,roughness:.45});
+const matRouge=new THREE.MeshStandardMaterial({color:0xdc2626,roughness:.4});
+const matOrange=new THREE.MeshStandardMaterial({color:0xf97316,roughness:.5});
+const matJaune=new THREE.MeshStandardMaterial({color:0xfacc15,roughness:.5});
+const matNoir=new THREE.MeshStandardMaterial({color:0x1c1917,roughness:.7});
+const matPeau=new THREE.MeshStandardMaterial({color:0xe0a07a,roughness:.7});
+const matCasque=new THREE.MeshStandardMaterial({color:0xd6d3d1,metalness:.8,roughness:.25});
+const matBois=new THREE.MeshStandardMaterial({color:0xd4a373,roughness:.6});
+const matMarine=new THREE.MeshStandardMaterial({color:0x1e3a5f,roughness:.6});
+
+// Bateau d'aviron (skiff) + rameur, orienté vers -z (la proue)
+function fabriquerBateau(fantome){
+  const g=new THREE.Group();
+  const coque=new THREE.Mesh(new THREE.CapsuleGeometry(0.22,7.4,8,24),fantome?null:matRouge);
+  coque.rotation.x=Math.PI/2;coque.scale.set(1,1,0.55);coque.position.y=0.06;g.add(coque);
+  const pont=new THREE.Mesh(new THREE.CapsuleGeometry(0.16,7.0,6,16),matBlanc);pont.rotation.x=Math.PI/2;pont.scale.set(1,1,0.35);pont.position.y=0.16;g.add(pont);
+  const liseré=new THREE.Mesh(new THREE.BoxGeometry(0.46,0.02,6.8),matJaune);liseré.position.y=0.12;g.add(liseré);
+  // portants (riggers)
+  for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.85,6),matNoir);p.rotation.z=Math.PI/2;p.position.set(s*0.42,0.34,-0.1);g.add(p)}
+  // rameur (face à la poupe, +z)
+  const rameur=new THREE.Group();g.add(rameur);
+  const siege=new THREE.Group();rameur.add(siege);
+  const bassin=new THREE.Mesh(new THREE.BoxGeometry(0.32,0.14,0.28),matMarine);bassin.position.y=0.3;siege.add(bassin);
+  const tronc=new THREE.Group();tronc.position.y=0.36;siege.add(tronc);
+  const torse=new THREE.Mesh(new THREE.CapsuleGeometry(0.17,0.42,6,14),matRouge);torse.position.y=0.32;tronc.add(torse);
+  const bande=new THREE.Mesh(new THREE.CylinderGeometry(0.176,0.176,0.07,18),matJaune);bande.position.y=0.36;tronc.add(bande);
+  const tete=new THREE.Mesh(new THREE.SphereGeometry(0.13,18,14),matPeau);tete.position.y=0.78;tronc.add(tete);
+  const casque=new THREE.Mesh(new THREE.SphereGeometry(0.15,18,10,0,Math.PI*2,0,Math.PI/2),matCasque);casque.position.y=0.8;tronc.add(casque);
+  const visiere=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.02,6,20,Math.PI),new THREE.MeshStandardMaterial({color:0xfbbf24,metalness:.7,roughness:.3}));visiere.position.set(0,0.8,0.02);visiere.rotation.x=-Math.PI/2.3;tronc.add(visiere);
+  const moustache=new THREE.Mesh(new THREE.TorusGeometry(0.06,0.018,6,12,Math.PI),matNoir);moustache.position.set(0,0.73,0.12);moustache.rotation.z=Math.PI;tronc.add(moustache);
+  // jambes (cuisses + tibias simplifiés)
+  const jambes=new THREE.Group();siege.add(jambes);
+  for(const s of[-1,1]){const cuisse=new THREE.Mesh(new THREE.CapsuleGeometry(0.075,0.36,4,8),matMarine);cuisse.position.set(s*0.1,0.42,0.22);cuisse.rotation.x=-1.0;jambes.add(cuisse)}
+  // bras : deux segments vers les poignées
+  const bras=[];for(const s of[-1,1]){const b=new THREE.Mesh(new THREE.CapsuleGeometry(0.05,0.5,4,8),matPeau);tronc.add(b);bras.push({m:b,s})}
+  // rames
+  const rames=[];
+  for(const s of[-1,1]){
+    const pivot=new THREE.Group();pivot.position.set(s*0.85,0.36,-0.1);g.add(pivot);
+    const manche=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,3.8,6),matBlanc);manche.rotation.z=Math.PI/2;manche.position.x=s*(3.8/2-0.9);pivot.add(manche);
+    const pale=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.02,0.2),matRouge);pale.position.x=s*(3.8-0.9-0.25);pivot.add(pale);
+    rames.push({pivot,s});
+  }
+  if(fantome){g.traverse(o=>{if(o.isMesh){o.material=new THREE.MeshStandardMaterial({color:0x67e8f9,transparent:true,opacity:.38,emissive:0x0e7490,emissiveIntensity:.6,depthWrite:false})}})}
+  return {g,siege,tronc,rames,bras,jambes};
+}
+const bateau=fabriquerBateau(false);scene.add(bateau.g);
+const fant=fabriquerBateau(true);scene.add(fant.g);fant.g.position.x=-7;
+
+// Sillage : ruban d'écume derrière le bateau
+function texSillage(){const c=document.createElement('canvas');c.width=64;c.height=256;const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,256);g.addColorStop(0,'rgba(255,255,255,.85)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,256);
+  const h=x.createLinearGradient(0,0,64,0);h.addColorStop(0,'rgba(0,0,0,1)');h.addColorStop(.25,'rgba(0,0,0,0)');h.addColorStop(.75,'rgba(0,0,0,0)');h.addColorStop(1,'rgba(0,0,0,1)');
+  x.globalCompositeOperation='destination-out';x.fillStyle=h;x.fillRect(0,0,64,256);
+  for(let i=0;i<500;i++){x.globalCompositeOperation='destination-out';x.fillStyle='rgba(0,0,0,'+Math.random()*.5+')';x.fillRect(Math.random()*64,Math.random()*256,2,2)}
+  const t=new THREE.CanvasTexture(c);return t}
+const sillage=new THREE.Mesh(new THREE.PlaneGeometry(1.2,26,1,1),new THREE.MeshBasicMaterial({map:texSillage(),transparent:true,depthWrite:false,opacity:.75}));
+sillage.rotation.x=-Math.PI/2;sillage.position.set(0,0.03,16.5);bateau.g.add(sillage);
+// Éclaboussures des pales
+const texGoutte=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const gouttes=[];for(let i=0;i<24;i++){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:texGoutte,transparent:true,depthWrite:false,opacity:0}));s.scale.setScalar(.6);scene.add(s);gouttes.push({s,v:new THREE.Vector3(),vie:0})}
+function eclabousser(p){for(let k=0;k<6;k++){const o=gouttes.find(x=>x.vie<=0);if(!o)return;o.s.position.copy(p);o.v.set((Math.random()-.5)*1.4,1.2+Math.random()*1.4,(Math.random()-.5)*1.4);o.vie=0.9}}
+
+// Bouées tous les 100 m, panneaux tous les 500 m
+const bouees=[];for(let i=0;i<26;i++){const b=new THREE.Group();const c=new THREE.Mesh(new THREE.SphereGeometry(0.55,18,14),matOrange);c.position.y=0.25;b.add(c);
+  const r=new THREE.Mesh(new THREE.TorusGeometry(0.52,0.07,8,24),matBlanc);r.rotation.x=Math.PI/2;r.position.y=0.3;b.add(r);
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.04,0.04,1.2,6),matNoir);m.position.y=0.9;b.add(m);scene.add(b);bouees.push(b)}
+function panneauTexte(t){const c=document.createElement('canvas');c.width=512;c.height=160;const x=c.getContext('2d');x.fillStyle='rgba(12,30,48,.85)';x.beginPath();x.roundRect(8,8,496,144,30);x.fill();x.strokeStyle='#fbbf24';x.lineWidth=8;x.stroke();
+  x.fillStyle='#fff';x.font='700 96px Oswald, sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(t,256,86);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true}));s.scale.set(6,1.9,1);return s}
+const panneaux={};
+// Phare d'arrivée sur son rocher
+function fabriquerPhare(){const g=new THREE.Group();
+  const roc=new THREE.Mesh(new THREE.DodecahedronGeometry(14,1),new THREE.MeshStandardMaterial({color:0x6b6158,roughness:.95,flatShading:true}));roc.scale.set(1.4,.45,1.1);roc.position.y=-1;g.add(roc);
+  const c=document.createElement('canvas');c.width=64;c.height=256;const x=c.getContext('2d');for(let i=0;i<8;i++){x.fillStyle=i%2?'#f5f5f4':'#dc2626';x.fillRect(0,i*32,64,32)}
+  const tex=new THREE.CanvasTexture(c);const tour=new THREE.Mesh(new THREE.CylinderGeometry(2.2,3.2,22,24),new THREE.MeshStandardMaterial({map:tex,roughness:.5}));tour.position.y=15;g.add(tour);
+  const lanterne=new THREE.Mesh(new THREE.CylinderGeometry(2.4,2.4,3,16),new THREE.MeshStandardMaterial({color:0xfff3c4,emissive:0xffd166,emissiveIntensity:2}));lanterne.position.y=27.5;g.add(lanterne);
+  const toit=new THREE.Mesh(new THREE.ConeGeometry(2.9,3,16),matRouge);toit.position.y=30.5;g.add(toit);
+  const faisceau=new THREE.Mesh(new THREE.ConeGeometry(6,60,24,1,true),new THREE.MeshBasicMaterial({color:0xfff1b8,transparent:true,opacity:.12,depthWrite:false,side:THREE.DoubleSide}));
+  faisceau.rotation.z=Math.PI/2;faisceau.position.set(30,27.5,0);const pivot=new THREE.Group();pivot.position.y=0;pivot.add(faisceau);g.add(pivot);g.userData.pivot=pivot;
+  return g}
+const phare=fabriquerPhare();scene.add(phare);
+// Îles et collines lointaines (low poly), de chaque côté du parcours
+const iles=[];for(let i=0;i<14;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(60+Math.random()*120,30+Math.random()*90,7,1),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.32+Math.random()*.06,.25,.22+Math.random()*.08),roughness:1,flatShading:true}));
+  m.position.set((i%2?1:-1)*(380+Math.random()*900),0,-i*700-200);scene.add(m);iles.push(m)}
+
+// ===================== DONNÉES (simulation ou PM5) =====================
+const etat={distance:0,temps:0,spm:0,pace:0,watts:0,vitesse:0,source:'simu',objectif:2000,fantPace:125,fini:false,enCours:false};
+let simuForce=0.62,phaseSimu=0;
+function simuler(dt){ // un rameur réaliste : ~24 coups/min, 2:05/500 m, petites variations
+  const spmCible=18+simuForce*14,paceCible=150-simuForce*45+Math.sin(etat.temps/9)*3;
+  etat.spm+= (spmCible-etat.spm)*Math.min(1,dt*.8);etat.pace+=((paceCible||150)-(etat.pace||150))*Math.min(1,dt*.6);
+  phaseSimu+=dt*etat.spm/60;const pouss=Math.max(0,Math.sin(phaseSimu%1/0.42*Math.PI))*(phaseSimu%1<0.42?1:0);
+  const vMoy=500/etat.pace;etat.vitesse=vMoy*(0.82+pouss*0.36);etat.watts=Math.round(2.8/Math.pow(etat.pace/500,3));
+  etat.distance+=etat.vitesse*dt;
+}
+// --- PM5 Concept2 en Bluetooth (service « rowing » du PM5) ---
+const PM5={service:'ce060030-43e5-11e4-916c-0800200c9a66',general:'ce060031-43e5-11e4-916c-0800200c9a66',add1:'ce060032-43e5-11e4-916c-0800200c9a66',add2:'ce060033-43e5-11e4-916c-0800200c9a66',taux:'ce060034-43e5-11e4-916c-0800200c9a66'};
+let pm5Derniere=0,pm5DistAff=0,pm5DistReelle=0;
+async function connecterPM5(){
+  const e=document.getElementById('etat');
+  if(!navigator.bluetooth){e.innerHTML='Ce navigateur ne sait pas se connecter en Bluetooth. Sur iPhone, ouvre cette page dans l\'appli gratuite <b>Bluefy</b>. Sur Android, utilise <b>Chrome</b>.';return}
+  try{e.textContent='Recherche du rameur…';
+    const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'PM5'}],optionalServices:[PM5.service]});
+    e.textContent='Connexion à '+dev.name+'…';const srv=await (await dev.gatt.connect()).getPrimaryService(PM5.service);
+    try{const t=await srv.getCharacteristic(PM5.taux);await t.writeValue(new Uint8Array([3]))}catch(x){} // 100 ms si possible
+    const ecoute=async(uuid,f)=>{const c=await srv.getCharacteristic(uuid);c.addEventListener('characteristicvaluechanged',ev=>f(ev.target.value));await c.startNotifications()};
+    await ecoute(PM5.general,v=>{etat.temps=(v.getUint8(0)|v.getUint8(1)<<8|v.getUint8(2)<<16)/100;pm5DistReelle=(v.getUint8(3)|v.getUint8(4)<<8|v.getUint8(5)<<16)/10;pm5Derniere=performance.now()});
+    await ecoute(PM5.add1,v=>{etat.vitesse=(v.getUint16(3,true))/1000;etat.spm=v.getUint8(5);const p=v.getUint16(7,true)/100;if(p>0)etat.pace=p});
+    await ecoute(PM5.add2,v=>{try{etat.watts=v.getUint16(4,true)}catch(x){}});
+    dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume le Bluetooth du PM5 !")});
+    etat.source='pm5';document.getElementById('qui').textContent='Relié à '+dev.name;demarrer();
+  }catch(x){e.textContent='Connexion impossible : '+(x.message||x)}
+}
+
+// ===================== SERGENT-CHEF =====================
+let sergentT=0;
+function ditSergent(t){const s=document.getElementById('sergent');document.getElementById('sergentTxt').textContent=t;s.classList.add('on');clearTimeout(sergentT);sergentT=setTimeout(()=>s.classList.remove('on'),5000)}
+const PHRASES={devant:["Le fantôme mange ton écume ! Continue !","Voilà ! C'est comme ça qu'on rame !","Je ne dis pas que je suis fier… mais je suis fier."],derriere:["Le fantôme se moque de toi. Pousse sur les jambes !","Plus vite, moussaillon !","Allonge ! Jambes, dos, bras !"],mi:["Mi-parcours ! Le phare t'attend.","La moitié ! L'autre moitié, c'est pour la gloire."]};
+
+// ===================== ANIMATION =====================
+const cams=['poursuite','cote','drone','tv'];let cam=0,camT=0;
+const vCam=new THREE.Vector3(),vVise=new THREE.Vector3();
+let derniere=performance.now(),fpsN=0,fpsT=0,dernierPhrase=0,phaseCoup=0,miDit=false;
+function demarrer(){document.getElementById('accueil').classList.add('cache');etat.enCours=true;etat.objectif=+document.getElementById('choixObj').value;etat.fantPace=+document.getElementById('choixFant').value;
+  document.getElementById('obj').textContent=etat.objectif.toLocaleString('fr-FR');placerPhare();ditSergent("Garde à vous ! Objectif "+etat.objectif.toLocaleString('fr-FR')+" m. Au bip… on rame !")}
+function placerPhare(){phare.position.set(26,0,-etat.objectif-30)}
+function fmt(s){if(!s||!isFinite(s))return '–:––';const m=Math.floor(s/60),r=Math.round(s%60);return m+':'+String(r).padStart(2,'0')}
+function boucle(t){
+  requestAnimationFrame(boucle);
+  let dt=Math.min(0.1,(t-derniere)/1000);derniere=t;
+  // qualité automatique : si l'écran rame, on allège
+  fpsN++;fpsT+=dt;if(fpsT>2.5){const fps=fpsN/fpsT;if(!qualiteFixe&&fps<40&&qualite>0){qualite--;appliquerQualite()}else if(fps>57&&qualite<3&&qualiteMax>qualite){qualite++;appliquerQualite()}fpsN=0;fpsT=0}
+  if(etat.enCours&&!etat.fini){
+    if(etat.source==='simu'){etat.temps+=dt;simuler(dt)}
+    else{ // PM5 : on lisse la distance entre deux mesures pour garder la fluidité
+      pm5DistAff+=etat.vitesse*dt;if(pm5DistReelle>pm5DistAff+3||pm5DistReelle<pm5DistAff-3)pm5DistAff=pm5DistReelle;else pm5DistAff+=(pm5DistReelle-pm5DistAff)*Math.min(1,dt*2);etat.distance=Math.max(etat.distance,pm5DistAff)}
+    if(etat.distance>=etat.objectif){etat.distance=etat.objectif;finir()}
+  }
+  const d=etat.distance,dFant=Math.min(etat.objectif,etat.temps*500/etat.fantPace);
+  // bateau, fantôme
+  bateau.g.position.z=-d;fant.g.position.z=-dFant;
+  const tps=t/1000;
+  for(const B of[bateau,fant]){B.g.position.y=Math.sin(tps*1.3+(B===fant?1:0))*0.04;B.g.rotation.z=Math.sin(tps*0.9)*0.025;B.g.rotation.x=Math.sin(tps*1.1)*0.012}
+  // coup de rame : phase pilotée par la cadence
+  const spm=etat.enCours?Math.max(etat.spm,0):0;phaseCoup+=dt*spm/60;
+  animerRameur(bateau,phaseCoup,spm>4,true);animerRameur(fant,tps*(60/125*2)%1+phaseCoup*0,true,false);
+  sillage.material.opacity=Math.min(.8,etat.vitesse/4.5*0.8);sillage.scale.y=0.4+Math.min(1,etat.vitesse/4)*0.6;sillage.position.z=sillage.scale.y*13+3;
+  for(const o of gouttes){if(o.vie>0){o.vie-=dt;o.v.y-=6*dt;o.s.position.addScaledVector(o.v,dt);o.s.material.opacity=Math.max(0,o.vie)*.9}else o.s.material.opacity=0}
+  // bouées et panneaux autour du bateau
+  const base=Math.floor(d/100)*100-500;bouees.forEach((b,i)=>{const z=base+i*100;b.position.set((i%2?1:-1)*7.5,Math.sin(tps*1.5+i)*0.12,-z);b.rotation.z=Math.sin(tps+i)*0.08;b.visible=z>=0&&z<=etat.objectif});
+  for(let m=Math.max(500,Math.floor(d/500)*500-500);m<=Math.min(etat.objectif,d+2500);m+=500){if(!panneaux[m]){const p=panneauTexte(m===etat.objectif?'🏁 ARRIVÉE':m.toLocaleString('fr-FR')+' m');p.position.set(-9,2.6,-m);scene.add(p);panneaux[m]=p}}
+  phare.userData.pivot.rotation.y=tps*0.8;
+  iles.forEach(m=>{if(m.position.z>-d+1500)m.position.z-=14*700});
+  eau.material.uniforms.time.value+=dt*(0.55+etat.vitesse*0.05);
+  // caméra
+  camT+=dt;if(cams[cam]==='tv'&&camT>14){camT=0}
+  const mode=cams[cam]==='tv'?['poursuite','cote','drone'][Math.floor(tps/14)%3]:cams[cam];
+  const bz=bateau.g.position.z;
+  if(mode==='poursuite'){vCam.set(4.2,2.3,bz+9.5);vVise.set(0,0.6,bz-5)}
+  else if(mode==='cote'){vCam.set(9,1.4,bz-1);vVise.set(0,0.7,bz-1.5)}
+  else {vCam.set(-14,16,bz+18);vVise.set(0,0,bz-14)}
+  camera.position.lerp(vCam,Math.min(1,dt*2.2));
+  const cible=camera.userData.vise||(camera.userData.vise=vVise.clone());cible.lerp(vVise,Math.min(1,dt*3));camera.lookAt(cible);
+  // tableau de bord
+  majHud(d,dFant,tps);
+  renderer.render(scene,camera);
+}
+function animerRameur(B,ph,actif,eclabousse){
+  const p=ph%1,drive=p<0.42,u=drive?p/0.42:(p-0.42)/0.58;
+  const e=drive?Math.sin(u*Math.PI/2):1-(0.5-0.5*Math.cos(u*Math.PI));
+  const ang=actif?THREE.MathUtils.lerp(0.75,-0.62,e):0.05;
+  const lev=actif?(drive?-0.07:0.14*Math.sin(u*Math.PI)+0.02):0.18;
+  B.rames.forEach(r=>{r.pivot.rotation.y=r.s>0?ang:-ang;r.pivot.rotation.z=r.s*lev});
+  B.siege.position.z=actif?THREE.MathUtils.lerp(0.4,-0.3,e):0.1;B.tronc.rotation.x=actif?THREE.MathUtils.lerp(0.38,-0.32,e):0;
+  B.bras.forEach(b=>{b.m.position.set(b.s*0.17,0.42,0.2);b.m.rotation.set(Math.PI/2-0.25,0,b.s*0.12)});
+  if(eclabousse&&actif&&B.dernierDrive===false&&drive){B.rames.forEach(r=>{const w=new THREE.Vector3(r.s*2.6,0,0).applyEuler(r.pivot.rotation).add(r.pivot.position).add(B.g.position);eclabousser(w)})}
+  B.dernierDrive=drive;
+}
+let dernierHud=0;
+function majHud(d,dFant,tps){
+  if(tps-dernierHud<0.1)return;dernierHud=tps;
+  document.getElementById('dist').textContent=Math.floor(d).toLocaleString('fr-FR');
+  document.getElementById('temps').textContent=fmt(etat.temps);
+  document.getElementById('pace').textContent=fmt(etat.pace);document.getElementById('spm').textContent=Math.round(etat.spm);
+  document.getElementById('watts').textContent=Math.round(etat.watts)+' W';document.getElementById('kmh').textContent=(etat.vitesse*3.6).toFixed(1).replace('.',',')+' km/h';
+  document.getElementById('progI').style.width=(100*d/etat.objectif)+'%';document.getElementById('progG').style.left='calc('+(100*dFant/etat.objectif)+'% - 2px)';
+  const ec=d-dFant,f=document.getElementById('fantome');
+  f.textContent=Math.abs(ec)<2?'👻 Fantôme : à égalité':ec>0?'👻 Tu as '+Math.round(ec)+' m d\'avance':'👻 Le fantôme a '+Math.round(-ec)+' m d\'avance';f.className='fantome '+(ec>=0?'devant':'derriere');
+  if(etat.enCours&&!etat.fini&&tps-dernierPhrase>25&&etat.temps>8){dernierPhrase=tps;const L=PHRASES[ec>=0?'devant':'derriere'];ditSergent(L[Math.floor(tps)%L.length])}
+  if(!miDit&&d>=etat.objectif/2){miDit=true;ditSergent(PHRASES.mi[Math.floor(tps)%2])}
+}
+function finir(){if(etat.fini)return;etat.fini=true;
+  const p=etat.temps/(etat.distance/500),gagne=etat.temps<=etat.objectif*etat.fantPace/500;
+  document.getElementById('finBoite').innerHTML='<h1>🏁 ARRIVÉE AU <b>PHARE</b></h1><p style="font-size:17px;color:#fff"><b>'+etat.distance.toLocaleString('fr-FR')+' m</b> en <b>'+fmt(etat.temps)+'</b> · moyenne <b>'+fmt(p)+' /500 m</b></p>'
+    +'<p>'+(gagne?'👻 Tu as battu le fantôme. Le Sergent-Chef range son sifflet… pour cette fois.':'👻 Le fantôme est arrivé avant toi. Il t\'attend pour la revanche.')+'</p>'
+    +'<p class="etat">Dans la version finale, tes mètres seront ajoutés tout seuls au défi du centre.</p><div class="ligne"><button class="pri" onclick="location.reload()">🔁 Recommencer</button></div>';
+  document.getElementById('fin').classList.remove('cache');ditSergent(gagne?"Respect ! Le phare est à toi.":"Arrivé ! Le fantôme a gagné cette manche.")}
+
+// ===================== COMMANDES =====================
+let qualiteMax=3,qualiteFixe=false;
+document.getElementById('btnSimu').onclick=()=>{etat.source='simu';demarrer()};
+document.getElementById('btnPM5').onclick=connecterPM5;
+document.getElementById('btnCam').onclick=()=>{cam=(cam+1)%cams.length;camT=0;ditSergent('Caméra : '+['poursuite','de côté','drone','TV (automatique)'][cam])};
+document.getElementById('btnPlus').onclick=()=>{simuForce=Math.min(1,simuForce+.12)};
+document.getElementById('btnMoins').onclick=()=>{simuForce=Math.max(0,simuForce-.12)};
+document.getElementById('btnFin').onclick=()=>{if(etat.enCours)finir()};
+addEventListener('keydown',e=>{if(e.key==='c'||e.key==='C')document.getElementById('btnCam').click();if(e.key==='ArrowUp')simuForce=Math.min(1,simuForce+.12);if(e.key==='ArrowDown')simuForce=Math.max(0,simuForce-.12);if(e.key==='Enter'&&!etat.enCours){etat.source='simu';demarrer()}});
+const q=new URLSearchParams(location.search);if(q.has('qualite'))qualiteMax=qualite=Math.max(0,Math.min(3,+q.get('qualite')));if(q.has('fixe'))qualiteFixe=true;
+if(q.has('demo')){etat.source='simu';setTimeout(demarrer,50)}
+if(q.has('tv')){cam=3}
+placerPhare();appliquerQualite();redim();
+camera.position.set(4.2,2.3,9.5);
+requestAnimationFrame(boucle);
+window.__rame={etat};
+</script>
+</body>
+</html>
