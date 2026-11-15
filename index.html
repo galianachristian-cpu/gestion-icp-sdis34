@@ -449,6 +449,7 @@ body.tv-on{overflow:hidden}
 .j-bdec.atteint{filter:none;opacity:1;animation:jBdec 2.4s ease-in-out infinite}.j-bdec.cible{font-size:30px;opacity:.85;filter:grayscale(.6) drop-shadow(0 0 6px rgba(251,191,36,.8))}
 @keyframes jBdec{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-4px)}}
 .tva.bonus{background:linear-gradient(135deg,#a16207,#1c1917 70%)}.tva-emo{font-size:20vh;line-height:1;animation:radioPulse 1.2s ease-in-out infinite}
+.anniv-in{width:80px;text-align:center;padding:6px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px}.anniv-in.faux{border-color:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,.3)}
 .j-zone{position:absolute;top:0;bottom:0;right:0;border-radius:0 999px 999px 0;background:repeating-linear-gradient(45deg,rgba(251,191,36,.30) 0 8px,rgba(251,191,36,.10) 8px 16px);border-left:2px dashed #fbbf24}
 .j-zl{position:absolute;top:calc(100% + 6px);transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:.14em;color:#fbbf24;white-space:nowrap;pointer-events:none}
 .j-lab{position:absolute;top:calc(100% + 5px);transform:translateX(-50%);font-size:11.5px;font-weight:800;white-space:nowrap;color:#fbbf24;pointer-events:none}
@@ -456,6 +457,7 @@ body.tv-on{overflow:hidden}
 .j-med{position:absolute;bottom:2px;transform:translateX(-50%);width:30px;z-index:2;pointer-events:none;filter:drop-shadow(0 0 6px rgba(251,191,36,.7))}.j-med img{width:100%;display:block}
 s.j-ok{background:#4ade80!important;opacity:.8}
 .avec-bonus{margin-bottom:22px}
+@media (max-width:640px){.j-zl{display:none}.j-lab{font-size:10.5px}.j-bdec{font-size:22px}.j-bdec.cible{font-size:25px}}
 .tv-jauge .avec-bonus{margin-bottom:24px}
 .dfs-bonus-l{display:block!important;margin-top:8px;font-size:13.5px;color:var(--muted)}.dfs-bonus-l b{display:inline!important;font:inherit!important;font-weight:800!important;color:#fbbf24!important}
 .dfs-bonus-l.tv{font-size:2.6vh;margin-top:1.2vh}.dfs-bonus-l.compact{margin-top:4px}
@@ -1276,6 +1278,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 <button class="btn btn-success" onclick="saveAll()" id="btnSaveAll">💾 Enregistrer</button>
 <button class="btn btn-primary" onclick="showAddPompier()" id="btnAddPompier">➕ Ajouter</button>
 <button class="btn" onclick="ouvrirGardes()" id="btnGardes" style="background:var(--surface2);color:var(--text)">🛡️ Gardes</button>
+<button class="btn" onclick="ouvrirAnnivs()" id="btnAnnivs" style="background:var(--surface2);color:var(--text)">🎂 Anniversaires</button>
 </div>
 </div>
 </div>
@@ -3422,6 +3425,27 @@ function gardesLigneHtml(d){
   var max=Math.max(1,L[0].v);
   return '<div class="gardes-ligne">⚔️ '+L.map(function(o,i){return '<span style="--g:'+couleurGarde(o.g)+'">'+(i===0&&o.v>0&&(L.length<2||o.v>L[1].v)?'👑 ':'')+dfsEsc(nomGarde(o.g))+' <b>'+dfsNum(o.v)+'</b></span>'}).join('<em>vs</em>')+'</div>';
 }
+// Fenêtre « Anniversaires » (onglet Saisie) : jour et mois de chacun, sans l'année
+function ouvrirAnnivs(){
+  if(!isAdmin)return;
+  var m=document.getElementById("modalAnnivs");
+  if(!m){m=document.createElement("div");m.id="modalAnnivs";m.className="modal-overlay";m.onclick=function(e){if(e.target===m)fermerAnnivs()};document.body.appendChild(m)}
+  var tri=data.slice().sort(parNomPrenom),n=data.filter(function(p){return p.anniv}).length;
+  m.innerHTML='<div class="modal modal-gardes"><h3>🎂 Les anniversaires</h3>'
+    +'<p style="color:var(--muted);font-size:13px;margin:0 0 10px">Jour et mois seulement (ex. 14/03), sans l\'année. Le jour J : carte sur la TV, annonce du Sergent-Chef et notification à 8 h. <b id="annivCpt">'+n+' / '+data.length+'</b> renseignés.</p>'
+    +'<div class="gardes-liste">'+tri.map(function(p){var v=p.anniv?p.anniv.slice(3)+"/"+p.anniv.slice(0,2):"";
+      return '<div class="gardes-l"><span>'+escAttr(p.nom)+' '+escAttr(p.prenom)+'</span><input type="text" class="anniv-in" value="'+v+'" placeholder="JJ/MM" maxlength="5" inputmode="numeric" onchange="majAnniv('+p.id+',this)"></div>'}).join("")+'</div>'
+    +'<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="btn" style="background:var(--surface2);color:var(--text)" onclick="fermerAnnivs()">Fermer</button>'
+    +'<button class="btn btn-success" onclick="saveAll();fermerAnnivs()">💾 Enregistrer</button></div></div>';
+  m.classList.remove("hidden");
+}
+function majAnniv(pid,el){
+  var p=data.find(function(x){return x.id===pid});if(!p)return;var an=lireAnniv(el.value);
+  if(an===false){el.classList.add("faux");showToast("Date invalide : écris le jour et le mois, ex. 14/03","error");return}
+  el.classList.remove("faux");p.anniv=an;el.value=an?an.slice(3)+"/"+an.slice(0,2):"";markDirty();
+  var c=document.getElementById("annivCpt");if(c)c.textContent=data.filter(function(x){return x.anniv}).length+" / "+data.length;
+}
+function fermerAnnivs(){var m=document.getElementById("modalAnnivs");if(m)m.classList.add("hidden");if(dfsCharge){renderDefis();renderBandeauDefi()}}
 // Fenêtre « Gardes » (onglet Saisie) : ranger tout le monde d'un coup
 var gardesNoms=null;
 function ouvrirGardes(){
