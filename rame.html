@@ -92,6 +92,7 @@ html,body{margin:0;height:100%;background:#0b1d2e;color:var(--txt);font-family:I
 import * as THREE from 'three';
 import { Water } from 'three/addons/objects/Water.js';
 import { Sky } from 'three/addons/objects/Sky.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // ===================== RENDU =====================
 const canvas=document.getElementById('scene');
@@ -145,7 +146,7 @@ function fabriquerBateau(fantome,femme){
   const liseré=new THREE.Mesh(new THREE.BoxGeometry(0.46,0.02,6.8),matJaune);liseré.position.y=0.12;g.add(liseré);
   // portants (riggers)
   for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.85,6),matNoir);p.rotation.z=Math.PI/2;p.position.set(s*0.42,0.40,0.6);g.add(p)}
-  const cale=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.16,0.04),matNoir);cale.position.set(0,0.26,1.12);cale.rotation.x=-0.6;g.add(cale);
+  const cale=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.16,0.04),matNoir);cale.position.set(0,0.26,0.98);cale.rotation.x=-0.6;g.add(cale);
   // ===== Le Sergent-Chef en 3D (style cartoon, contours noirs), face à la poupe (+z) =====
   const rameur=new THREE.Group();g.add(rameur);
   const siege=new THREE.Group();rameur.add(siege);
@@ -233,6 +234,60 @@ function texSillage(){const c=document.createElement('canvas');c.width=64;c.heig
   const t=new THREE.CanvasTexture(c);return t}
 const sillage=new THREE.Mesh(new THREE.PlaneGeometry(1.2,26,1,1),new THREE.MeshBasicMaterial({map:texSillage(),transparent:true,depthWrite:false,opacity:.75}));
 sillage.rotation.x=-Math.PI/2;sillage.position.set(0,0.03,16.5);bateau.g.add(sillage);
+
+// ===================== PERSONNAGES MODÉLISÉS (Blender, avec squelette) =====================
+// Le corps suit un squelette : on oriente les os à chaque image (même calcul que les membres simples).
+const contourMat=()=>{const m=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <project_vertex>','transformed += normalize(objectNormal)*0.014;\n#include <project_vertex>')};return m};
+function habiller(racine){
+  const aj=[];racine.traverse(o=>{if(!o.isMesh)return;const c=o.material.color.clone();o.material=new THREE.MeshToonMaterial({color:c,gradientMap:tons,toneMapped:false});
+    const ol=o.isSkinnedMesh?new THREE.SkinnedMesh(o.geometry,contourMat()):new THREE.Mesh(o.geometry,contourMat());if(o.isSkinnedMesh)ol.bind(o.skeleton,o.bindMatrix);
+    ol.position.copy(o.position);ol.quaternion.copy(o.quaternion);ol.scale.copy(o.scale);ol.userData.contour=true;aj.push([o.parent,ol]);o.frustumCulled=false;ol.frustumCulled=false});
+  aj.forEach(([p,o])=>p.add(o));
+}
+const _q=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_v1=new THREE.Vector3(),_v2=new THREE.Vector3(),_v3=new THREE.Vector3();
+// oriente un os vers une direction du monde, en gardant sa torsion de repos
+function viser(os,dirMonde){
+  os.parent.getWorldQuaternion(_q).invert();_v1.copy(dirMonde).applyQuaternion(_q).normalize();
+  _v2.set(0,1,0).applyQuaternion(os.userData.repos);_q2.setFromUnitVectors(_v2,_v1);os.quaternion.copy(_q2).multiply(os.userData.repos);os.updateMatrixWorld(true);
+}
+function chargerPerso(B,fichier){
+  new GLTFLoader().load(fichier,g=>{
+    const m=g.scene,os={};m.traverse(o=>{if(o.isBone){os[o.name]=o;o.userData.repos=o.quaternion.clone()}});
+    // échelle : jambes (cuisse + tibia) = 1,0 m, comme le reste du bateau
+    m.updateMatrixWorld(true);const lg=(a,b)=>os[a].getWorldPosition(new THREE.Vector3()).distanceTo(os[b].getWorldPosition(new THREE.Vector3()));
+    const k=1.0/(lg('cuisseG','tibiaG')+lg('tibiaG','piedG'));m.scale.setScalar(k);m.updateMatrixWorld(true);
+    const L={bras:lg('brasG','avbrasG'),avbras:lg('avbrasG','mainG'),cuisse:lg('cuisseG','tibiaG'),tibia:lg('tibiaG','piedG')};
+    const bassin0=os.bassin.getWorldPosition(new THREE.Vector3());
+    habiller(m);B.g.add(m);
+    B.perso={m,os,L,bassin0};
+    // les membres simples s'effacent derrière le vrai personnage
+    B.siege.visible=false;B.membres.forEach(x=>Object.values(x).forEach(o=>{if(o&&o.isObject3D)o.visible=false}));
+  },undefined,e=>console.warn('Personnage 3D indisponible, on garde la version simple',e));
+}
+chargerPerso(bateaux.h,'img/rame/sergent-h.glb');chargerPerso(bateaux.f,'img/rame/sergent-f.glb');
+const _hipW=new THREE.Vector3(),_footW=new THREE.Vector3(),_tW=new THREE.Vector3(),_sW=new THREE.Vector3(),_jW=new THREE.Vector3(),_hW=new THREE.Vector3(),_pW=new THREE.Vector3(),_bq=new THREE.Quaternion();
+function poserPerso(B,penche){
+  const P=B.perso,o=P.os;if(!P)return;
+  // bassin posé sur le siège
+  P.m.position.set(0,0.36-P.bassin0.y,B.siege.position.z-P.bassin0.z);P.m.updateMatrixWorld(true);
+  B.g.getWorldQuaternion(_bq);
+  // buste penché (vers la poupe à l'attaque, en arrière au dégagé)
+  viser(o.dos,_v3.set(0,Math.cos(penche),Math.sin(penche)).applyQuaternion(_bq));
+  viser(o.cou,_v3.set(0,1,Math.sin(penche)*0.3).normalize().applyQuaternion(_bq));
+  viser(o.tete,_v3.set(0,1,0.12).normalize().applyQuaternion(_bq));
+  B.membres.forEach(m=>{const c=m.s>0?'G':'D',r=B.rames.find(x=>x.s===m.s);
+    // bras : épaule -> coude -> main sur la poignée
+    o['bras'+c].getWorldPosition(_sW);_tW.set(-m.s*0.72,0.02,0);r.pivot.localToWorld(_tW);
+    _pW.set(m.s,-0.5,-0.9).applyQuaternion(_bq);deuxOs(_sW,_tW,P.L.bras,P.L.avbras,_pW,_jW,_hW);
+    viser(o['bras'+c],_v3.subVectors(_jW,_sW));viser(o['avbras'+c],_v3.subVectors(_hW,_jW));
+    // jambes : hanche -> genou -> pied calé sur la barre
+    o['cuisse'+c].getWorldPosition(_hipW);_footW.set(m.s*0.12,0.3,PIEDS_Z);B.g.localToWorld(_footW);
+    _pW.set(m.s*0.2,1,0.35).applyQuaternion(_bq);deuxOs(_hipW,_footW,P.L.cuisse,P.L.tibia,_pW,_jW,_hW);
+    viser(o['cuisse'+c],_v3.subVectors(_jW,_hipW));viser(o['tibia'+c],_v3.subVectors(_hW,_jW));
+    viser(o['pied'+c],_v3.set(0,-0.45,1).normalize().applyQuaternion(_bq));
+  });
+}
+const PIEDS_Z=0.92;
 function choisirPerso(f){bateaux.h.g.visible=!f;bateaux.f.g.visible=!!f;bateau=f?bateaux.f:bateaux.h;bateau.g.add(sillage)}
 // Éclaboussures des pales
 const texGoutte=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');const g=x.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
@@ -380,7 +435,7 @@ function animerRameur(B,ph,actif,eclabousse){
   const dos=drive?Math.min(1,Math.max(0,(u-0.3)/0.5)):1-Math.min(1,u/0.35);
   B.siege.position.z=actif?THREE.MathUtils.lerp(0.36,-0.08,ease(jamb)):0.1;
   B.tronc.rotation.x=actif?THREE.MathUtils.lerp(0.42,-0.28,ease(dos)):0.05;
-  B.g.updateMatrixWorld(true);ikMembres(B);
+  B.g.updateMatrixWorld(true);ikMembres(B);if(B.perso)poserPerso(B,B.tronc.rotation.x);
   if(eclabousse&&actif&&B.dernierDrive===false&&drive){B.rames.forEach(r=>{const w=new THREE.Vector3(r.s*2.6,0,0).applyEuler(r.pivot.rotation).add(r.pivot.position).add(B.g.position);eclabousser(w)})}
   B.dernierDrive=drive;
 }
