@@ -445,6 +445,16 @@ body.tv-on{overflow:hidden}
 .sergent-bulle span{font-size:14px;line-height:1.4;font-style:italic}
 .sergent-x{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:none;color:var(--muted);font-size:12px;cursor:pointer}
 /* ===== OBJECTIF BONUS, VITRINE DES DÉFIS ===== */
+.j-zone{position:absolute;top:0;bottom:0;right:0;border-radius:0 999px 999px 0;background:repeating-linear-gradient(45deg,rgba(251,191,36,.30) 0 8px,rgba(251,191,36,.10) 8px 16px);border-left:2px dashed #fbbf24}
+.j-zl{position:absolute;top:calc(100% + 6px);transform:translateX(-50%);font-size:10px;font-weight:800;letter-spacing:.14em;color:#fbbf24;white-space:nowrap;pointer-events:none}
+.j-lab{position:absolute;top:calc(100% + 5px);transform:translateX(-50%);font-size:11.5px;font-weight:800;white-space:nowrap;color:#fbbf24;pointer-events:none}
+.j-lab.ok{color:#4ade80}.j-lab[style*="left:97%"]{transform:translateX(-85%)}
+.j-med{position:absolute;bottom:2px;transform:translateX(-50%);width:30px;z-index:2;pointer-events:none;filter:drop-shadow(0 0 6px rgba(251,191,36,.7))}.j-med img{width:100%;display:block}
+s.j-ok{background:#4ade80!important;opacity:.8}
+.avec-bonus{margin-bottom:22px}
+.tv-jauge .avec-bonus{margin-bottom:24px}
+.dfs-bonus-l{display:block!important;margin-top:8px;font-size:13.5px;color:var(--muted)}.dfs-bonus-l b{display:inline!important;font:inherit!important;font-weight:800!important;color:#fbbf24!important}
+.dfs-bonus-l.tv{font-size:2.6vh;margin-top:1.2vh}.dfs-bonus-l.compact{margin-top:4px}
 .dfs-bonus{position:relative;z-index:1;margin-top:12px;padding:10px 12px;border-radius:12px;background:linear-gradient(120deg,rgba(251,191,36,.16),rgba(251,191,36,.04));border:1px solid rgba(251,191,36,.5)}
 .dfs-bonus-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13.5px;font-weight:700;color:var(--accent)}
 .dfs-bonus-t b{color:var(--text);font-family:var(--titre);font-size:17px}
@@ -2955,9 +2965,8 @@ function renderBandeauDefi(){
     +(estNoel(d)?neigeHtml():'')+'<div class="bdf-haut"><span class="bdf-ic">'+iconeDefi(d)+'</span><div><div class="bdf-titre">'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
     +'<div class="bdf-sous">Défi collectif du centre'+(S.classement.length?' · '+S.classement.length+' participant'+(S.classement.length>1?'s':''):'')+'</div></div>'
     +'<span class="bdf-pill">'+(avenir?'J-'+dfsJoursAvant(d)+' avant le départ':S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
-    +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
-    +'<div class="bdf-jauge'+(!avenir&&themeHumour(d)?' avec-perso':'')+'"><i style="width:'+S.pct+'%"></i>'+(avenir?'':bateauHtml(d,S.pct))+[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
-    +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'')+'</div>'
+    +'<div class="bdf-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+(S.atteint?' ✅':'')+'</em><span class="pct">'+pctAffiche(d,S)+' %</span></div>'
+    +'<div class="bdf-jauge'+(!avenir&&themeHumour(d)?' avec-perso':'')+(!avenir&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,avenir,attendu)+'</div>'
     +'<div class="bdf-bas"><span>'+rythme+'</span>'+(moi&&!avenir?'<span>Ma part : <b>'+dfsNum(maPart?maPart.v:0)+' '+dfsEsc(d.unite)+'</b></span>':'')
     +(moi&&!avenir?'<button class="bdf-btn" onclick="ouvrirAjoutDefi()">➕ J\'ai fait…</button>':'')+'</div>'
     +dfsBonusHtml(d,S,"compact")
@@ -3267,10 +3276,8 @@ function renderTV(){
     +'<div class="tv-titre"><span class="tv-ic">'+iconeDefi(d)+'</span><div><div>'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
     +'<small>Défi collectif du centre · du '+deb.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</small></div>'
     +'<span class="tv-pill">'+(avenir?'J-'+dfsJoursAvant(d):S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
-    +'<div class="tv-chiffres"><b data-n="'+S.total+'">'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em><span class="pct">'+S.pct+' %</span></div>'
-    +'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+'"><i style="width:'+S.pct+'%"></i>'+(avenir?'':bateauHtml(d,S.pct))
-    +[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
-    +(!avenir&&!S.atteint?'<u style="left:'+attendu+'%"></u>':'')+'</div></div>'
+    +'<div class="tv-chiffres"><b data-n="'+S.total+'">'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+(S.atteint?' ✅':'')+'</em><span class="pct">'+pctAffiche(d,S)+' %</span></div>'
+    +'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+(!avenir&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,avenir,attendu)+'</div></div>'
     +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
     +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
@@ -3540,12 +3547,25 @@ function dfsBonus(d,S){
   var n=Math.max(3,Math.floor(S.total/(obj/2))+1),cible=n*obj/2,depart=cible-obj/2;
   return {cible:cible,depart:depart,pct:Math.max(0,Math.min(100,Math.round(100*(S.total-depart)/(obj/2)))),rang:n-2,fini:d.fin<dfsIso(new Date())};
 }
+// Contenu d'une jauge de défi. Objectif atteint : la piste s'allonge jusqu'au palier bonus,
+// le phare (ou la maison) devient un point de passage et une zone dorée mène à la médaille.
+function jaugeContenu(d,S,avenir,attendu){
+  var B=avenir?null:dfsBonus(d,S),u=dfsEsc(d.unite);
+  if(!B)return '<i style="width:'+S.pct+'%"></i>'+(avenir?'':bateauHtml(d,S.pct))+[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")
+    +(!avenir&&!S.atteint&&attendu!=null?'<u style="left:'+attendu+'%" title="Où il faudrait être aujourd\'hui"></u>':'');
+  var obj=Number(d.objectif),k=obj/B.cible,pos=Math.min(100,100*S.total/B.cible),bn={k:k,pos:pos},x=100*k,coupe=Math.max(1,Math.min(100,100*x/Math.max(pos,1)));
+  var h='<span class="j-zone" style="left:'+x+'%"></span><span class="j-zl" style="left:'+((x+97)/2)+'%">ZONE BONUS</span>'
+    +'<i style="width:'+pos+'%;background:linear-gradient(90deg,var(--c),#f97316 '+coupe+'%,#fbbf24 '+coupe+'%,#fde047)"></i>'
+    +bateauHtml(d,S.pct,bn)+[25,50,75].map(function(p){return '<s style="left:'+p*k+'%"></s>'}).join("");
+  for(var q=obj*1.5;q<=B.depart+1e-9;q+=obj/2)h+='<s class="j-ok" style="left:'+100*q/B.cible+'%"></s>';
+  return h+'<span class="j-med" style="left:97%"><img src="img/defis/medaille-or.webp" alt="" draggable="false"></span>'
+    +'<span class="j-lab ok" style="left:'+x+'%">✅ '+dfsNum(obj)+' '+u+'</span><span class="j-lab" style="left:97%">🏅 '+dfsNum(B.cible)+' '+u+'</span>';
+}
+function pctAffiche(d,S){return S.atteint?Math.round(100*S.total/Number(d.objectif)):S.pct}
 function dfsBonusHtml(d,S,cls){
-  var B=dfsBonus(d,S);if(!B)return "";
-  return '<div class="dfs-bonus '+(cls||"")+'"><div class="dfs-bonus-t"><span>🏅 '+(B.fini?"Bonus atteint":"Objectif bonus"+(B.rang>1?" n° "+B.rang:""))+'</span>'
-    +'<b>'+dfsNum(S.total)+' / '+dfsNum(B.cible)+' '+dfsEsc(d.unite)+'</b></div>'
-    +'<div class="dfs-bonus-j"><i style="width:'+B.pct+'%"></i></div>'
-    +(B.fini?'':'<div class="dfs-bonus-s">Vous pensiez avoir fini ? Encore '+dfsNum(B.cible-S.total)+' '+dfsEsc(d.unite)+' pour le palier suivant.</div>')+'</div>';
+  var B=dfsBonus(d,S);if(!B)return "";var u=dfsEsc(d.unite);
+  return '<div class="dfs-bonus-l '+(cls||"")+'">🏅 '+(B.fini?'Bonus : <b>'+dfsNum(S.total)+' / '+dfsNum(B.cible)+' '+u+'</b>'
+    :'Vous pensiez avoir fini ? Encore <b>'+dfsNum(B.cible-S.total)+' '+u+'</b> pour le bonus de '+dfsNum(B.cible)+' '+u+'.')+'</div>';
 }
 // Mes chiffres sur un défi : total, séances, jours actifs, rang, part du centre
 function dfsMonBilan(d,pid){
@@ -4416,20 +4436,20 @@ function iconeDefi(d){
   if(!th&&THEME_IMG[d.theme])return themeIc(d.theme,null,"ic-illu");
   return th?'<img class="ic-illu" src="img/defis/'+(th==="noel"?"perenoel":"rameur")+'.webp" alt="">':dfsEsc(d.icone||"🏆");
 }
-function personnageHtml(d,pct){
+function personnageHtml(d,pct,bn){
   var th=themeHumour(d);
   if(!th)return null;
   var h=humeurDefi(d),b=BULLES[th][h]||BULLES[th].normal,phrase=b[(Math.floor(Date.now()/36e5)+d.id)%b.length];
   // Illustrations : img/defis/perenoel.webp et rameur.webp (fond transparent), animées en CSS ;
   // à l'arrivée du défi de Noël, la scène de victoire (arrivee.webp) prend la place du skieur
-  var img=th==="noel"?(h==="atteint"?"img/defis/arrivee.webp":"img/defis/perenoel.webp"):"img/defis/rameur.webp";
+  var img=th==="noel"?(h==="atteint"&&!bn?"img/defis/arrivee.webp":"img/defis/perenoel.webp"):"img/defis/rameur.webp";
   // à l'arrivée, le personnage s'arrête avant le dernier décor (maison ou phare) pour le laisser voir
-  var gauche=h==="atteint"?Math.min(th==="noel"?74:80,pct):Math.max(6,Math.min(94,pct));
+  var gauche=bn?Math.max(6,Math.min(82,pct)):h==="atteint"?Math.min(th==="noel"?74:80,pct):Math.max(6,Math.min(94,pct));
   if(th==="noel"&&finalNoel(d))return '<span class="perso-zone decolle" style="left:'+gauche+'%" onclick="oeufDePaques(event)" title="Joyeux Noël !">'
     +'<span class="bulle'+(pct>55?' gauche':'')+'">Joyeux Noël, le centre !</span><span class="perso perso-noel humeur-avance"><span class="p-vitesse"><i></i><i></i><i></i></span><img src="img/defis/perenoel.webp" alt="" width="80" height="74" draggable="false"><span class="p-etoiles">✨</span></span></span>';
   return '<span class="perso-zone" style="left:'+gauche+'%" onclick="oeufDePaques(event)" title="Psst…">'
     +'<span class="bulle'+(pct>55?' gauche':'')+'">'+dfsEsc(phrase)+'</span>'
-    +'<span class="perso perso-'+th+' humeur-'+h+(th==="noel"&&h==="atteint"?' perso-arrivee':'')+'">'
+    +'<span class="perso perso-'+th+' humeur-'+h+(th==="noel"&&h==="atteint"&&!bn?' perso-arrivee':'')+'">'
     +'<span class="p-vitesse"><i></i><i></i><i></i></span>'
     +(th==="noel"?'<span class="p-neige"><i></i><i></i><i></i><i></i></span>':'')
     +'<img src="'+img+'" alt="" width="80" height="74" draggable="false">'
@@ -4441,9 +4461,9 @@ var IMG_D=function(f){return '<img src="img/defis/'+f+'.webp" alt="" draggable="
 // [palier %, image, classe de taille]
 var DECORS_NOEL=[[25,IMG_D("rennes"),"d-rennes"],[50,IMG_D("montagnes"),"d-montagnes"],[75,IMG_D("sapins"),"d-sapins"],[100,IMG_D("maison"),"d-maison"]];
 var DECORS_MOVEMBER=[[25,IMG_D("bouee"),"d-bouee"],[50,IMG_D("bouee"),"d-bouee"],[75,IMG_D("bouee"),"d-bouee"],[100,IMG_D("phare"),"d-phare"]];
-function decorsHtml(d,pct){
+function decorsHtml(d,pct,bn){
   var L=estNoel(d)?DECORS_NOEL:estMovember(d)?DECORS_MOVEMBER:null;if(!L)return "";
-  return L.map(function(x){return '<span class="decor decor-illu '+x[2]+(pct>=x[0]?' atteint':'')+'" style="left:'+Math.min(96,x[0])+'%">'+x[1]+'</span>'}).join("");
+  return L.map(function(x){return '<span class="decor decor-illu '+x[2]+(pct>=x[0]?' atteint':'')+'" style="left:'+(bn?x[0]*bn.k:Math.min(96,x[0]))+'%">'+x[1]+'</span>'}).join("");
 }
 var MEDAILLES=["or","argent","bronze"].map(function(m){return '<img class="medaille" src="img/defis/medaille-'+m+'.webp" alt="'+m+'" draggable="false">'});
 // ===== HUMOUR DES DÉFIS (Noël, Movember) =====
@@ -4498,8 +4518,8 @@ function etapeNoel(pct){
 // 4 + 5. Bateau sur la jauge et touche Movember
 function estMovember(d){return /movember/i.test((d.titre||"")+" "+(d.theme||""))}
 var MOUSTACHE='<img class="moustache" src="img/defis/moustache.webp" alt="" draggable="false">';
-function bateauHtml(d,pct){
-  var perso=personnageHtml(d,pct);if(perso)return perso+decorsHtml(d,pct);
+function bateauHtml(d,pct,bn){
+  var perso=personnageHtml(d,bn?bn.pos:pct,bn);if(perso)return perso+decorsHtml(d,pct,bn);if(bn)pct=bn.pos;
   var ic=(d.icone&&d.icone.length<=4)?d.icone:"🚣";
   if(THEME_IMG[d.theme])return '<span class="bateau bateau-img" style="left:'+Math.max(4,Math.min(96,pct))+'%;cursor:pointer" onclick="oeufDePaques(event)" title="Psst…">'+themeIc(d.theme)+'</span>';
   return '<span class="bateau" style="left:'+Math.max(3,Math.min(97,pct))+'%;cursor:pointer" onclick="oeufDePaques(event)" title="Psst…">'+dfsEsc(ic)+(estNoel(d)?BONNET:'')+'</span>';
@@ -6565,9 +6585,8 @@ function dfsCarte(d){
                         :'<span class="dfs-pill fin">terminé</span>')
              :'<span class="dfs-pill fin">clos</span>')+'</div>'
     +'<div class="dfs-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em></div>'
-    +'<div class="dfs-jauge'+(!dfsAVenir(d)&&themeHumour(d)?' avec-perso':'')+'"><i style="width:'+S.pct+'%"></i>'+(dfsAVenir(d)?'':bateauHtml(d,S.pct))
-    +[25,50,75].map(function(p){return '<s style="left:'+p+'%"></s>'}).join("")+'</div>'
-    +'<div class="dfs-sous"><span>'+S.pct+' %</span>'
+    +'<div class="dfs-jauge'+(!dfsAVenir(d)&&themeHumour(d)?' avec-perso':'')+(!dfsAVenir(d)&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,dfsAVenir(d),null)+'</div>'
+    +'<div class="dfs-sous"><span>'+pctAffiche(d,S)+' %</span>'
     +(S.atteint?'<span class="dfs-ok">🎉 Objectif atteint !</span>'
                :'<span>il reste '+dfsNum(Number(d.objectif)-S.total)+' '+dfsEsc(d.unite)+'</span>')+'</div>'
     +dfsBonusHtml(d,S)
