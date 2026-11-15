@@ -137,7 +137,8 @@ function fabriquerBateau(fantome){
   const pont=new THREE.Mesh(new THREE.CapsuleGeometry(0.16,7.0,6,16),matBlanc);pont.rotation.x=Math.PI/2;pont.scale.set(1,1,0.35);pont.position.y=0.16;g.add(pont);
   const liseré=new THREE.Mesh(new THREE.BoxGeometry(0.46,0.02,6.8),matJaune);liseré.position.y=0.12;g.add(liseré);
   // portants (riggers)
-  for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.85,6),matNoir);p.rotation.z=Math.PI/2;p.position.set(s*0.42,0.34,-0.1);g.add(p)}
+  for(const s of[-1,1]){const p=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,0.85,6),matNoir);p.rotation.z=Math.PI/2;p.position.set(s*0.42,0.40,0.6);g.add(p)}
+  const cale=new THREE.Mesh(new THREE.BoxGeometry(0.34,0.16,0.04),matNoir);cale.position.set(0,0.26,1.12);cale.rotation.x=-0.6;g.add(cale);
   // rameur (face à la poupe, +z)
   const rameur=new THREE.Group();g.add(rameur);
   const siege=new THREE.Group();rameur.add(siege);
@@ -149,24 +150,29 @@ function fabriquerBateau(fantome){
   const casque=new THREE.Mesh(new THREE.SphereGeometry(0.15,18,10,0,Math.PI*2,0,Math.PI/2),matCasque);casque.position.y=0.8;tronc.add(casque);
   const visiere=new THREE.Mesh(new THREE.TorusGeometry(0.15,0.02,6,20,Math.PI),new THREE.MeshStandardMaterial({color:0xfbbf24,metalness:.7,roughness:.3}));visiere.position.set(0,0.8,0.02);visiere.rotation.x=-Math.PI/2.3;tronc.add(visiere);
   const moustache=new THREE.Mesh(new THREE.TorusGeometry(0.06,0.018,6,12,Math.PI),matNoir);moustache.position.set(0,0.73,0.12);moustache.rotation.z=Math.PI;tronc.add(moustache);
-  // jambes (cuisses + tibias simplifiés)
-  const jambes=new THREE.Group();siege.add(jambes);
-  for(const s of[-1,1]){const cuisse=new THREE.Mesh(new THREE.CapsuleGeometry(0.075,0.36,4,8),matMarine);cuisse.position.set(s*0.1,0.42,0.22);cuisse.rotation.x=-1.0;jambes.add(cuisse)}
-  // bras : deux segments vers les poignées
-  const bras=[];for(const s of[-1,1]){const b=new THREE.Mesh(new THREE.CapsuleGeometry(0.05,0.5,4,8),matPeau);tronc.add(b);bras.push({m:b,s})}
+  // membres articulés (placés à chaque image par cinématique inverse)
+  const seg=(r,m)=>{const x=new THREE.Mesh(new THREE.CylinderGeometry(r,r*0.9,1,10),m);g.add(x);return x};
+  const rot=(r,m)=>{const x=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),m);g.add(x);return x};
+  const membres=[];
+  for(const s of[-1,1])membres.push({s,
+    bras:seg(0.052,matRouge),avant:seg(0.045,matPeau),coude:rot(0.05,matPeau),main:rot(0.055,matPeau),epaule:rot(0.07,matRouge),
+    cuisse:seg(0.08,matMarine),tibia:seg(0.06,matPeau),genou:rot(0.075,matMarine),pied:new THREE.Mesh(new THREE.BoxGeometry(0.11,0.08,0.26),matNoir)});
+  membres.forEach(m=>g.add(m.pied));
   // rames
   const rames=[];
   for(const s of[-1,1]){
-    const pivot=new THREE.Group();pivot.position.set(s*0.85,0.36,-0.1);g.add(pivot);
+    const pivot=new THREE.Group();pivot.position.set(s*0.85,0.42,0.6);g.add(pivot);
     const manche=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,3.8,6),matBlanc);manche.rotation.z=Math.PI/2;manche.position.x=s*(3.8/2-0.9);pivot.add(manche);
     const pale=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.02,0.2),matRouge);pale.position.x=s*(3.8-0.9-0.25);pivot.add(pale);
     rames.push({pivot,s});
   }
   if(fantome){g.traverse(o=>{if(o.isMesh){o.material=new THREE.MeshStandardMaterial({color:0x67e8f9,transparent:true,opacity:.38,emissive:0x0e7490,emissiveIntensity:.6,depthWrite:false})}})}
-  return {g,siege,tronc,rames,bras,jambes};
+  return {g,siege,tronc,rames,membres};
 }
 const bateau=fabriquerBateau(false);scene.add(bateau.g);
 const fant=fabriquerBateau(true);scene.add(fant.g);fant.g.position.x=-7;
+// les bateaux ne se reflètent pas (leur reflet déformé faisait des taches sur l'eau)
+{const avant=eau.onBeforeRender;eau.onBeforeRender=function(...a){bateau.g.visible=false;fant.g.visible=false;avant.apply(this,a);bateau.g.visible=true;fant.g.visible=true}}
 
 // Sillage : ruban d'écume derrière le bateau
 function texSillage(){const c=document.createElement('canvas');c.width=64;c.height=256;const x=c.getContext('2d');
@@ -264,7 +270,7 @@ function boucle(t){
   for(const B of[bateau,fant]){B.g.position.y=Math.sin(tps*1.3+(B===fant?1:0))*0.04;B.g.rotation.z=Math.sin(tps*0.9)*0.025;B.g.rotation.x=Math.sin(tps*1.1)*0.012}
   // coup de rame : phase pilotée par la cadence
   const spm=etat.enCours?Math.max(etat.spm,0):0;phaseCoup+=dt*spm/60;
-  animerRameur(bateau,phaseCoup,spm>4,true);animerRameur(fant,tps*(60/125*2)%1+phaseCoup*0,true,false);
+  animerRameur(bateau,phaseCoup,spm>4,true);animerRameur(fant,tps*24/60,true,false);
   sillage.material.opacity=Math.min(.8,etat.vitesse/4.5*0.8);sillage.scale.y=0.4+Math.min(1,etat.vitesse/4)*0.6;sillage.position.z=sillage.scale.y*13+3;
   for(const o of gouttes){if(o.vie>0){o.vie-=dt;o.v.y-=6*dt;o.s.position.addScaledVector(o.v,dt);o.s.material.opacity=Math.max(0,o.vie)*.9}else o.s.material.opacity=0}
   // bouées et panneaux autour du bateau
@@ -286,14 +292,43 @@ function boucle(t){
   majHud(d,dFant,tps);
   renderer.render(scene,camera);
 }
+const UP=new THREE.Vector3(0,1,0),_a=new THREE.Vector3(),_b=new THREE.Vector3(),_c=new THREE.Vector3(),_d=new THREE.Vector3(),_e=new THREE.Vector3();
+function ease(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2}
+function poser(m,a,b){_e.subVectors(b,a);const L=_e.length();m.position.addVectors(a,b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(UP,_e.normalize());m.scale.set(1,L,1)}
+// deux os (épaule-coude-main ou hanche-genou-pied) : le coude se place tout seul
+function deuxOs(S,T,L1,L2,pole,J,H){
+  _a.subVectors(T,S);const dist=_a.length(),d=Math.min(dist,L1+L2-1e-3);_a.normalize();
+  const a=(L1*L1-L2*L2+d*d)/(2*d),h=Math.sqrt(Math.max(0,L1*L1-a*a));
+  _b.copy(pole).addScaledVector(_a,-pole.dot(_a)).normalize();
+  J.copy(S).addScaledVector(_a,a).addScaledVector(_b,h);H.copy(S).addScaledVector(_a,d);
+}
+const _S=new THREE.Vector3(),_T=new THREE.Vector3(),_J=new THREE.Vector3(),_H=new THREE.Vector3(),_P=new THREE.Vector3(),_hip=new THREE.Vector3(),_foot=new THREE.Vector3();
+function ikMembres(B){
+  B.membres.forEach(m=>{
+    const r=B.rames.find(x=>x.s===m.s);
+    // main sur la poignée de la rame du même côté
+    _T.set(-m.s*0.72,0.02,0);r.pivot.localToWorld(_T);B.g.worldToLocal(_T);
+    _S.set(m.s*0.2,0.56,0.02);B.tronc.localToWorld(_S);B.g.worldToLocal(_S);
+    _P.set(m.s*1,-0.5,-0.9);deuxOs(_S,_T,0.38,0.38,_P,_J,_H);
+    poser(m.bras,_S,_J);poser(m.avant,_J,_H);m.coude.position.copy(_J);m.main.position.copy(_H);m.epaule.position.copy(_S);
+    // pied calé sur la barre, genou qui monte quand le siège avance
+    _hip.set(m.s*0.1,0.36,0);B.siege.localToWorld(_hip);B.g.worldToLocal(_hip);
+    _foot.set(m.s*0.1,0.3,1.08);_P.set(m.s*0.25,1,0.3);
+    deuxOs(_hip,_foot,0.6,0.58,_P,_J,_H);poser(m.cuisse,_hip,_J);poser(m.tibia,_J,_H);m.genou.position.copy(_J);m.pied.position.copy(_foot).add(_d.set(0,-0.03,0.05));
+  });
+}
 function animerRameur(B,ph,actif,eclabousse){
   const p=ph%1,drive=p<0.42,u=drive?p/0.42:(p-0.42)/0.58;
   const e=drive?Math.sin(u*Math.PI/2):1-(0.5-0.5*Math.cos(u*Math.PI));
   const ang=actif?THREE.MathUtils.lerp(0.75,-0.62,e):0.05;
   const lev=actif?(drive?-0.07:0.14*Math.sin(u*Math.PI)+0.02):0.18;
   B.rames.forEach(r=>{r.pivot.rotation.y=r.s>0?ang:-ang;r.pivot.rotation.z=r.s*lev});
-  B.siege.position.z=actif?THREE.MathUtils.lerp(0.4,-0.3,e):0.1;B.tronc.rotation.x=actif?THREE.MathUtils.lerp(0.38,-0.32,e):0;
-  B.bras.forEach(b=>{b.m.position.set(b.s*0.17,0.42,0.2);b.m.rotation.set(Math.PI/2-0.25,0,b.s*0.12)});
+  // ordre réel du coup : jambes d'abord, puis le dos, puis les bras ; retour dans l'ordre inverse
+  const jamb=drive?Math.min(1,u/0.6):1-Math.min(1,Math.max(0,(u-0.25)/0.6));
+  const dos=drive?Math.min(1,Math.max(0,(u-0.3)/0.5)):1-Math.min(1,u/0.35);
+  B.siege.position.z=actif?THREE.MathUtils.lerp(0.36,-0.08,ease(jamb)):0.1;
+  B.tronc.rotation.x=actif?THREE.MathUtils.lerp(0.42,-0.28,ease(dos)):0.05;
+  B.g.updateMatrixWorld(true);ikMembres(B);
   if(eclabousse&&actif&&B.dernierDrive===false&&drive){B.rames.forEach(r=>{const w=new THREE.Vector3(r.s*2.6,0,0).applyEuler(r.pivot.rotation).add(r.pivot.position).add(B.g.position);eclabousser(w)})}
   B.dernierDrive=drive;
 }
