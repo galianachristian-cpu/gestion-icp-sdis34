@@ -98,7 +98,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // ===================== RENDU =====================
 const canvas=document.getElementById('scene');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.36;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.4;
 let qualite=3;const PR_MAX=Math.min(window.devicePixelRatio||1,2);
 function appliquerQualite(){renderer.setPixelRatio(qualite>=3?PR_MAX:qualite===2?Math.min(PR_MAX,1.25):qualite===1?0.85:0.65);redim();document.getElementById('qualite').textContent='qualité '+['très basse','basse','moyenne','haute'][qualite]}
 const scene=new THREE.Scene();
@@ -109,7 +109,7 @@ addEventListener('resize',redim);
 // Ciel et soleil de fin d'après-midi
 const sky=new Sky();sky.scale.setScalar(10000);scene.add(sky);
 const su=sky.material.uniforms;su.turbidity.value=1.2;su.rayleigh.value=2.6;su.mieCoefficient.value=0.002;su.mieDirectionalG.value=0.9;
-const soleil=new THREE.Vector3().setFromSphericalCoords(1,THREE.MathUtils.degToRad(90-16),THREE.MathUtils.degToRad(205));
+const soleil=new THREE.Vector3().setFromSphericalCoords(1,THREE.MathUtils.degToRad(90-24),THREE.MathUtils.degToRad(35));
 su.sunPosition.value.copy(soleil);
 const pmrem=new THREE.PMREMGenerator(renderer);const rtEnv=pmrem.fromScene(sky);scene.environment=rtEnv.texture;
 const lumSoleil=new THREE.DirectionalLight(0xffe2b0,2.2);lumSoleil.position.copy(soleil).multiplyScalar(500);scene.add(lumSoleil);
