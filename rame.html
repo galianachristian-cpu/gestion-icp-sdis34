@@ -340,6 +340,7 @@ const etat={distance:0,temps:0,spm:0,pace:0,watts:0,vitesse:0,source:'simu',obje
 let simuForce=0.62,phaseSimu=0;
 function simuler(dt){ // un rameur réaliste : ~24 coups/min, 2:05/500 m, petites variations
   if(simuForce<=0){etat.spm*=Math.max(0,1-dt*1.5);etat.vitesse*=Math.max(0,1-dt*0.6);etat.watts=0;etat.distance+=etat.vitesse*dt;return}
+  if(!(etat.pace>0))etat.pace=150; // départ : allure de repos, jamais zéro (sinon vitesse négative)
   const spmCible=18+simuForce*14,paceCible=150-simuForce*45+Math.sin(etat.temps/9)*3;
   etat.spm+= (spmCible-etat.spm)*Math.min(1,dt*.8);etat.pace+=((paceCible||150)-(etat.pace||150))*Math.min(1,dt*.6);
   phaseSimu+=dt*etat.spm/60;const pouss=Math.max(0,Math.sin(phaseSimu%1/0.42*Math.PI))*(phaseSimu%1<0.42?1:0);
@@ -451,7 +452,7 @@ let immobile=0,doucheT=-1;
 function douche(){doucheT=0;vague.visible=true;plouf();ditSergent(["Tu dors ? Tiens, une douche !","Debout là-dedans ! Le rafraîchissement est offert.","On ne s'arrête pas en pleine mer, moussaillon !"][Math.floor(Math.random()*3)])}
 
 function loufoque(dt,tps){
-  const bz=bateau.g.position.z,v=etat.vitesse||0,actif=etat.enCours&&!etat.fini;
+  const bz=bateau.g.position.z,v=etat.vitesse||0,vMoy=etat.pace>0&&etat.spm>2?500/etat.pace:v,actif=etat.enCours&&!etat.fini;
   // camion : apparaît loin devant, sur le côté, et croise le bateau
   if(actif&&!camionActif&&etat.distance>camionProchain){camionActif=true;camionChante=false;camion.visible=true;camion.position.set(-13,0,bz-260);camion.rotation.y=0}
   if(camionActif){camion.position.z+=9*dt;camion.position.y=Math.sin(tps*1.6)*0.12;camion.rotation.z=Math.sin(tps*1.1)*0.03;
@@ -460,13 +461,15 @@ function loufoque(dt,tps){
     if(camion.position.z>bz+60){camionActif=false;camion.visible=false;camionProchain=etat.distance+450+Math.random()*250}}
   // mouette
   const M=mouette,ail=M.userData.ailes;
-  if(mouetteEtat==='attente'){mouetteT-=dt;if(actif&&mouetteT<=0){mouetteEtat='arrive';M.visible=true;M.position.copy(teteMonde()).add(mouetteDep.set(6,5,-10));cri()}}
+  if(mouetteEtat==='attente'){mouetteT-=dt;if(actif&&mouetteT<=0){mouetteEtat='arrive';M.visible=true;mouetteDep.set(6,5,-10);M.position.copy(teteMonde()).add(mouetteDep);cri()}}
   else{const cible=teteMonde();
-    if(mouetteEtat==='arrive'){M.position.lerp(cible,Math.min(1,dt*1.6));M.lookAt(cible.x,M.position.y,cible.z-1);ail.forEach(a=>a.piv.rotation.z=a.s*Math.sin(tps*18)*0.7);
-      if(M.position.distanceTo(cible)<0.12){mouetteEtat='posee';mouetteT=0;mouetteVitesseRef=Math.max(v,2.5);ditSergent("Une mouette sur mon casque ! Accélère pour la faire décoller !")}}
+    if(mouetteEtat==='arrive'){ // l'écart à la tête se réduit, dans le repère du bateau (qui avance pendant ce temps)
+      mouetteDep.multiplyScalar(Math.max(0,1-dt*1.4));const l=mouetteDep.length();if(l>0.01)mouetteDep.addScaledVector(mouetteDep,-Math.min(1,dt*1.2/l));
+      M.position.copy(cible).add(mouetteDep);M.lookAt(cible.x,M.position.y,cible.z+1);ail.forEach(a=>a.piv.rotation.z=a.s*Math.sin(tps*18)*0.7);
+      if(mouetteDep.length()<0.15){mouetteEtat='posee';mouetteT=0;mouetteVitesseRef=Math.max(vMoy,2.5);ditSergent("Une mouette sur mon casque ! Accélère pour la faire décoller !")}}
     else if(mouetteEtat==='posee'){M.position.copy(cible);M.rotation.set(0,Math.PI+Math.sin(tps*2)*0.4,0);ail.forEach(a=>a.piv.rotation.z=a.s*0.15);mouetteT+=dt;
       if(Math.floor(tps*1.3)%4===0&&Math.random()<dt*2)cri();
-      if(v>mouetteVitesseRef*1.12||mouetteT>14){mouetteEtat='part';mouetteDep.set(-4,6,8);cri();ditSergent(mouetteT>14?"Elle est partie toute seule… Tu ne lui as même pas fait peur.":"Bien joué ! La mouette a pris la fuite !")}}
+      if((mouetteT>3&&vMoy>mouetteVitesseRef*1.08)||mouetteT>14){mouetteEtat='part';mouetteDep.set(-4,6,8);cri();ditSergent(mouetteT>14?"Elle est partie toute seule… Tu ne lui as même pas fait peur.":"Bien joué ! La mouette a pris la fuite !")}}
     else if(mouetteEtat==='part'){M.position.addScaledVector(mouetteDep,dt*0.9);ail.forEach(a=>a.piv.rotation.z=a.s*Math.sin(tps*20)*0.8);M.lookAt(M.position.clone().add(mouetteDep));
       if(M.position.distanceTo(cible)>40){mouetteEtat='attente';M.visible=false;mouetteT=70+Math.random()*60}}}
   // douche
