@@ -98,7 +98,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 // ===================== RENDU =====================
 const canvas=document.getElementById('scene');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.42;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=0.36;
 let qualite=3;const PR_MAX=Math.min(window.devicePixelRatio||1,2);
 function appliquerQualite(){renderer.setPixelRatio(qualite>=3?PR_MAX:qualite===2?Math.min(PR_MAX,1.25):qualite===1?0.85:0.65);redim();document.getElementById('qualite').textContent='qualité '+['très basse','basse','moyenne','haute'][qualite]}
 const scene=new THREE.Scene();
@@ -108,17 +108,17 @@ addEventListener('resize',redim);
 
 // Ciel et soleil de fin d'après-midi
 const sky=new Sky();sky.scale.setScalar(10000);scene.add(sky);
-const su=sky.material.uniforms;su.turbidity.value=2.2;su.rayleigh.value=1.1;su.mieCoefficient.value=0.004;su.mieDirectionalG.value=0.86;
+const su=sky.material.uniforms;su.turbidity.value=1.2;su.rayleigh.value=2.6;su.mieCoefficient.value=0.002;su.mieDirectionalG.value=0.9;
 const soleil=new THREE.Vector3().setFromSphericalCoords(1,THREE.MathUtils.degToRad(90-16),THREE.MathUtils.degToRad(205));
 su.sunPosition.value.copy(soleil);
 const pmrem=new THREE.PMREMGenerator(renderer);const rtEnv=pmrem.fromScene(sky);scene.environment=rtEnv.texture;
 const lumSoleil=new THREE.DirectionalLight(0xffe2b0,2.2);lumSoleil.position.copy(soleil).multiplyScalar(500);scene.add(lumSoleil);
 scene.add(new THREE.HemisphereLight(0xbfd8ff,0x223344,0.6));
-scene.fog=new THREE.Fog(0xa9c6dc,3000,14000);
+scene.fog=new THREE.Fog(0x8fb7d6,3000,14000);
 
 // La mer
 const eauNormales=new THREE.TextureLoader().load('img/rame/waternormals.jpg',t=>{t.wrapS=t.wrapT=THREE.RepeatWrapping});
-const eau=new Water(new THREE.PlaneGeometry(40000,40000),{textureWidth:1024,textureHeight:1024,waterNormals:eauNormales,sunDirection:soleil.clone(),sunColor:0xfff1d6,waterColor:0x003049,distortionScale:2.0,fog:true,alpha:1});
+const eau=new Water(new THREE.PlaneGeometry(40000,40000),{textureWidth:1024,textureHeight:1024,waterNormals:eauNormales,sunDirection:soleil.clone(),sunColor:0xfff1d6,waterColor:0x0a5a8a,distortionScale:2.6,fog:true,alpha:1});
 eau.rotation.x=-Math.PI/2;eau.material.uniforms.size.value=2.2;scene.add(eau);
 
 // ===================== DÉCOR =====================
@@ -213,8 +213,10 @@ function fabriquerBateau(fantome,femme){
   const rames=[];
   for(const s of[-1,1]){
     const pivot=new THREE.Group();pivot.position.set(s*0.85,0.42,0.6);g.add(pivot);
-    const manche=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,3.8,6),matBlanc);manche.rotation.z=Math.PI/2;manche.position.x=s*(3.8/2-0.9);pivot.add(manche);
-    const pale=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.02,0.2),matRouge);pale.position.x=s*(3.8-0.9-0.25);pivot.add(pale);
+    const manche=new THREE.Mesh(new THREE.CylinderGeometry(0.034,0.034,3.8,10),matNoir);manche.rotation.z=Math.PI/2;manche.position.x=s*(3.8/2-0.9);pivot.add(manche);
+    const pale=new THREE.Mesh(new THREE.BoxGeometry(0.55,0.03,0.24),matRouge);pale.position.x=s*(3.8-0.9-0.25);pivot.add(pale);
+    const bout=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.032,0.245),matJaune);bout.position.x=s*(3.8-0.9-0.05);pivot.add(bout);
+    const poignee=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,0.24,12),matBois);poignee.rotation.z=Math.PI/2;poignee.position.x=-s*0.8;pivot.add(poignee);
     rames.push({pivot,s});
   }
   if(fantome){g.traverse(o=>{if(o.isMesh&&o.userData.contour){o.visible=false;return}if(o.isMesh){o.material=new THREE.MeshStandardMaterial({color:0x67e8f9,transparent:true,opacity:.38,emissive:0x0e7490,emissiveIntensity:.6,depthWrite:false})}})}
@@ -320,7 +322,17 @@ function fabriquerPhare(){const g=new THREE.Group();
   return g}
 const phare=fabriquerPhare();scene.add(phare);
 // Îles et collines lointaines (low poly), de chaque côté du parcours
-const iles=[];for(let i=0;i<14;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(60+Math.random()*120,30+Math.random()*90,7,1),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(.32+Math.random()*.06,.25,.22+Math.random()*.08),roughness:1,flatShading:true}));
+// Îles méditerranéennes : colline arrondie (garrigue), falaise claire au pied, petite plage
+function fabriquerIle(){
+  const g=new THREE.Group(),r=80+Math.random()*140,h=25+Math.random()*60;
+  const geo=new THREE.SphereGeometry(r,28,14,0,Math.PI*2,0,Math.PI/2);const pos=geo.attributes.position;
+  for(let i=0;i<pos.count;i++){const x=pos.getX(i),y=pos.getY(i),z=pos.getZ(i),b=1+0.18*Math.sin(x*0.04)*Math.cos(z*0.05)+0.08*Math.sin(x*0.13+z*0.11);pos.setXYZ(i,x*b,y*(h/r)*b,z*b)}
+  geo.computeVertexNormals();
+  const cols=[];for(let i=0;i<pos.count;i++){const y=pos.getY(i)/h,c=new THREE.Color();if(y<0.08)c.set(0xe9d8a6);else if(y<0.22)c.set(0xbfae8f);else c.setHSL(0.24+Math.random()*0.05,0.32,0.26+y*0.08);cols.push(c.r,c.g,c.b)}
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+  g.add(new THREE.Mesh(geo,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1})));g.position.y=-2;return g;
+}
+const iles=[];for(let i=0;i<14;i++){const m=fabriquerIle();
   m.position.set((i%2?1:-1)*(380+Math.random()*900),0,-i*700-200);scene.add(m);iles.push(m)}
 
 // ===================== DONNÉES (simulation ou PM5) =====================
