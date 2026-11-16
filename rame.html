@@ -238,10 +238,12 @@ sillage.rotation.x=-Math.PI/2;sillage.position.set(0,0.03,16.5);bateau.g.add(sil
 
 // ===================== PERSONNAGES MODÉLISÉS (Blender, avec squelette) =====================
 // Le corps suit un squelette : on oriente les os à chaque image (même calcul que les membres simples).
-const contourMat=()=>{const m=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <project_vertex>','transformed += normalize(objectNormal)*0.014;\n#include <project_vertex>')};return m};
+const contourMat=(ep=0.014)=>{const m=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <project_vertex>','transformed += normalize(objectNormal)*'+ep.toFixed(4)+';\n#include <project_vertex>')};return m};
 function habiller(racine){
-  const aj=[];racine.traverse(o=>{if(!o.isMesh)return;const c=o.material.color.clone();o.material=new THREE.MeshToonMaterial({color:c,gradientMap:tons,toneMapped:false});
-    const ol=o.isSkinnedMesh?new THREE.SkinnedMesh(o.geometry,contourMat()):new THREE.Mesh(o.geometry,contourMat());if(o.isSkinnedMesh)ol.bind(o.skeleton,o.bindMatrix);
+  const aj=[];racine.traverse(o=>{if(!o.isMesh)return;const carte=o.material.map||null,c=carte?new THREE.Color(0xffffff):o.material.color.clone();
+    // modèle peint (IA) : on garde sa texture ; modèle à aplats : couleurs franches
+    o.material=new THREE.MeshToonMaterial({color:c,map:carte,gradientMap:tons,toneMapped:false});const ep=carte?0.006:0.014;
+    const ol=o.isSkinnedMesh?new THREE.SkinnedMesh(o.geometry,contourMat(ep)):new THREE.Mesh(o.geometry,contourMat(ep));if(o.isSkinnedMesh)ol.bind(o.skeleton,o.bindMatrix);
     ol.position.copy(o.position);ol.quaternion.copy(o.quaternion);ol.scale.copy(o.scale);ol.userData.contour=true;aj.push([o.parent,ol]);o.frustumCulled=false;ol.frustumCulled=false});
   aj.forEach(([p,o])=>p.add(o));
 }
@@ -256,11 +258,12 @@ function chargerPerso(B,fichier){
     const m=g.scene,os={};m.traverse(o=>{if(o.isBone){os[o.name]=o;o.userData.repos=o.quaternion.clone()}});
     // échelle : jambes (cuisse + tibia) = 1,0 m, comme le reste du bateau
     m.updateMatrixWorld(true);const lg=(a,b)=>os[a].getWorldPosition(new THREE.Vector3()).distanceTo(os[b].getWorldPosition(new THREE.Vector3()));
-    const k=1.0/(lg('cuisseG','tibiaG')+lg('tibiaG','piedG'));m.scale.setScalar(k);m.updateMatrixWorld(true);
+    // échelle : bras (épaule -> poignet) = 0,78 m, pour que les mains atteignent les poignées quelles que soient les proportions
+    const k=0.78/(lg('brasG','avbrasG')+lg('avbrasG','mainG'));m.scale.setScalar(k);m.updateMatrixWorld(true);
     const L={bras:lg('brasG','avbrasG'),avbras:lg('avbrasG','mainG'),cuisse:lg('cuisseG','tibiaG'),tibia:lg('tibiaG','piedG')};
     const bassin0=os.bassin.getWorldPosition(new THREE.Vector3());
     habiller(m);B.g.add(m);
-    B.perso={m,os,L,bassin0};
+    B.perso={m,os,L,bassin0,piedsZ:-0.08+0.95*(L.cuisse+L.tibia)};
     // les membres simples s'effacent derrière le vrai personnage
     B.siege.visible=false;B.membres.forEach(x=>Object.values(x).forEach(o=>{if(o&&o.isObject3D)o.visible=false}));
   },undefined,e=>console.warn('Personnage 3D indisponible, on garde la version simple',e));
@@ -282,7 +285,7 @@ function poserPerso(B,penche){
     _pW.set(m.s,-0.5,-0.9).applyQuaternion(_bq);deuxOs(_sW,_tW,P.L.bras,P.L.avbras,_pW,_jW,_hW);
     viser(o['bras'+c],_v3.subVectors(_jW,_sW));viser(o['avbras'+c],_v3.subVectors(_hW,_jW));
     // jambes : hanche -> genou -> pied calé sur la barre
-    o['cuisse'+c].getWorldPosition(_hipW);_footW.set(m.s*0.12,0.3,PIEDS_Z);B.g.localToWorld(_footW);
+    o['cuisse'+c].getWorldPosition(_hipW);_footW.set(m.s*0.12,0.3,P.piedsZ);B.g.localToWorld(_footW);
     _pW.set(m.s*0.2,1,0.35).applyQuaternion(_bq);deuxOs(_hipW,_footW,P.L.cuisse,P.L.tibia,_pW,_jW,_hW);
     viser(o['cuisse'+c],_v3.subVectors(_jW,_hipW));viser(o['tibia'+c],_v3.subVectors(_hW,_jW));
     viser(o['pied'+c],_v3.set(0,-0.45,1).normalize().applyQuaternion(_bq));
