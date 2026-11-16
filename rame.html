@@ -282,13 +282,16 @@ function poserPerso(B,penche){
   B.membres.forEach(m=>{const c=m.s>0?'G':'D',r=B.rames.find(x=>x.s===m.s);
     // bras : épaule -> coude -> main sur la poignée
     o['bras'+c].getWorldPosition(_sW);_tW.set(-m.s*0.72,0.02,0);r.pivot.localToWorld(_tW);
+    // le poing (et non le poignet) entoure la poignée : le poignet se place 8 cm avant, vers l'épaule
+    _v3.subVectors(_sW,_tW);_tW.addScaledVector(_v3,Math.min(0.08,_v3.length()*0.2)/Math.max(_v3.length(),1e-3));
     _pW.set(m.s,-0.5,-0.9).applyQuaternion(_bq);deuxOs(_sW,_tW,P.L.bras,P.L.avbras,_pW,_jW,_hW);
     viser(o['bras'+c],_v3.subVectors(_jW,_sW));viser(o['avbras'+c],_v3.subVectors(_hW,_jW));
     // jambes : hanche -> genou -> pied calé sur la barre
     o['cuisse'+c].getWorldPosition(_hipW);_footW.set(m.s*0.12,0.3,P.piedsZ);B.g.localToWorld(_footW);
     _pW.set(m.s*0.2,1,0.35).applyQuaternion(_bq);deuxOs(_hipW,_footW,P.L.cuisse,P.L.tibia,_pW,_jW,_hW);
     viser(o['cuisse'+c],_v3.subVectors(_jW,_hipW));viser(o['tibia'+c],_v3.subVectors(_hW,_jW));
-    viser(o['pied'+c],_v3.set(0,-0.45,1).normalize().applyQuaternion(_bq));
+    // pied à plat sur la barre de pieds inclinée : pointe vers le haut et vers la poupe
+    viser(o['pied'+c],_v3.set(0,0.62,0.78).normalize().applyQuaternion(_bq));
   });
 }
 const PIEDS_Z=0.92;

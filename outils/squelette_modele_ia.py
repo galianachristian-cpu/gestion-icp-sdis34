@@ -20,6 +20,34 @@ for v in mesh.data.vertices: v.co -= Vector((dx, dy, zmin))
 V = np.array([v.co[:] for v in mesh.data.vertices]); H = V[:, 2].max(); X = V[:, 0].max()
 print('hauteur', round(H, 3), 'envergure', round(2 * X, 3))
 
+# ---------- mains de rameur : poings fermés, pouce rabattu, paumes vers le bas ----------
+# Sur le modèle en T, la main est à plat dans le plan x-z, paume vers l'avant (-y), doigts vers l'extérieur.
+def bras_z():
+    b = V[np.abs(V[:, 0]) > 0.55 * X]; return float(np.median(b[:, 2])), float(np.median(b[:, 1]))
+zb0, yb0 = bras_z()
+ax = np.abs(V[:, 0]); sg = np.sign(V[:, 0])
+main = ax > 0.74 * X
+# repère de la main : jointure des doigts (début de la partie fine en y) et pointe
+x0 = 0.875 * X; Lg = X - x0; y0 = float(np.median(V[main & (ax > x0), 1]))
+pouce = main & (ax > 0.78 * X) & (ax < x0) & (V[:, 2] > zb0 + 0.04 * H)
+doigts = main & (ax >= x0)
+# 1) les doigts s'enroulent vers la paume (vers -y) : pliage en arc, ~190°
+theta = 3.3; r = Lg / theta
+d = ax[doigts] - x0; p = V[doigts, 1] - y0; R = r + p; phi = np.minimum(d / r, theta)
+V[doigts, 0] = sg[doigts] * (x0 + R * np.sin(phi)); V[doigts, 1] = (y0 - r) + R * np.cos(phi)
+# 2) le pouce se rabat devant les doigts (rotation autour de l'axe du bras)
+cz = zb0 + 0.035 * H; a = np.radians(80)
+dy = V[pouce, 1] - y0; dz = V[pouce, 2] - cz
+V[pouce, 1] = y0 + dy * np.cos(a) - dz * np.sin(a); V[pouce, 2] = cz + dy * np.sin(a) + dz * np.cos(a)
+# 3) pronation : l'avant-bras tourne pour que la paume regarde vers le bas (progressif depuis le coude)
+coude = 0.5 * X; t = np.clip((ax - coude) / (0.8 * X - coude), 0, 1); t = t * t * (3 - 2 * t)
+a = np.radians(90) * t; dy = V[:, 1] - yb0; dz = V[:, 2] - zb0
+ny = yb0 + dy * np.cos(a) - dz * np.sin(a); nz = zb0 + dy * np.sin(a) + dz * np.cos(a)
+V[:, 1] = np.where(ax > coude, ny, V[:, 1]); V[:, 2] = np.where(ax > coude, nz, V[:, 2])
+for i, v in enumerate(mesh.data.vertices): v.co = Vector(V[i])
+mesh.data.update()
+print('mains : doigts', int(doigts.sum()), 'pouce', int(pouce.sum()))
+
 # ---------- repères anatomiques mesurés sur le maillage ----------
 bras = V[np.abs(V[:, 0]) > 0.55 * X]
 zb = float(np.median(bras[:, 2])); yb = float(np.median(bras[:, 1]))
