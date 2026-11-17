@@ -35,10 +35,14 @@ new GLTFLoader().load(q.get('f')||'pompes.glb',g=>{
   aj.forEach(([p,o])=>p.add(o));scene.add(modele);
   clip=g.animations[0];mixer=new THREE.AnimationMixer(modele);mixer.clipAction(clip).play();window.duree=clip.duration;
   // cadrage : on mesure le personnage sur tout le clip
-  const B=new THREE.Box3();for(let i=0;i<=8;i++){mixer.setTime(clip.duration*i/8);modele.updateMatrixWorld(true);B.expandByObject(modele)}
+  // la boîte d'un maillage animé ne bouge pas avec le squelette : on mesure les os, sur tout le clip
+  const os=[];modele.traverse(x=>{if(x.isBone)os.push(x)});const B=new THREE.Box3(),_p=new THREE.Vector3();
+  for(let i=0;i<=24;i++){mixer.setTime(clip.duration*i/24);modele.updateMatrixWorld(true);os.forEach(b=>B.expandByPoint(b.getWorldPosition(_p)))}
+  B.expandByScalar(0.16);
   const c=B.getCenter(new THREE.Vector3()),s=B.getSize(new THREE.Vector3());window.boite={c:c.toArray(),s:s.toArray()};
-  const dist=Math.max(s.z,s.x,s.y*W/H)*0.62/Math.tan(THREE.MathUtils.degToRad(14))*(+q.get('zoom')||1);
-  camera.position.set(c.x+dist,c.y+dist*0.18,c.z+dist*0.12);camera.lookAt(c.x,c.y*0.8,c.z);
+  // vue de profil (depuis +x), le personnage remplit l'image
+  const t=Math.tan(THREE.MathUtils.degToRad(14)),dist=Math.max(s.y/(2*t),s.z/(2*t*W/H))*1.08*(+q.get('zoom')||1);
+  camera.position.set(c.x+dist,c.y+dist*0.12,c.z+dist*0.08);camera.lookAt(c.x,c.y,c.z);
   window.pret=true;poserT(0);
 });
 function poserT(t){if(!mixer)return;mixer.setTime(((t%1)+1)%1*clip.duration);renderer.render(scene,camera)}
