@@ -42,7 +42,8 @@ new GLTFLoader().load(q.get('f')||'pompes.glb',g=>{
   const c=B.getCenter(new THREE.Vector3()),s=B.getSize(new THREE.Vector3());window.boite={c:c.toArray(),s:s.toArray()};
   // vue de profil (depuis +x), le personnage remplit l'image
   const t=Math.tan(THREE.MathUtils.degToRad(14)),dist=Math.max(s.y/(2*t),s.z/(2*t*W/H))*1.08*(+q.get('zoom')||1);
-  camera.position.set(c.x+dist,c.y+dist*0.12,c.z+dist*0.08);camera.lookAt(c.x,c.y,c.z);
+  if(q.get('vue')==='face'){const df=Math.max(s.y/(2*t),s.x/(2*t*W/H))*1.08*(+q.get('zoom')||1);camera.position.set(c.x+df*0.18,c.y+df*0.1,c.z+df);camera.lookAt(c.x,c.y,c.z)}
+  else{camera.position.set(c.x+dist,c.y+dist*0.12,c.z+dist*0.08);camera.lookAt(c.x,c.y,c.z)}
   window.pret=true;poserT(0);
 });
 function poserT(t){if(!mixer)return;mixer.setTime(((t%1)+1)%1*clip.duration);renderer.render(scene,camera)}

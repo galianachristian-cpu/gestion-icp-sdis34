@@ -1,11 +1,11 @@
 #!/bin/bash
 # Fabrique la vidéo (MP4), le GIF et le WebM d'un exercice à partir d'un GLB animé de l'atelier.
-# Usage : outils/faire_video.sh exercice.glb nbImages dossierTravail nomSortie
+# Usage : outils/faire_video.sh exercice.glb nbImages dossierTravail nomSortie [options, ex. vue=face]
 # (le GLB doit être dans outils/tmp-anim/ ; le serveur local doit tourner sur le port 8123)
 set -e
-GLB=$1; N=$2; D=$3; NOM=$4
+GLB=$1; N=$2; D=$3; NOM=$4; OPT=${5:-}
 cd "$(dirname "$0")/.."
-node outils/rendu_atelier.js "$GLB" "$N" "" "$D/img" >/dev/null
+node outils/rendu_atelier.js "$GLB" "$N" "$OPT" "$D/img" >/dev/null
 CROP=$(python3 - "$D/img" "$N" <<'EOF'
 import sys
 from PIL import Image, ImageChops
