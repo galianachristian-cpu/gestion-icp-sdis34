@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Atelier d'animation · Sergent-Chef</title>
+<style>html,body{margin:0;background:#fff;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<script type="module">
+// Atelier : le Sergent-Chef fait un exercice sur fond blanc, vu de profil, pour fabriquer des animations (GIF / WebM).
+// ?ex=rameur  ·  window.poser(phase 0..1) dessine une image  ·  window.pret passe à true une fois le modèle chargé.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const W=innerWidth,H=innerHeight;
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(2,devicePixelRatio||1));renderer.setSize(W,H);document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xffffff);
+const camera=new THREE.PerspectiveCamera(30,W/H,0.1,50);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8a8a,1.4));const sol=new THREE.DirectionalLight(0xffffff,1.6);sol.position.set(3,5,2);scene.add(sol);
+
+// rendu cartoon + contours, comme dans Rame en direct
+const tons=new THREE.DataTexture(new Uint8Array([120,120,120,255,200,200,200,255,255,255,255,255]),3,1);tons.minFilter=tons.magFilter=THREE.NearestFilter;tons.needsUpdate=true;
+const contourMat=ep=>{const m=new THREE.MeshBasicMaterial({color:0x111111,side:THREE.BackSide});m.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <project_vertex>','transformed += normalize(normal)*'+ep.toFixed(4)+';\n#include <project_vertex>')};return m};
+const toon=c=>new THREE.MeshToonMaterial({color:c,gradientMap:tons});
+function contour(m,ep=0.012){const c=new THREE.Mesh(m.geometry,contourMat(ep));m.add(c);return m}
+function habiller(r){const aj=[];r.traverse(o=>{if(!o.isMesh)return;const carte=o.material.map||null;o.material=new THREE.MeshToonMaterial({color:carte?0xffffff:o.material.color,map:carte,gradientMap:tons});
+  const ol=o.isSkinnedMesh?new THREE.SkinnedMesh(o.geometry,contourMat(0.006)):new THREE.Mesh(o.geometry,contourMat(0.006));if(o.isSkinnedMesh)ol.bind(o.skeleton,o.bindMatrix);
+  ol.position.copy(o.position);ol.quaternion.copy(o.quaternion);ol.scale.copy(o.scale);aj.push([o.parent,ol]);o.frustumCulled=ol.frustumCulled=false});aj.forEach(([p,o])=>p.add(o))}
+
+// ----- outils de pose : orienter un os, résoudre un membre à deux os -----
+const _q=new THREE.Quaternion(),_q2=new THREE.Quaternion(),_v1=new THREE.Vector3(),_v2=new THREE.Vector3(),_a=new THREE.Vector3(),_b=new THREE.Vector3();
+function viser(os,dir){os.parent.getWorldQuaternion(_q).invert();_v1.copy(dir).applyQuaternion(_q).normalize();_v2.set(0,1,0).applyQuaternion(os.userData.repos);_q2.setFromUnitVectors(_v2,_v1);os.quaternion.copy(_q2).multiply(os.userData.repos);os.updateMatrixWorld(true)}
+function deuxOs(S,T,L1,L2,pole,J,Hh){_a.subVectors(T,S);const d=Math.min(_a.length(),L1+L2-1e-3);_a.normalize();const a=(L1*L1-L2*L2+d*d)/(2*d),h=Math.sqrt(Math.max(0,L1*L1-a*a));
+  _b.copy(pole).addScaledVector(_a,-pole.dot(_a)).normalize();J.copy(S).addScaledVector(_a,a).addScaledVector(_b,h);Hh.copy(S).addScaledVector(_a,d)}
+const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2,lerp=THREE.MathUtils.lerp;
+
+// ----- le rameur Concept2 (vu simplement) : le volant d'inertie est devant le rameur (+z) -----
+const gris=toon(0xd9d9d9),noir=toon(0x1c1c1c),grisF=toon(0x8f8f8f);
+const ergo=new THREE.Group();scene.add(ergo);
+const RAIL_Y=0.42;
+function boite(sx,sy,sz,mat,x,y,z,rx=0){const m=contour(new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat));m.position.set(x,y,z);m.rotation.x=rx;ergo.add(m);return m}
+boite(0.12,0.06,2.9,gris,0,RAIL_Y,1.15);                                   // monorail
+boite(0.5,0.05,0.08,noir,0,0.03,-0.25);boite(0.06,RAIL_Y,0.06,grisF,0,RAIL_Y/2,-0.25); // pied arrière
+const volant=contour(new THREE.Mesh(new THREE.CylinderGeometry(0.34,0.34,0.22,40),gris));volant.rotation.z=Math.PI/2;volant.position.set(0,0.78,2.82);ergo.add(volant);
+const grille=new THREE.Mesh(new THREE.CircleGeometry(0.22,40),noir);grille.position.set(0.112,0.78,2.82);grille.rotation.y=Math.PI/2;ergo.add(grille);
+const moyeu=new THREE.Mesh(new THREE.CircleGeometry(0.07,24),gris);moyeu.position.set(0.114,0.78,2.82);moyeu.rotation.y=Math.PI/2;ergo.add(moyeu);
+for(const s of[-1,1]){const p=contour(new THREE.Mesh(new THREE.BoxGeometry(0.05,0.85,0.06),noir));p.position.set(0,0.35,2.82+s*0.16);p.rotation.x=-s*0.42;ergo.add(p)}
+boite(0.6,0.05,0.1,noir,0,0.02,3.0);boite(0.6,0.05,0.1,noir,0,0.02,2.62);
+const siege=boite(0.34,0.07,0.3,noir,0,RAIL_Y+0.06,1.0);
+const PIEDS={z:2.12,y:0.52};
+for(const s of[-1,1])boite(0.16,0.34,0.05,noir,s*0.11,PIEDS.y,PIEDS.z+0.03,0.75);   // cale-pieds inclinés
+const poignee=contour(new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.5,14),noir));poignee.rotation.z=Math.PI/2;scene.add(poignee);
+const chaine=new THREE.Mesh(new THREE.CylinderGeometry(0.006,0.006,1,6),grisF);scene.add(chaine);
+const SORTIE=new THREE.Vector3(0,0.76,2.6);
+
+// ----- le Sergent-Chef -----
+let P=null;
+new GLTFLoader().load('../img/rame/sergent-h.glb',g=>{
+  const m=g.scene,os={};m.traverse(o=>{if(o.isBone){os[o.name]=o;o.userData.repos=o.quaternion.clone()}});
+  m.updateMatrixWorld(true);const pos=n=>os[n].getWorldPosition(new THREE.Vector3()),lg=(a,b)=>pos(a).distanceTo(pos(b));
+  const k=0.92/(lg('cuisseG','tibiaG')+lg('tibiaG','piedG'));m.scale.setScalar(k);m.updateMatrixWorld(true);
+  const L={bras:lg('brasG','avbrasG'),avbras:lg('avbrasG','mainG'),cuisse:lg('cuisseG','tibiaG'),tibia:lg('tibiaG','piedG')};
+  habiller(m);scene.add(m);P={m,os,L,bassin0:pos('bassin'),hanche0:pos('cuisseG')};
+  window.pret=true;poser(0);
+});
+
+// Un coup de rame : 0 = attaque (« catch »), 0,35 = fin de la propulsion, 1 = retour à l'attaque.
+// Ordre réel : jambes, puis dos, puis bras ; au retour : bras, dos, jambes.
+const _S=new THREE.Vector3(),_T=new THREE.Vector3(),_J=new THREE.Vector3(),_Hh=new THREE.Vector3(),_pole=new THREE.Vector3(),_h=new THREE.Vector3();
+function poser(phase){
+  if(!P)return;const o=P.os,L=P.L,p=((phase%1)+1)%1,drive=p<0.38,u=drive?p/0.38:(p-0.38)/0.62;
+  let jambes,dos,bras;
+  if(drive){jambes=ease(Math.min(1,u/0.6));dos=ease(Math.min(1,Math.max(0,(u-0.35)/0.45)));bras=ease(Math.min(1,Math.max(0,(u-0.6)/0.4)))}
+  else{bras=1-ease(Math.min(1,u/0.25));dos=1-ease(Math.min(1,Math.max(0,(u-0.15)/0.3)));jambes=1-ease(Math.min(1,Math.max(0,(u-0.35)/0.65)))}
+  // siège : la longueur des jambes fixe la position de la fin (jambes presque tendues) et de l'attaque (tibias verticaux)
+  const hancheY=RAIL_Y+0.12,dy=hancheY-PIEDS.y,Lj=L.cuisse+L.tibia;
+  const zFin=PIEDS.z-Math.sqrt(Math.max(0.01,(Lj*0.97)**2-dy*dy)),zAtt=PIEDS.z-0.08-L.cuisse*0.95;
+  const zHanche=lerp(zAtt,zFin,jambes);siege.position.z=zHanche-0.02;
+  P.m.position.set(0,hancheY-P.hanche0.y*1,zHanche-P.hanche0.z);P.m.updateMatrixWorld(true);
+  // buste : penché en avant à l'attaque (+), en arrière à la fin (−)
+  const pen=lerp(0.5,-0.3,dos);
+  viser(o.dos,new THREE.Vector3(0,Math.cos(pen),Math.sin(pen)));viser(o.cou,new THREE.Vector3(0,1,Math.sin(pen)*0.4).normalize());viser(o.tete,new THREE.Vector3(0,1,0.15).normalize());
+  // poignée : bras tendus vers le volant, puis tirée sous les pectoraux
+  o.brasG.getWorldPosition(_S);o.brasD.getWorldPosition(_h);_S.add(_h).multiplyScalar(0.5);
+  const portee=(L.bras+L.avbras)*lerp(0.97,0.32,bras);const dir=new THREE.Vector3().subVectors(SORTIE,_S);dir.y=Math.min(dir.y,-0.05*dir.length());dir.normalize();
+  const centre=_S.clone().addScaledVector(dir,portee);if(bras>0.5)centre.y=lerp(centre.y,_S.y-0.32,(bras-0.5)*2);
+  poignee.position.copy(centre);const ch=new THREE.Vector3().subVectors(SORTIE,centre);chaine.position.copy(centre).addScaledVector(ch,0.5);chaine.scale.set(1,ch.length(),1);chaine.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),ch.normalize());
+  for(const c of['G','D']){const s=c==='G'?1:-1;
+    o['bras'+c].getWorldPosition(_S);_T.copy(centre);_T.x+=s*0.1;_v1.subVectors(_S,_T);_T.addScaledVector(_v1,Math.min(0.07,_v1.length()*0.2)/Math.max(_v1.length(),1e-3));
+    _pole.set(s*0.9,-0.4,-0.6).normalize();deuxOs(_S,_T,L.bras,L.avbras,_pole,_J,_Hh);viser(o['bras'+c],_v1.subVectors(_J,_S));viser(o['avbras'+c],_v1.subVectors(_Hh,_J));
+    o['cuisse'+c].getWorldPosition(_S);_T.set(s*0.11,PIEDS.y+0.06,PIEDS.z-0.06);_pole.set(s*0.15,1,0.4).normalize();deuxOs(_S,_T,L.cuisse,L.tibia,_pole,_J,_Hh);
+    viser(o['cuisse'+c],_v1.subVectors(_J,_S));viser(o['tibia'+c],_v1.subVectors(_Hh,_J));viser(o['pied'+c],new THREE.Vector3(0,0.68,0.73))}
+  // le volant tourne pendant la propulsion
+  grille.rotation.z=moyeu.rotation.z=phase*6;
+  camera.position.set(6.4,1.9,1.15);camera.lookAt(0,0.95,1.45);renderer.render(scene,camera);
+}
+window.poser=poser;
+let t0=null;function boucle(t){requestAnimationFrame(boucle);if(new URLSearchParams(location.search).has('fige'))return;t0=t0??t;poser(((t-t0)/1000)/2.4)}requestAnimationFrame(boucle);
+</script>
+</body>
+</html>
