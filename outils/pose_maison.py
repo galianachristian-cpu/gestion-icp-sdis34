@@ -1,6 +1,6 @@
 # Fabrique une animation « maison » (position tenue + respiration) sur le squelette Mixamo du Sergent-Chef.
 # Usage : python pose_maison.py squelette_mixamo.fbx exercice sortie.glb texture.png
-# Exercices : gainage
+# Exercices : gainage, gainage_lateral
 import bpy, sys, math
 from mathutils import Vector, Matrix
 SRC, EX, OUT, TEX = sys.argv[1:5]
@@ -37,6 +37,20 @@ def viser(n, d, normale=None, garder=True):
     M = R.to_4x4(); M.translation = b.matrix.translation
     b.matrix = M; bpy.context.view_layer.update()
 
+REPOS = {}   # orientation monde de chaque os dans la pose de repos (debout, face à -Y, gauche +X)
+bpy.context.view_layer.update()
+for b in arm.pose.bones: REPOS[b.name] = (arm.matrix_world @ b.matrix).to_3x3().normalized()
+
+def orienter(n, haut, avant):
+    """Tourne l'os n comme le corps entier : son « haut » devient 'haut', son « devant » devient 'avant' (repère monde)."""
+    h = Vector(haut).normalized(); av = (Vector(avant) - h * Vector(avant).dot(h)).normalized(); g = h.cross(av)
+    Q = Matrix((g, h, av)).transposed() @ Matrix(((1, 0, 0), (0, 0, 1), (0, -1, 0))).transposed().inverted()
+    b = pb(n); bpy.context.view_layer.update()
+    Mw = arm.matrix_world.to_3x3().normalized()
+    R = Mw.inverted() @ Q @ REPOS[b.name]
+    M = R.to_4x4(); M.translation = b.matrix.translation
+    b.matrix = M; bpy.context.view_layer.update()
+
 ANGLE = [0.08]   # inclinaison du corps (radians), ajustée au calage
 def gainage(t):
     """Planche sur les avant-bras. t : phase de respiration 0..1."""
@@ -54,15 +68,37 @@ def gainage(t):
         viser(c + 'Foot', Vector((0, 0.45, -1)).normalized())                    # sur la pointe des pieds
         viser(c + 'ToeBase', Vector((0, 0.1, -1)).normalized())
 
-POSES = {'gainage': gainage}
-pose = POSES[EX]
+def gainage_lateral(t):
+    """Gainage latéral sur l'avant-bras droit, poitrine vers +X (vers la caméra), bras gauche tendu vers le ciel."""
+    r = math.sin(t * 2 * math.pi); a = ANGLE[0]
+    haut = Vector((0, -math.cos(a), math.sin(a))); avant = Vector((1, 0, 0))
+    for n in ('Hips', 'Spine', 'Spine1', 'Spine2'): orienter(n, haut + Vector((0, 0, 0.012 * r)), avant)
+    orienter('Neck', haut + Vector((0, 0, 0.05)), avant); orienter('Head', haut + Vector((0, 0, 0.08 + 0.02 * r)), avant + Vector((0, 0, -0.15)))
+    viser('RightArm', Vector((0.04, 0, -1)).normalized())                                   # bras d'appui vertical, coude sous l'épaule
+    viser('RightForeArm', Vector((1, -0.12, 0)).normalized(), Vector((0, -1, 0)), garder=False)   # avant-bras au sol, vers l'avant
+    viser('RightHand', Vector((1, -0.08, -0.03)).normalized(), Vector((0, -1, 0)), garder=False)
+    viser('LeftArm', Vector((0.03, -0.04, 1)).normalized())                                  # bras libre tendu vers le ciel
+    viser('LeftForeArm', Vector((0.03, -0.04, 1)).normalized()); viser('LeftHand', Vector((0.02, -0.05, 1)).normalized())
+    jambe = -haut
+    for c, dz in (('Left', 0.0), ('Right', 0.0)):
+        viser(c + 'UpLeg', jambe); viser(c + 'Leg', jambe)
+        viser(c + 'Foot', (Vector((1, 0, 0)) * 0.9 + jambe * 0.42).normalized())          # pieds empilés, de profil
+        viser(c + 'ToeBase', (Vector((1, 0, 0)) + jambe * 0.1).normalized())
 
-# Calage : on cherche l'inclinaison du corps qui pose les coudes et les orteils à la même hauteur (sol)
-def ecart(a):
-    ANGLE[0] = a; pose(0); bpy.context.view_layer.update()
+def ecart_gainage(a):
     coude = (W('LeftForeArm') + W('RightForeArm')) / 2; orteil = (W('LeftToeBase', True) + W('RightToeBase', True)) / 2
     return (coude.z - 0.04) - orteil.z
-a0, a1 = 0.0, 0.3; e0, e1 = ecart(a0), ecart(a1)
+def ecart_lateral(a):
+    return (W('RightForeArm').z - 0.045) - (W('RightFoot').z - 0.06)
+
+POSES = {'gainage': (gainage, ecart_gainage, 0.0, 0.3), 'gainage_lateral': (gainage_lateral, ecart_lateral, 0.2, 0.5)}
+pose, mesure, A0, A1 = POSES[EX]
+
+# Calage : on cherche l'inclinaison du corps qui pose l'appui (coudes) et les pieds à la même hauteur (sol)
+def ecart(a):
+    ANGLE[0] = a; pose(0); bpy.context.view_layer.update()
+    return mesure(a)
+a0, a1 = A0, A1; e0, e1 = ecart(a0), ecart(a1)
 for _ in range(12):
     if abs(e1 - e0) < 1e-6: break
     a2 = a1 - e1 * (a1 - a0) / (e1 - e0); a0, e0 = a1, e1; a1, e1 = a2, ecart(a2)
