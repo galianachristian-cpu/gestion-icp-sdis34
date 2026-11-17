@@ -1,5 +1,5 @@
 # Pompes Mixamo -> GLB : mains à plat (paume au sol, doigts vers l'avant), doigts tendus, corps posé au sol.
-# Usage : python pompes_fix.py entree.fbx sortie.glb
+# Usage : python pompes_fix.py entree.fbx sortie.glb [texture.png]
 import bpy, sys
 from mathutils import Matrix, Vector
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -51,6 +51,13 @@ for f in range(f0, f1 + 1, 3):
     zmin = min(zmin, min((me.matrix_world @ v.co).z for v in m.vertices)); ev.to_mesh_clear()
 arm.location.z -= zmin
 print('sol corrigé de', round(zmin, 4))
+# texture corrigée (casque chromé), si on la donne en 3e argument
+if len(sys.argv) > 3:
+    nouv = bpy.data.images.load(sys.argv[3])
+    for mat in bpy.data.materials:
+        if mat.use_nodes:
+            for n in mat.node_tree.nodes:
+                if n.type == 'TEX_IMAGE' and n.image and n.image.size[0] > 256 and n.image.colorspace_settings.name != 'Non-Color': n.image = nouv
 bpy.ops.export_scene.gltf(filepath=sys.argv[2], export_format='GLB', export_animations=True, export_skins=True, export_yup=True,
                           export_image_format='JPEG', export_image_quality=85, export_frame_range=True)
 print('OK')
