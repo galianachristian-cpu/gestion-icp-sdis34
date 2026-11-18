@@ -97,3 +97,13 @@ et une annonce vocale sur la TV (`audio/sergent/bonus-*.mp3`). Liste dans `PALIE
 - Noël : 🛷 Traîneau volant, 🌙 Cap sur la lune, ⭐ Étoile filante, 🪐 Hors galaxie
 - Autres défis : 🥉 🥈 🥇 💎
 Pour de vraies illustrations plus tard : remplacer l'émoji par une image dans `PALIERS_BONUS`.
+
+## Séance de garde (mode TV)
+
+Bouton « 🚒 Séance de garde » dans le bandeau du mode TV : séance guidée au poids du corps, avec le Sergent-Chef ou la Sergente-Chef à l'écran.
+- Choix : coach, niveau (Recrue 30 s, Équipier 40 s, Chef d'agrès 45 s + burpees), durée (10, 20 ou 30 min = 2, 3 ou 4 tours).
+- Déroulé : échauffement (jumping jacks, montées de genoux), tours équilibrés tirés au hasard, retour au calme (pont fessier, superman).
+- Rien n'est écrit dans la base : à la fin, le QR « Ajoute ta séance » (même lien `?ajout`) ; retour au mode TV au bout de 60 s.
+- La radio continue ; elle baisse seulement quand le coach parle. Pas d'alerte séance ni d'annonce du Sergent-Chef pendant la séance.
+- Vidéos : `img/garde/<exercice>-h.mp4` (Sergent-Chef) et `-f.mp4` (Sergente-Chef), fabriquées avec `outils/` (pose_maison.py, transfert_mixamo.py, faire_video.sh).
+- Voix : `audio/garde/h/` (Henri, `--rate=+10% --pitch=-14Hz`) et `audio/garde/f/` (Denise, `--rate=+8% --pitch=-4Hz`), puis filtre ffmpeg (compresseur + volume).

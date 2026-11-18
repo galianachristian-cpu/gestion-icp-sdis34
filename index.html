@@ -1118,6 +1118,73 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-aide .aide-rg b{display:block;font-size:14px}
 #tab-aide .aide-rg em{font-style:normal;display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45}
 @media(max-width:720px){#tab-aide .aide-grille{grid-template-columns:1fr}}
+/* ===== SÉANCE DE GARDE (mode TV) ===== */
+.tv-garde-btn{margin-left:auto;font-family:var(--titre);font-size:2.6vh;letter-spacing:.03em;color:#fff;cursor:pointer;border:0;border-radius:99px;padding:1vh 1.6vw;background:linear-gradient(135deg,#ef4444,#ea580c);box-shadow:0 0 2.4vh rgba(234,88,12,.45);white-space:nowrap}
+.tv-garde-btn+.tv-radio{margin-left:1.4vw}
+#tvGarde{position:fixed;inset:0;z-index:9500;background:radial-gradient(ellipse at 50% -10%,rgba(234,88,12,.28),transparent 60%),var(--bg);color:var(--text);overflow:hidden}
+#tvGarde.hidden{display:none}
+.gd{position:absolute;inset:0;display:flex;flex-direction:column;padding:2.4vh 2.4vw}
+.gd-haut{display:flex;align-items:center;gap:1.4vw;flex:0 0 auto}
+.gd-haut .tv-heure{margin-left:auto}
+.gd-sous{font-size:1.9vh;color:var(--muted)}
+#tvGarde video{width:100%;height:100%;object-fit:contain;display:block;background:#fff}
+#tvGarde button{font-family:inherit;color:var(--text);cursor:pointer}
+.gd-choix{flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:2.4vw;margin-top:2.4vh;min-height:0}
+.gd-carte{background:rgba(28,25,23,.85);border:1px solid var(--border);border-radius:3vh;padding:2.4vh 2vw;min-height:0}
+.gd-col{display:flex;flex-direction:column}
+.gd-lbl{font-size:1.8vh;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:800;margin:2.6vh 0 1.2vh}
+.gd-carte .gd-lbl:first-child{margin-top:0}
+.gd-coachs{display:grid;grid-template-columns:1fr 1fr;gap:1.6vw}
+.gd-coach{background:var(--surface2);border:.45vh solid var(--border);border-radius:2.6vh;padding:1.2vh;text-align:center}
+.gd-v{aspect-ratio:1;border-radius:1.8vh;overflow:hidden;background:#fff}
+.gd-coach span{display:block;font-family:var(--titre);font-size:3.4vh;margin-top:1vh}
+.gd-coach.on{border-color:var(--primary);box-shadow:0 0 3vh rgba(234,88,12,.5)}
+.gd-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:1vw}
+.gd-opt{background:var(--surface2);border:.4vh solid var(--border);border-radius:2vh;padding:1.8vh .6vw;text-align:center;font-family:var(--titre)!important;font-size:3.4vh;line-height:1.1}
+.gd-opt small{display:block;font-family:Inter,system-ui,sans-serif;font-size:1.7vh;color:var(--muted);margin-top:.6vh;font-weight:600}
+.gd-opt.on{border-color:var(--primary);background:rgba(234,88,12,.16)}
+.gd-resume{margin-top:2.4vh;font-size:2.1vh;color:var(--muted);line-height:1.45}.gd-resume b{color:var(--text)}
+.gd-go{display:block;width:100%;margin-top:auto;border:0;border-radius:2.4vh;padding:2.4vh;font-family:var(--titre)!important;font-size:4.6vh;letter-spacing:.03em;background:linear-gradient(135deg,#ef4444,#ea580c);color:#fff!important;box-shadow:0 1.4vh 4vh rgba(234,88,12,.45)}
+.gd-corps{flex:1;display:grid;grid-template-columns:auto 1fr;gap:2.6vw;margin-top:2vh;min-height:0}
+.gd-scene{position:relative;height:100%;aspect-ratio:1;max-width:56vw;max-height:100%;border-radius:3.6vh;overflow:hidden;background:#fff;align-self:center}
+.gd-voile{position:absolute;inset:0;background:rgba(12,10,9,.55);display:none;padding:2vh}
+.gd-scene.recup .gd-voile,.gd-scene.pause .gd-voile{display:block}
+.gd-voile span{display:inline-block;background:var(--accent);color:#1c1917;font-family:var(--titre);font-size:3.4vh;padding:.6vh 1.6vw;border-radius:99px}
+.gd-bulle{position:absolute;left:2vh;right:2vh;bottom:2vh;background:#fff;color:#111;border-radius:2.4vh;padding:1.6vh 1.6vw;font-weight:800;font-size:3.4vh;box-shadow:0 1vh 3vh rgba(0,0,0,.35);transform:translateY(140%);transition:transform .4s}
+.gd-bulle.on{transform:none}
+.gd-droite{display:flex;flex-direction:column;min-width:0;min-height:0}
+.gd-etape{font-size:2.4vh;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.12em}
+.gd-nom{font-family:var(--titre);font-size:9vh;line-height:1.02;margin-top:.6vh}
+.gd-aide{font-size:2.8vh;color:var(--muted);margin-top:1.2vh;line-height:1.35}
+.gd-chrono{display:flex;align-items:center;gap:2vw;margin-top:auto;padding-top:2vh}
+.gd-rond{position:relative;width:30vh;height:30vh;flex:0 0 auto}
+.gd-rond svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gd-rond b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--titre);font-size:13vh;font-variant-numeric:tabular-nums}
+.gd-rond.recup b{color:var(--accent)}
+.gd-etat{font-family:var(--titre);font-size:5vh;line-height:1.05}
+.gd-etat small{display:block;font-family:Inter,system-ui,sans-serif;font-size:2.2vh;color:var(--muted);font-weight:600;margin-top:.8vh}
+.gd-suivant{display:flex;align-items:center;gap:1.4vw;margin-top:2.4vh;background:rgba(28,25,23,.85);border:1px solid var(--border);border-radius:2.4vh;padding:1.4vh 1.2vw}
+.gd-mini{width:11vh;height:11vh;border-radius:1.6vh;overflow:hidden;background:#fff;flex:0 0 auto}
+.gd-suivant small{display:block;font-size:1.9vh;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:800}
+.gd-suivant b{font-family:var(--titre);font-size:4vh}
+.gd-bas{flex:0 0 auto;display:flex;align-items:center;gap:.8vw;margin-top:2vh}
+.gd-bas button{border:1px solid var(--border);background:rgba(255,255,255,.06);border-radius:1.6vh;padding:1vh 1.4vw;font-size:2.1vh;font-weight:800}
+.gd-barre{flex:1;height:1.6vh;background:var(--surface2);border-radius:99px;overflow:hidden;margin-left:.6vw}
+.gd-barre i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ef4444,#ea580c,#fbbf24);transition:width .5s}
+.gd-t{font-size:2vh;color:var(--muted);font-weight:700;min-width:12vw;text-align:right}
+.gd-fin{flex:1;display:grid;grid-template-columns:auto 1fr auto;gap:3vw;align-items:center;margin-top:2vh;min-height:0}
+.gd-finv{height:min(60vh,34vw);aspect-ratio:1;border-radius:3.6vh;overflow:hidden;background:#fff}
+.gd-fin h1{font-family:var(--titre);font-size:8.4vh;line-height:1.05}
+.gd-fin p{font-size:2.8vh;color:var(--muted);margin-top:1.4vh}
+.gd-stats{display:flex;gap:1.4vw;margin-top:3vh}
+.gd-stats div{background:rgba(28,25,23,.85);border:1px solid var(--border);border-radius:2.4vh;padding:1.6vh 2vw;text-align:center}
+.gd-stats b{display:block;font-family:var(--titre);font-size:7vh;line-height:1}
+.gd-stats span{font-size:2vh;color:var(--muted)}
+.gd-retour{font-size:2vh!important}
+.gd-qr{background:rgba(28,25,23,.9);border:.4vh solid var(--accent);border-radius:3vh;padding:2.4vh 1.8vw;text-align:center;width:30vh}
+.gd-qr .gd-qrsvg{width:100%;height:auto;display:block;border-radius:1.4vh}
+.gd-qr b{display:block;font-family:var(--titre);font-size:3.6vh;margin-top:1.4vh}
+.gd-qr span{font-size:1.9vh;color:var(--muted);line-height:1.35;display:block;margin-top:.6vh}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -3162,7 +3229,7 @@ function radioDucker(bas){
   radioVolTimer=setInterval(function(){var v=radioAudio.volume,p=bas?-0.08:0.05;v=Math.max(0,Math.min(1,v+p));if((bas&&v<=cible)||(!bas&&v>=cible)){v=cible;clearInterval(radioVolTimer)}radioAudio.volume=v},40);
 }
 function tvSonPossible(){return document.body.classList.contains("tv-on")&&!tvEstNuit()}
-function sgtDire(seq){if(!tvSonPossible()||!seq||sgtFile.length>3)return;sgtFile.push(seq);if(!sgtOcc)sgtSuivant()}
+function sgtDire(seq){if(!tvSonPossible()||GARDE.on||!seq||sgtFile.length>3)return;sgtFile.push(seq);if(!sgtOcc)sgtSuivant()}
 function sgtSuivant(){
   var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);return}
   sgtOcc=true;radioDucker(true);if(!sgtA){sgtA=new Audio();sgtA.preload="auto"}
@@ -3185,6 +3252,7 @@ function tvVerifNouveautes(){
   if(!tvAlerteOcc&&tvAlerteFile.length)tvAlerteSuivante();
 }
 function tvAlerteSuivante(){
+  if(GARDE.on){tvAlerteFile=[];tvAlerteOcc=false;return}   // pas d'alerte pendant une Séance de garde
   var x=tvAlerteFile.shift(),el=document.getElementById("tvAlerte");
   if(!x){tvAlerteOcc=false;if(el)el.classList.remove("on");return}
   tvAlerteOcc=true;
@@ -3312,7 +3380,7 @@ function renderTV(){
   var haut=(NOEL_ON?'<div class="tv-guirlande">'+guirlandeHtml(40)+'</div>':'')+'<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
     +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'+meteoHtml()
     +(NOEL_ON&&joursAvantNoel()<=31?'<span class="tv-noel">🎄 '+(joursAvantNoel()===0?"Joyeux Noël !":"J-"+joursAvantNoel()+" avant Noël")+'</span>':'')
-    +radioHtml()+'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
+    +gardeBoutonHtml()+radioHtml()+'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
     +'<button class="tv-x" onclick="fermerModeTV()" title="Quitter le mode TV">✕</button></div>';
   if(!d){el.innerHTML='<div class="tv">'+haut+'<div class="tv-vide">'+etatVide("trophee","Pas de défi en cours","Le prochain défi du centre arrive bientôt. En attendant : on garde la forme 💪")+'</div></div>';return;}
   var S=dfsStats(d),avenir=dfsAVenir(d),th=themeHumour(d);
@@ -3350,6 +3418,166 @@ function renderTV(){
   var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
   el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+fetesTvHtml()+podium+dernieres+qr+'</div></div></div>';
   tvAjuster();
+}
+// ===== SÉANCE DE GARDE (mode TV) : séance guidée au poids du corps, Sergent-Chef ou Sergente-Chef à l'écran =====
+// Lancée par le bouton « 🚒 Séance de garde » du mode TV. Rien n'est écrit dans la base : à la fin, le QR
+// « Ajoute ta séance » permet à chacun·e de noter sa séance dans le défi, comme d'habitude.
+// La radio de la salle continue ; elle baisse seulement quand le coach parle (radioDucker).
+var GARDE={on:false,R:{coach:"h",niv:0,min:10},S:null,tic:null,retour:null,voix:null,file:[],bulleT:null};
+try{Object.assign(GARDE.R,JSON.parse(localStorage.getItem("icp_garde")||"{}"))}catch(e){}
+var GARDE_EX=[
+  ["jacks","Jumping jacks","Écarte bras et jambes, reviens pieds joints.","cardio",0],
+  ["montees_genoux","Montées de genoux","Genoux à hauteur de hanches, les bras accompagnent.","cardio",0],
+  ["squat","Squat","Fesses en arrière, dos droit, cuisses parallèles au sol.","jambes",0],
+  ["fentes","Fentes avant","Un grand pas, le genou arrière frôle le sol. On alterne.","jambes",0],
+  ["chaise","Chaise","Dos au mur, cuisses à l’horizontale. On tient !","jambes",0],
+  ["pont_fessier","Pont fessier","Monte le bassin, serre les fessiers 2 s en haut.","jambes",0],
+  ["gainage","Gainage","Sur les avant-bras, corps bien aligné.","abdos",0],
+  ["crunch","Crunch bicyclette","Coude vers le genou opposé, on pédale.","abdos",0],
+  ["superman","Superman","Bras et jambes décollés, regard vers le sol.","dos",0],
+  ["pompes","Pompes","Corps gainé, poitrine près du sol. Sur les genoux si besoin.","haut",1],
+  ["mountain_climbers","Mountain climbers","En planche, ramène les genoux vite vers la poitrine.","cardio",1],
+  ["gainage_lateral","Gainage latéral","Hanches hautes. On change de côté à mi-temps.","abdos",1],
+  ["hollow","Hollow hold","Le corps en banane, bas du dos collé au sol.","abdos",1],
+  ["situps","Sit-up","On remonte le buste jusqu’aux genoux, on redescend doucement.","abdos",1],
+  ["burpee","Burpees","Squat, planche, pompe, retour et saut !","cardio",2]
+].map(function(a){return {k:a[0],n:a[1],aide:a[2],fam:a[3],niv:a[4]}});
+var GARDE_BY={};GARDE_EX.forEach(function(e){GARDE_BY[e.k]=e});
+var GARDE_NIV=[{nom:"Recrue",eff:30,rec:20},{nom:"Équipier",eff:40,rec:15},{nom:"Chef d'agrès",eff:45,rec:15}];
+var GARDE_TOURS={10:2,20:3,30:4};
+var GARDE_BULLES={go:["Allez, on lâche rien !","C’est parti, à fond !","On y va, en équipe !"],mi:["La moitié ! On garde le rythme !","Respirez, vous gérez !","C’est dur ? C’est que ça marche !"],
+  recup:["Bien joué ! Soufflez un coup.","Récup : une gorgée d’eau si besoin.","Propre ! On enchaîne bientôt."]};
+function gardeVid(k,c){return "img/garde/"+k+"-"+(c||GARDE.R.coach)+".mp4"}
+function gardeBoutonHtml(){return '<button class="tv-garde-btn" onclick="event.stopPropagation();gardeOuvrir()" title="Lancer une séance guidée">🚒 Séance de garde</button>'}
+function gardeEl(){var el=document.getElementById("tvGarde");if(!el){el=document.createElement("div");el.id="tvGarde";el.className="hidden";document.body.appendChild(el)}return el}
+function gardeSauver(){try{localStorage.setItem("icp_garde",JSON.stringify(GARDE.R))}catch(e){}}
+function gardeHaut(titre,sous){
+  return '<div class="gd-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">'+titre+'</div><div class="gd-sous">'+sous+'</div></div>'
+    +'<div class="tv-heure">'+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
+    +'<button class="tv-x" onclick="event.stopPropagation();gardeFermer()" title="Retour au mode TV">✕</button></div>';
+}
+function gardeOuvrir(){
+  var el=gardeEl();GARDE.on=true;el.classList.remove("hidden");
+  tvAlerteFile=[];
+  var R=GARDE.R,n=GARDE_NIV[R.niv],t=GARDE_TOURS[R.min],par=t<=2?5:t===3?6:7;
+  el.innerHTML='<div class="gd">'+gardeHaut("SÉANCE DE <b>GARDE</b>",'Au poids du corps, sans matériel · tout le monde suit le coach')
+    +'<div class="gd-choix"><div class="gd-carte"><div class="gd-lbl">Le coach</div><div class="gd-coachs">'
+    +['h','f'].map(function(c){return '<button class="gd-coach'+(R.coach===c?' on':'')+'" onclick="event.stopPropagation();gardeRegle(\'coach\',\''+c+'\')"><div class="gd-v"><video src="'+gardeVid("jacks",c)+'" autoplay muted loop playsinline></video></div><span>'+(c==="h"?"Sergent-Chef":"Sergente-Chef")+'</span></button>'}).join("")
+    +'</div></div><div class="gd-carte gd-col"><div class="gd-lbl">Niveau</div><div class="gd-opts">'
+    +GARDE_NIV.map(function(x,i){return '<button class="gd-opt'+(R.niv===i?' on':'')+'" onclick="event.stopPropagation();gardeRegle(\'niv\','+i+')">'+x.nom+'<small>'+x.eff+' s d\'effort'+(i===2?' · burpees':'')+'</small></button>'}).join("")
+    +'</div><div class="gd-lbl">Durée</div><div class="gd-opts">'
+    +[10,20,30].map(function(m){return '<button class="gd-opt'+(R.min===m?' on':'')+'" onclick="event.stopPropagation();gardeRegle(\'min\','+m+')">'+m+' min<small>'+GARDE_TOURS[m]+' tours</small></button>'}).join("")
+    +'</div><div class="gd-resume">Avec <b>'+(R.coach==="h"?"le Sergent-Chef":"la Sergente-Chef")+'</b> : échauffement, <b>'+t+' tours de '+par+' exercices</b> ('+n.eff+' s d\'effort, '+n.rec+' s de récup), retour au calme. <b>≈ '+R.min+' min</b>. Prévoir un mur pour la chaise.</div>'
+    +'<button class="gd-go" onclick="event.stopPropagation();gardeDemarrer()">C\'est parti ! 💪</button></div></div></div>';
+}
+function gardeRegle(k,v){GARDE.R[k]=v;gardeSauver();gardeOuvrir()}
+function gardeFermer(){
+  GARDE.on=false;clearInterval(GARDE.tic);clearInterval(GARDE.retour);GARDE.S=null;gardeTaire();
+  var el=gardeEl();el.classList.add("hidden");el.innerHTML="";renderTV();
+}
+function gardeMelanger(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),x=a[i];a[i]=a[j];a[j]=x}return a}
+function gardePlan(){
+  var R=GARDE.R,n=GARDE_NIV[R.niv],tours=GARDE_TOURS[R.min],par=tours<=2?5:tours===3?6:7,P=[];
+  var ok=GARDE_EX.filter(function(e){return e.niv<=R.niv&&e.k!=="jacks"&&e.k!=="montees_genoux"});
+  P.push({ex:GARDE_BY.jacks,d:45,etape:"Échauffement",enchaine:true},{ex:GARDE_BY.montees_genoux,d:40,etape:"Échauffement",enchaine:true});
+  for(var t=0;t<tours;t++){
+    var ordre=["jambes",R.niv>=1?"haut":"cardio","abdos","jambes","dos","abdos","cardio"],pris={},nb=0;
+    for(var i=0;i<ordre.length&&nb<par;i++){
+      var c=gardeMelanger(ok.filter(function(e){return e.fam===ordre[i]})).filter(function(e){return !pris[e.k]})[0]||gardeMelanger(ok).filter(function(e){return !pris[e.k]})[0];
+      if(c){pris[c.k]=1;nb++;P.push({ex:c,d:n.eff,etape:"Tour "+(t+1)+" / "+tours,tour:t})}
+    }
+  }
+  P.push({ex:GARDE_BY.pont_fessier,d:40,etape:"Retour au calme",enchaine:true,calme:true},{ex:GARDE_BY.superman,d:30,etape:"Retour au calme",enchaine:true});
+  return {P:P,rec:n.rec,tours:tours};
+}
+// ----- voix du coach : messages enregistrés (audio/garde/h ou f), la radio baisse pendant qu'il parle -----
+function gardeTaire(){GARDE.file=[];try{if(GARDE.voix){GARDE.voix.pause();GARDE.voix.onended=null}}catch(e){}radioDucker(false)}
+function gardeDire(seq){
+  if(tvEstNuit())return;GARDE.file=seq.slice();
+  if(!GARDE.voix){GARDE.voix=new Audio();GARDE.voix.preload="auto"}
+  var a=GARDE.voix;radioDucker(true);
+  var suivant=function(){var c=GARDE.file.shift();if(!c){radioDucker(false);return}
+    a.onended=function(){setTimeout(suivant,120)};a.onerror=suivant;a.src="audio/garde/"+GARDE.R.coach+"/"+c+".mp3";
+    var p=a.play();if(p&&p.catch)p.catch(function(){GARDE.file=[];radioDucker(false)})};
+  try{a.pause()}catch(e){}setTimeout(suivant,radioEtat==="joue"?350:0);
+}
+var gardeAc=null;
+function gardeBip(f,d,n){try{gardeAc=gardeAc||new (window.AudioContext||window.webkitAudioContext)();
+  for(var i=0;i<(n||1);i++){var o=gardeAc.createOscillator(),g=gardeAc.createGain(),t=gardeAc.currentTime+i*0.18;o.frequency.value=f;o.type="square";
+    g.gain.setValueAtTime(0.16,t);g.gain.exponentialRampToValueAtTime(0.001,t+d);o.connect(g).connect(gardeAc.destination);o.start(t);o.stop(t+d+0.02)}}catch(e){}}
+function gardeBulle(t){var b=document.getElementById("gdBulle");if(!b)return;b.textContent=t;b.classList.add("on");clearTimeout(GARDE.bulleT);GARDE.bulleT=setTimeout(function(){b.classList.remove("on")},3200)}
+function gardePick(a){return a[Math.floor(Math.random()*a.length)]}
+// ----- déroulé -----
+function gardeDemarrer(){
+  gardeBip(1,0.01);var p=gardePlan();
+  GARDE.S={P:p.P,rec:p.rec,tours:p.tours,i:0,phase:"effort",reste:p.P[0].d,total:p.P[0].d,pause:false,t0:Date.now(),fini:false};
+  var R=GARDE.R;
+  gardeEl().innerHTML='<div class="gd">'+gardeHaut("SÉANCE DE <b>GARDE</b>","Avec "+(R.coach==="h"?"le Sergent-Chef":"la Sergente-Chef")+" · niveau "+GARDE_NIV[R.niv].nom)
+    +'<div class="gd-corps"><div class="gd-scene" id="gdScene"><video id="gdVid" autoplay muted loop playsinline></video><div class="gd-voile"><span id="gdVoile">Prochain exercice</span></div><div class="gd-bulle" id="gdBulle"></div></div>'
+    +'<div class="gd-droite"><div class="gd-etape" id="gdEtape"></div><div class="gd-nom" id="gdNom"></div><div class="gd-aide" id="gdAide"></div>'
+    +'<div class="gd-chrono"><div class="gd-rond" id="gdRond"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" stroke="#292524" stroke-width="8" fill="none"/><circle id="gdArc" cx="50" cy="50" r="44" stroke="#ef4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="276.5"/></svg><b id="gdSec"></b></div><div class="gd-etat" id="gdEtat"></div></div>'
+    +'<div class="gd-suivant" id="gdSuivant"></div></div></div>'
+    +'<div class="gd-bas"><button onclick="event.stopPropagation();gardePause()" id="gdPause">⏸ Pause</button><button onclick="event.stopPropagation();gardeSuite()">⏭ Passer</button><button onclick="event.stopPropagation();gardeArreter()">✕ Arrêter</button>'
+    +'<div class="gd-barre"><i id="gdProg"></i></div><div class="gd-t" id="gdRestant"></div></div></div>';
+  gardeBip(660,0.15,2);gardeEntrer(["debut","ex-jacks","s45"]);
+  clearInterval(GARDE.tic);GARDE.tic=setInterval(gardeSeconde,1000);
+}
+function gardeEntrer(annonce){
+  var S=GARDE.S,it=S.P[S.i],e=it.ex,rec=S.phase==="recup",$=function(i){return document.getElementById(i)};
+  $("gdVid").src=gardeVid(e.k);
+  $("gdEtape").textContent=rec?"Récupération · "+it.etape:it.etape;$("gdNom").textContent=e.n;$("gdAide").textContent=e.aide;
+  $("gdScene").classList.toggle("recup",rec);$("gdRond").classList.toggle("recup",rec);$("gdVoile").textContent="Prochain exercice";
+  $("gdEtat").innerHTML=rec?'Récup<small>On souffle, on prépare la suite</small>':'Effort !<small>'+it.d+' secondes</small>';
+  var sv=S.P[S.i+1];
+  $("gdSuivant").innerHTML=sv?'<div class="gd-mini"><video src="'+gardeVid(sv.ex.k)+'" autoplay muted loop playsinline></video></div><div><small>Ensuite · '+sv.etape+'</small><b>'+sv.ex.n+'</b></div>'
+    :'<div><small>Dernier exercice</small><b>🏁 On finit en beauté !</b></div>';
+  if(annonce)gardeDire(annonce);
+  if(rec)gardeBulle(gardePick(GARDE_BULLES.recup));else setTimeout(function(){if(GARDE.S&&GARDE.S.phase==="effort")gardeBulle(gardePick(GARDE_BULLES.go))},1200);
+  gardeMajChrono();
+}
+function gardeRestant(){var S=GARDE.S,s=S.reste;for(var i=S.i+(S.phase==="recup"?0:1);i<S.P.length;i++)s+=S.P[i].d+(S.P[i].enchaine?0:S.rec);return s}
+function gardeMajChrono(){
+  var S=GARDE.S;if(!S)return;var $=function(i){return document.getElementById(i)};
+  $("gdSec").textContent=S.reste;$("gdArc").style.stroke=S.phase==="recup"?"#fbbf24":"#ef4444";
+  $("gdArc").style.strokeDashoffset=(276.5*(1-S.reste/S.total)).toFixed(1);
+  $("gdProg").style.width=(100*(S.i+(S.phase==="recup"?0:1-S.reste/S.total))/S.P.length).toFixed(1)+"%";
+  var r=gardeRestant();$("gdRestant").textContent="Encore "+Math.floor(r/60)+" min "+String(r%60).padStart(2,"0");
+}
+function gardeSeconde(){
+  var S=GARDE.S;if(!S||S.pause||S.fini)return;S.reste--;
+  if(S.phase==="effort"&&S.reste===Math.floor(S.total/2)&&S.total>=30){
+    if(S.P[S.i].ex.k==="gainage_lateral"){gardeDire(["cote"]);gardeBulle("On change de côté !")}
+    else{var m=1+Math.floor(Math.random()*3);gardeDire(["mi-"+m]);gardeBulle(GARDE_BULLES.mi[m-1])}}
+  if(S.reste>0&&S.reste<=3)gardeBip(S.phase==="effort"?880:660,0.09);
+  if(S.reste<=0)return gardeSuite();
+  gardeMajChrono();
+}
+function gardeSuite(){
+  var S=GARDE.S;if(!S||S.fini||S.pause)return;var annonce=null;
+  if(S.phase==="effort"){
+    gardeBip(1040,0.25);var it=S.P[S.i],nx=S.P[S.i+1];if(!nx)return gardeTerminer();
+    var finTour=it.tour!==undefined&&nx.tour!==it.tour;S.i++;
+    if(nx.enchaine){S.phase="effort";S.reste=S.total=nx.d;annonce=(nx.calme?["calme"]:[]).concat(["ex-"+nx.ex.k,"s"+nx.d])}
+    else{S.phase="recup";S.reste=S.total=S.rec;annonce=(finTour?["tour"]:[]).concat(["recup","ex-"+nx.ex.k])}
+  }else{S.phase="effort";S.reste=S.total=S.P[S.i].d;gardeBip(880,0.2,2);
+    annonce=[S.i===S.P.length-1?"dernier":"go-"+(1+Math.floor(Math.random()*3)),"s"+S.P[S.i].d]}
+  gardeEntrer(annonce);
+}
+function gardePause(){var S=GARDE.S;if(!S||S.fini)return;S.pause=!S.pause;
+  document.getElementById("gdPause").textContent=S.pause?"▶ Reprendre":"⏸ Pause";document.getElementById("gdScene").classList.toggle("pause",S.pause);
+  document.getElementById("gdVoile").textContent=S.pause?"Pause":"Prochain exercice";var v=document.getElementById("gdVid");try{S.pause?v.pause():v.play()}catch(e){}}
+function gardeArreter(){if(confirm("Arrêter la séance ?"))gardeFermer()}
+function gardeTerminer(){
+  var S=GARDE.S;S.fini=true;clearInterval(GARDE.tic);var R=GARDE.R;
+  var qr="";try{qr=qrSvg(lienAjout(),"gd-qrsvg")}catch(e){}
+  gardeEl().innerHTML='<div class="gd">'+gardeHaut("SÉANCE DE <b>GARDE</b>","Terminée")
+    +'<div class="gd-fin"><div class="gd-finv"><video src="'+gardeVid("jacks")+'" autoplay muted loop playsinline></video></div>'
+    +'<div><h1>✅ Séance validée !</h1><p>'+(R.coach==="h"?"Le Sergent-Chef est fier de vous. Bonne garde !":"La Sergente-Chef est fière de vous. Bonne garde !")+'</p>'
+    +'<div class="gd-stats"><div><b>'+Math.max(1,Math.round((Date.now()-S.t0)/60000))+'</b><span>minutes</span></div><div><b>'+S.P.length+'</b><span>exercices</span></div><div><b>'+S.tours+'</b><span>tours</span></div></div>'
+    +'<p class="gd-retour" id="gdRetour">Retour au mode TV dans 60 s</p></div>'
+    +'<div class="gd-qr">'+qr+'<b>Ajoute ta séance</b><span>Scanne avec ton téléphone pour la noter dans le défi du centre.</span></div></div></div>';
+  gardeDire(["fin"]);gardeBip(880,0.15,3);
+  var n=60;clearInterval(GARDE.retour);GARDE.retour=setInterval(function(){n--;var r=document.getElementById("gdRetour");if(r)r.textContent="Retour au mode TV dans "+n+" s";if(n<=0)gardeFermer()},1000);
 }
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
