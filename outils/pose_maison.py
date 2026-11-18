@@ -1,6 +1,6 @@
 # Fabrique une animation « maison » (position tenue + respiration) sur le squelette Mixamo du Sergent-Chef.
 # Usage : python pose_maison.py squelette_mixamo.fbx exercice sortie.glb texture.png
-# Exercices : gainage, gainage_lateral
+# Exercices : gainage, gainage_lateral, chaise, pont_fessier, superman, hollow
 import bpy, sys, math
 from mathutils import Vector, Matrix
 SRC, EX, OUT, TEX = sys.argv[1:5]
@@ -91,29 +91,106 @@ def ecart_gainage(a):
 def ecart_lateral(a):
     return (W('RightForeArm').z - 0.045) - (W('RightFoot').z - 0.06)
 
-POSES = {'gainage': (gainage, ecart_gainage, 0.0, 0.3), 'gainage_lateral': (gainage_lateral, ecart_lateral, 0.2, 0.5)}
-pose, mesure, A0, A1 = POSES[EX]
+def phase(t, monte=0.28, tient=0.55, descend=0.82):
+    """Mouvement aller-retour avec pause en haut : 0 -> 1 (monte), 1 (tient), 1 -> 0 (descend), 0 (repos)."""
+    lis = lambda x: x * x * (3 - 2 * x)
+    if t < monte: return lis(t / monte)
+    if t < tient: return 1.0
+    if t < descend: return 1 - lis((t - tient) / (descend - tient))
+    return 0.0
 
-# Calage : on cherche l'inclinaison du corps qui pose l'appui (coudes) et les pieds à la même hauteur (sol)
-def ecart(a):
-    ANGLE[0] = a; pose(0); bpy.context.view_layer.update()
+def chaise(t):
+    """Chaise contre le mur : dos droit, cuisses à l'horizontale, genoux au-dessus des chevilles, bras tendus devant."""
+    r = math.sin(t * 2 * math.pi)
+    for n in ('Hips', 'Spine', 'Spine1', 'Spine2'): orienter(n, (0, 0.04, 1 + 0.01 * r), (0, -1, 0))
+    orienter('Neck', (0, -0.05, 1), (0, -1, 0)); orienter('Head', (0, -0.02, 1), (0, -1, 0.05 * r))
+    for c, s in (('Left', 1), ('Right', -1)):
+        bras = Vector((s * 0.1, -1, 0.02 * r)).normalized()
+        viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+        viser(c + 'UpLeg', Vector((s * 0.1, -1, 0)).normalized()); viser(c + 'Leg', Vector((0, 0.02, -1)).normalized())
+        viser(c + 'Foot', Vector((0, -0.85, -0.5)).normalized()); viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+
+LEVE = [0.0]
+def pont_fessier(t):
+    """Pont fessier : sur le dos, genoux pliés, le bassin monte, tient 2 s, redescend.
+    Le buste se lève avec le mouvement ; ANGLE = angle des cuisses, calé pour que les pieds restent à plat au sol."""
+    a = 0.03 + 0.42 * LEVE[0]; b = ANGLE[0]
+    for n in ('Hips', 'Spine', 'Spine1', 'Spine2'): orienter(n, (0, -math.cos(a), -math.sin(a)), (0, 0, 1))
+    orienter('Neck', (0, -1, 0.25), (0, 0, 1)); orienter('Head', (0, -1, 0.05), (0, 0, 1))
+    for c, s in (('Left', 1), ('Right', -1)):          # sur le dos, la gauche du personnage est vers -X
+        bras = Vector((-s * 0.14, 1, -0.06)).normalized()
+        viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+        viser(c + 'UpLeg', Vector((-s * 0.06, math.cos(b), math.sin(b))).normalized())
+        viser(c + 'Leg', Vector((-s * 0.02, -0.15, -1)).normalized())
+        viser(c + 'Foot', Vector((0, 1, -0.35)).normalized()); viser(c + 'ToeBase', Vector((0, 1, 0)).normalized())
+
+def superman(t):
+    """Superman : sur le ventre, bras et jambes se lèvent ensemble, tient 2 s, redescendent. Regard vers le sol."""
+    l = LEVE[0]
+    for n, k in (('Hips', 0.0), ('Spine', 0.1), ('Spine1', 0.22), ('Spine2', 0.32)): orienter(n, (0, -1, k * l), (0, 0, -1))
+    orienter('Neck', (0, -1, 0.36 * l + 0.05), (0, 0, -1)); orienter('Head', (0, -1, 0.3 * l + 0.03), (0, 0, -1))
+    for c, s in (('Left', 1), ('Right', -1)):
+        bras = Vector((s * 0.16, -1, 0.04 + 0.4 * l)).normalized()
+        viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+        viser(c + 'UpLeg', Vector((s * 0.05, 1, 0.03 + 0.24 * l)).normalized()); viser(c + 'Leg', Vector((s * 0.03, 1, 0.05 + 0.3 * l)).normalized())
+        viser(c + 'Foot', Vector((0, 1, -0.3)).normalized()); viser(c + 'ToeBase', Vector((0, 1, -0.1)).normalized())
+
+def hollow(t):
+    """Hollow hold : sur le dos, bras et jambes tendus décollés du sol, le corps en banane, bas du dos collé au sol."""
+    r = math.sin(t * 2 * math.pi)
+    for n, k in (('Hips', 0.0), ('Spine', 0.12), ('Spine1', 0.26), ('Spine2', 0.38)): orienter(n, (0, -1, k + 0.01 * r), (0, 0, 1))
+    orienter('Neck', (0, -1, 0.45), (0, 0, 1)); orienter('Head', (0, -1, 0.42), (0, 0, 1))
+    for c, s in (('Left', 1), ('Right', -1)):
+        bras = Vector((-s * 0.1, -1, 0.32 + 0.01 * r)).normalized()
+        viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+        jambe = Vector((-s * 0.03, 1, 0.3 + 0.01 * r)).normalized()
+        viser(c + 'UpLeg', jambe); viser(c + 'Leg', jambe)
+        viser(c + 'Foot', Vector((0, 1, 0.05)).normalized()); viser(c + 'ToeBase', Vector((0, 1, 0.05)).normalized())
+
+def ecart_pont(a):
+    epaule = (W('LeftArm') + W('RightArm')) / 2; talon = (W('LeftFoot') + W('RightFoot')) / 2
+    return (epaule.z - 0.07) - (talon.z - 0.08)
+
+# nom : (pose, mesure de calage ou None, bornes de recherche, mouvement par image ou None)
+POSES = {'gainage': (gainage, ecart_gainage, 0.0, 0.3, None), 'gainage_lateral': (gainage_lateral, ecart_lateral, 0.2, 0.5, None),
+         'chaise': (chaise, None, 0, 0, None), 'pont_fessier': (pont_fessier, ecart_pont, 0.4, 1.0, phase),
+         'superman': (superman, None, 0, 0, phase), 'hollow': (hollow, None, 0, 0, None)}
+pose, mesure, A0, A1, mouvement = POSES[EX]
+
+# Calage : on cherche l'inclinaison du corps qui pose l'appui et les pieds à la même hauteur (sol)
+def ecart(a, t):
+    ANGLE[0] = a; pose(t); bpy.context.view_layer.update()
     return mesure(a)
-a0, a1 = A0, A1; e0, e1 = ecart(a0), ecart(a1)
-for _ in range(12):
-    if abs(e1 - e0) < 1e-6: break
-    a2 = a1 - e1 * (a1 - a0) / (e1 - e0); a0, e0 = a1, e1; a1, e1 = a2, ecart(a2)
-ANGLE[0] = a1; print('angle du corps', round(math.degrees(a1), 1), 'écart', round(e1, 4))
+def caler(t):
+    if not mesure: return
+    a0, a1 = A0, A1; e0, e1 = ecart(a0, t), ecart(a1, t)
+    for _ in range(14):
+        if abs(e1 - e0) < 1e-7: break
+        a2 = a1 - e1 * (a1 - a0) / (e1 - e0); a0, e0 = a1, e1; a1, e1 = a2, ecart(a2, t)
+    ANGLE[0] = a1
+
+def sol_mesh():
+    dg = bpy.context.evaluated_depsgraph_get(); ev = me.evaluated_get(dg); m = ev.to_mesh()
+    z = min((me.matrix_world @ v.co).z for v in m.vertices); ev.to_mesh_clear(); return z
 
 N = 48; sc.frame_start, sc.frame_end = 1, N
 for f in range(1, N + 1):
-    sc.frame_set(f); pose((f - 1) / N); bpy.context.view_layer.update()
+    t = (f - 1) / N; sc.frame_set(f)
+    LEVE[0] = mouvement(t) if mouvement else 0.0
+    caler(t); pose(t); arm.location.z = 0; bpy.context.view_layer.update()
+    arm.location.z = -sol_mesh(); bpy.context.view_layer.update()          # toujours posé au sol, image par image
     for b in arm.pose.bones: b.keyframe_insert('rotation_quaternion', frame=f)
-# posé au sol
-zmin = 1e9
-for f in range(1, N + 1, 6):
-    sc.frame_set(f); dg = bpy.context.evaluated_depsgraph_get(); ev = me.evaluated_get(dg); m = ev.to_mesh()
-    zmin = min(zmin, min((me.matrix_world @ v.co).z for v in m.vertices)); ev.to_mesh_clear()
-arm.location.z -= zmin
+    arm.keyframe_insert('location', frame=f)
+print('angle', round(math.degrees(ANGLE[0]), 1))
+zmin = 0.0
+if EX == 'chaise':   # le mur derrière le dos
+    sc.frame_set(1); bpy.context.view_layer.update()
+    dos = max((me.matrix_world @ v.co).y for v in me.evaluated_get(bpy.context.evaluated_depsgraph_get()).to_mesh().vertices
+              if (me.matrix_world @ v.co).z > W('Spine').z)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=(0, dos + 0.03, 0.85)); mur = bpy.context.active_object
+    mur.scale = (1.5, 0.06, 1.7); mur.name = 'mur'
+    mm = bpy.data.materials.new('mur'); mm.use_nodes = True; mm.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (0.82, 0.78, 0.7, 1)
+    mur.data.materials.append(mm)
 nouv = bpy.data.images.load(TEX)
 for mat in bpy.data.materials:
     if mat.use_nodes:

@@ -17,5 +17,5 @@ for img in bpy.data.images:
     if img.size[0] > 0:
         img.filepath_raw = os.path.join(out, 'texture.png'); img.file_format = 'PNG'; img.save(); break
 bpy.ops.wm.obj_export(filepath=os.path.join(out, 'SergentChef.obj'), export_selected_objects=True, export_materials=True,
-                      path_mode='RELATIVE', forward_axis='NEGATIVE_Z', up_axis='Y')
+                      path_mode='STRIP', forward_axis='NEGATIVE_Z', up_axis='Y')
 print('OK', os.listdir(out))
