@@ -105,6 +105,11 @@ for j, n in enumerate(noms):
         ok = (cote == n[-1]) & (V[:, 2] < hanche_z + 0.02 * H); D[~ok, j] = 9
     if n in ('dos', 'cou', 'tete', 'bassin'):
         D[np.abs(V[:, 0]) > ep_x * 1.15, j] = 9
+# cheveux longs (queue de cheval) : derrière la tête, au-dessus des épaules -> ils suivent la tête, jamais les bras
+cheveux = (np.abs(V[:, 0]) < ep_x * 1.25) & (V[:, 1] > yb + 0.05 * H) & (V[:, 2] > zb - 0.03 * H)
+for j, n in enumerate(noms):
+    if n not in ('tete', 'cou'): D[cheveux, j] = 9
+print('cheveux suivant la tête :', int(cheveux.sum()))
 W = 1.0 / np.maximum(D, 1e-3) ** 6
 W[D > 8] = 0
 top = np.argsort(-W, 1)[:, :3]
