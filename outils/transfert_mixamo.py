@@ -2,7 +2,8 @@
 # On recopie l'orientation de chaque os dans le monde (en tenant compte des poses de repos de chacun)
 # et le déplacement du bassin, mis à l'échelle de la taille du personnage cible.
 # Usage : python transfert_mixamo.py animation_source.fbx personnage_cible.fbx sortie.glb texture.png
-import bpy, sys
+# MAINS_A_PLAT=1 : pour les pompes, mains à plat au sol (même correction que mixamo_mains_a_plat.py)
+import bpy, sys, os
 from mathutils import Matrix, Vector
 SRC, CIBLE, OUT, TEX = sys.argv[1:5]
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -57,6 +58,27 @@ for f in range(f0, f1 + 1):
         b.keyframe_insert('rotation_quaternion', frame=f)
 bpy.data.objects.remove(S)
 bpy.context.view_layer.update()
+if os.environ.get('MAINS_A_PLAT'):
+    P = 'mixamorig:'; AW = T.matrix_world.to_3x3().normalized()
+    def repere(y, n):
+        y = y.normalized(); n = (n - y * n.dot(y)).normalized(); return Matrix((y.cross(n), y, n)).transposed()
+    sc.frame_set(f0); bpy.context.view_layer.update()
+    tete = T.matrix_world @ T.pose.bones[P + 'Head'].head; pied = T.matrix_world @ T.pose.bones[P + 'LeftFoot'].head
+    Wd = repere(Vector((tete.x - pied.x, tete.y - pied.y, 0)).normalized(), Vector((0, 0, -1)))
+    cibles = {}
+    for c in ('Left', 'Right'):
+        Rr = (AW @ T.data.bones[P + c + 'Hand'].matrix_local.to_3x3()).normalized()
+        cibles[c] = Wd @ repere(Vector((0, 1, 0)), Rr.transposed() @ Vector((0, -1, 0))).transposed()
+    doigts = [b.name for b in T.pose.bones if 'Thumb' in b.name or 'Index' in b.name]
+    for f in range(f0, f1 + 1):
+        sc.frame_set(f); bpy.context.view_layer.update()
+        for c in ('Left', 'Right'):
+            pb = T.pose.bones[P + c + 'Hand']; M = (T.matrix_world.inverted().to_3x3().normalized() @ cibles[c]).to_4x4()
+            M.translation = pb.matrix.translation.copy(); pb.matrix = M; bpy.context.view_layer.update()
+            pb.keyframe_insert('rotation_quaternion', frame=f)
+        for n in doigts:
+            pb = T.pose.bones[n]; pb.rotation_quaternion = (1, 0, 0, 0); pb.keyframe_insert('rotation_quaternion', frame=f)
+    print('mains à plat')
 # posé au sol (sur tout le clip, comme mixamo_glb.py : les sauts restent des sauts)
 me = mT[0]; zmin = 1e9
 for f in range(f0, f1 + 1, 2):

@@ -1,6 +1,6 @@
 # Fabrique une animation « maison » (position tenue + respiration) sur le squelette Mixamo du Sergent-Chef.
 # Usage : python pose_maison.py squelette_mixamo.fbx exercice sortie.glb texture.png
-# Exercices : gainage, gainage_lateral, chaise, pont_fessier, superman, hollow
+# Exercices : gainage, gainage_lateral, chaise, pont_fessier, superman, hollow, fentes, mountain_climbers, montees_genoux
 import bpy, sys, math
 from mathutils import Vector, Matrix
 SRC, EX, OUT, TEX = sys.argv[1:5]
@@ -151,10 +151,93 @@ def ecart_pont(a):
     epaule = (W('LeftArm') + W('RightArm')) / 2; talon = (W('LeftFoot') + W('RightFoot')) / 2
     return (epaule.z - 0.07) - (talon.z - 0.08)
 
+def main_a_plat(c, avant=(0, -1, 0)):
+    """Main à plat au sol, doigts vers 'avant' (même méthode que mixamo_mains_a_plat.py)."""
+    def rep(y, n):
+        y = Vector(y).normalized(); n = Vector(n); n = (n - y * n.dot(y)).normalized(); return Matrix((y.cross(n), y, n)).transposed()
+    Rr = REPOS[P + c + 'Hand']; L = rep((0, 1, 0), Rr.transposed() @ Vector((0, -1, 0)))
+    b = pb(c + 'Hand'); bpy.context.view_layer.update()
+    M = (arm.matrix_world.to_3x3().normalized().inverted() @ rep(avant, (0, 0, -1)) @ L.transposed()).to_4x4()
+    M.translation = b.matrix.translation; b.matrix = M; bpy.context.view_layer.update()
+
+def bras_balance(c, s, k):
+    """Bras de course : coude plié à 90°, le bras se balance d'avant en arrière selon k (-1..1)."""
+    a = 0.75 * k
+    viser(c + 'Arm', Vector((s * 0.12, -math.sin(a), -math.cos(a))).normalized())
+    viser(c + 'ForeArm', Vector((s * 0.05, -math.cos(a) * 0.9, math.sin(a) * 0.9 + 0.25)).normalized())
+    viser(c + 'Hand', Vector((s * 0.05, -math.cos(a) * 0.9, math.sin(a) * 0.9 + 0.25)).normalized())
+
+def debout(lean=0.0, r=0.0):
+    for n in ('Hips', 'Spine', 'Spine1', 'Spine2'): orienter(n, (0, -lean, 1 + 0.01 * r), (0, -1, 0))
+    orienter('Neck', (0, -lean * 0.5, 1), (0, -1, 0)); orienter('Head', (0, 0, 1), (0, -1, 0))
+
+COTE = ['Left']
+def fentes(t):
+    """Fente avant alternée : un pas en avant, on descend genou arrière vers le sol, on remonte pieds joints, puis l'autre jambe.
+    ANGLE = angle de la cuisse arrière, calé pour que les deux pieds restent au sol."""
+    t2 = (t * 2) % 1; d = 0.5 - 0.5 * math.cos(2 * math.pi * t2); COTE[0] = 'Left' if t < 0.5 else 'Right'
+    debout(0.06 * d)
+    for c, s in (('Left', 1), ('Right', -1)):
+        viser(c + 'Arm', Vector((s * 0.15, 0.03, -1)).normalized()); viser(c + 'ForeArm', Vector((s * 0.1, -0.15, -1)).normalized())
+        viser(c + 'Hand', Vector((s * 0.1, -0.15, -1)).normalized())
+        if c == COTE[0]:   # jambe avant
+            th = 1.35 * d
+            viser(c + 'UpLeg', Vector((s * 0.08, -math.sin(th), -math.cos(th))).normalized())
+            viser(c + 'Leg', Vector((s * 0.04, 0.08 * d, -1)).normalized())
+            viser(c + 'Foot', Vector((0, -0.85, -0.5)).normalized()); viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+        else:              # jambe arrière : genou qui descend vers le sol, sur la pointe du pied
+            th = ANGLE[0] * d
+            cuisse = Vector((s * 0.08, math.sin(th), -math.cos(th))).normalized()
+            viser(c + 'UpLeg', cuisse)
+            tibia = (cuisse * (1 - d) + Vector((0, 1, -0.35)).normalized() * d).normalized()
+            viser(c + 'Leg', tibia)
+            viser(c + 'Foot', (Vector((0, -0.85, -0.5)) * (1 - d) + Vector((0, -0.3, -1)) * d).normalized())
+            viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+def ecart_fentes(a):
+    av = COTE[0]; ar = 'Right' if av == 'Left' else 'Left'
+    return W(ar + 'ToeBase', True).z - (W(av + 'Foot').z - 0.075)
+
+GENOU = [0.0, 0.0]
+def mountain_climbers(t):
+    """Mountain climbers : planche bras tendus, on ramène un genou vers la poitrine puis l'autre, vite.
+    ANGLE = inclinaison du corps, calée pour que les mains et le pied d'appui touchent le sol."""
+    a = ANGLE[0]; ph = math.sin(2 * math.pi * t)
+    GENOU[0], GENOU[1] = max(0.0, ph) ** 0.8, max(0.0, -ph) ** 0.8
+    haut = Vector((0, -math.cos(a), math.sin(a)))
+    for n in ('Hips', 'Spine', 'Spine1', 'Spine2'): orienter(n, haut, (0, 0, -1))
+    orienter('Neck', haut + Vector((0, 0, 0.15)), (0, 0, -1)); orienter('Head', haut + Vector((0, 0, 0.2)), (0, 0, -1))
+    for (c, s), g in zip((('Left', 1), ('Right', -1)), GENOU):
+        bras = Vector((s * 0.06, -0.05, -1)).normalized()
+        viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); main_a_plat(c)
+        jambe = -haut
+        cuisse = (jambe * (1 - g) + Vector((s * 0.1, -0.88, -0.42)).normalized() * g).normalized()
+        tibia = (jambe * (1 - g) + Vector((0, 0.95, -0.3)).normalized() * g).normalized()
+        viser(c + 'UpLeg', cuisse); viser(c + 'Leg', tibia)
+        viser(c + 'Foot', (Vector((0, 0.45, -1)).normalized() * (1 - g) + Vector((0, 1, 0.15)).normalized() * g).normalized())   # pied du genou ramené : pointe vers l'arrière
+        viser(c + 'ToeBase', (Vector((0, 0.1, -1)) * (1 - g) + Vector((0, 1, 0.15)) * g).normalized())
+def ecart_mc(a):
+    appui = 'Right' if GENOU[0] >= GENOU[1] else 'Left'
+    mains = (W('LeftHand') + W('RightHand')) / 2
+    return (mains.z - 0.05) - W(appui + 'ToeBase', True).z
+
+def montees_genoux(t):
+    """Montées de genoux : course sur place, genou à hauteur de hanche, bras qui balancent."""
+    ph = math.sin(2 * math.pi * t); kg, kd = max(0.0, ph), max(0.0, -ph)
+    debout(0.04)
+    for (c, s), k, kb in ((('Left', 1), kg, -ph), (('Right', -1), kd, ph)):
+        th = 1.5 * k
+        viser(c + 'UpLeg', Vector((s * 0.06, -math.sin(th), -math.cos(th))).normalized())
+        viser(c + 'Leg', Vector((0, 0.15 * k + 0.02, -1)).normalized())
+        viser(c + 'Foot', (Vector((0, -0.85, -0.5)) * (1 - k) + Vector((0, -0.5, -0.85)) * k).normalized())
+        viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+        bras_balance(c, s, kb)
+
 # nom : (pose, mesure de calage ou None, bornes de recherche, mouvement par image ou None)
 POSES = {'gainage': (gainage, ecart_gainage, 0.0, 0.3, None), 'gainage_lateral': (gainage_lateral, ecart_lateral, 0.2, 0.5, None),
          'chaise': (chaise, None, 0, 0, None), 'pont_fessier': (pont_fessier, ecart_pont, 0.4, 1.0, phase),
-         'superman': (superman, None, 0, 0, phase), 'hollow': (hollow, None, 0, 0, None)}
+         'superman': (superman, None, 0, 0, phase), 'hollow': (hollow, None, 0, 0, None),
+         'fentes': (fentes, ecart_fentes, 0.3, 0.9, None), 'mountain_climbers': (mountain_climbers, ecart_mc, 0.1, 0.5, None),
+         'montees_genoux': (montees_genoux, None, 0, 0, None)}
 pose, mesure, A0, A1, mouvement = POSES[EX]
 
 # Calage : on cherche l'inclinaison du corps qui pose l'appui et les pieds à la même hauteur (sol)
