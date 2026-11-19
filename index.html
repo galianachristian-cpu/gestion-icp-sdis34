@@ -355,6 +355,7 @@ img.medaille{width:22px;height:30px;object-fit:contain;vertical-align:middle;fil
 body.tv-on{overflow:hidden}
 .tv{height:100vh;display:flex;flex-direction:column;padding:2.2vh 2.4vw;gap:2vh;box-sizing:border-box}
 .tv-haut{display:flex;align-items:center;gap:1.4vw}
+.tv-haut>.tv-logo+div{flex-shrink:0}.tv-haut .tv-meteo{overflow:hidden;flex-shrink:0;max-width:26vw}.tv-garde-btn+.tv-radio .tv-rn small{white-space:nowrap}.tv-haut .tv-meteo small{overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tv-logo{width:6.5vh;height:6.5vh;object-fit:contain}
 .tv-centre{font-family:var(--titre);font-size:3.4vh;letter-spacing:.1em;white-space:nowrap}.tv-centre b{color:var(--accent)}
 .tv-jour{color:var(--muted);font-size:2.1vh;text-transform:capitalize}
@@ -1119,8 +1120,9 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 #tab-aide .aide-rg em{font-style:normal;display:block;font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.45}
 @media(max-width:720px){#tab-aide .aide-grille{grid-template-columns:1fr}}
 /* ===== SÉANCE DE GARDE (mode TV) ===== */
-.tv-garde-btn{margin-left:auto;font-family:var(--titre);font-size:2.6vh;letter-spacing:.03em;color:#fff;cursor:pointer;border:0;border-radius:99px;padding:1vh 1.6vw;background:linear-gradient(135deg,#ef4444,#ea580c);box-shadow:0 0 2.4vh rgba(234,88,12,.45);white-space:nowrap}
-.tv-garde-btn+.tv-radio{margin-left:1.4vw}
+.tv-garde-btn{margin-left:auto;flex-shrink:0;font-family:var(--titre);font-size:2.4vh;letter-spacing:.03em;color:#fff;cursor:pointer;border:0;border-radius:99px;padding:1vh 1.2vw;background:linear-gradient(135deg,#ef4444,#ea580c);box-shadow:0 0 2.4vh rgba(234,88,12,.45);white-space:nowrap}
+.tv-noel{white-space:nowrap;flex-shrink:0}.tv-haut.avec-noel .tv-mv em{display:none}.tv-haut.avec-noel .tv-meteo{max-width:15vw}.tv-haut.avec-noel .tv-meteo small{white-space:nowrap}.tv-haut.avec-noel{gap:.8vw}.tv-haut.avec-noel .tv-centre{letter-spacing:.03em}.tv-haut.avec-noel .tv-noel{font-size:2.2vh;padding:.7vh 1vw}.tv-haut.avec-noel .tv-heure{font-size:5vh}.tv-haut.avec-noel .tv-radio+.tv-heure{margin-left:.8vw}.tv-noel~.tv-garde-btn{margin-left:1.1vw}.tv-noel~.tv-garde-btn span{display:none}.tv-noel~.tv-radio .tv-rp{min-width:0}
+.tv-garde-btn+.tv-radio{margin-left:1.2vw}.tv-garde-btn+.tv-radio .tv-rp{min-width:12vw}.tv-haut{gap:1.1vw}
 #tvGarde{position:fixed;inset:0;z-index:9500;background:radial-gradient(ellipse at 50% -10%,rgba(234,88,12,.28),transparent 60%),var(--bg);color:var(--text);overflow:hidden}
 #tvGarde.hidden{display:none}
 .gd{position:absolute;inset:0;display:flex;flex-direction:column;padding:2.4vh 2.4vw}
@@ -3377,7 +3379,7 @@ function renderTV(){
   var el=document.getElementById("modeTV");if(!el||el.classList.contains("hidden"))return;
   var now=new Date(),d=dfsDefiDuBandeau();
   if(tvEstNuit()){el.innerHTML=tvNuitHtml(now);return}
-  var haut=(NOEL_ON?'<div class="tv-guirlande">'+guirlandeHtml(40)+'</div>':'')+'<div class="tv-haut"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
+  var haut=(NOEL_ON?'<div class="tv-guirlande">'+guirlandeHtml(40)+'</div>':'')+'<div class="tv-haut'+(NOEL_ON&&joursAvantNoel()<=31?' avec-noel':'')+'"><img src="icons/logo.webp" alt="" class="tv-logo"><div><div class="tv-centre">CIS <b>CRUZY-QUARANTE</b></div>'
     +'<div class="tv-jour">'+now.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"})+'</div></div>'+meteoHtml()
     +(NOEL_ON&&joursAvantNoel()<=31?'<span class="tv-noel">🎄 '+(joursAvantNoel()===0?"Joyeux Noël !":"J-"+joursAvantNoel()+" avant Noël")+'</span>':'')
     +gardeBoutonHtml()+radioHtml()+'<div class="tv-heure">'+now.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})+'</div>'
@@ -3448,7 +3450,7 @@ var GARDE_TOURS={10:2,20:3,30:4};
 var GARDE_BULLES={go:["Allez, on lâche rien !","C’est parti, à fond !","On y va, en équipe !"],mi:["La moitié ! On garde le rythme !","Respirez, vous gérez !","C’est dur ? C’est que ça marche !"],
   recup:["Bien joué ! Soufflez un coup.","Récup : une gorgée d’eau si besoin.","Propre ! On enchaîne bientôt."]};
 function gardeVid(k,c){return "img/garde/"+k+"-"+(c||GARDE.R.coach)+".mp4"}
-function gardeBoutonHtml(){return '<button class="tv-garde-btn" onclick="event.stopPropagation();gardeOuvrir()" title="Lancer une séance guidée">🚒 Séance de garde</button>'}
+function gardeBoutonHtml(){return '<button class="tv-garde-btn" onclick="event.stopPropagation();gardeOuvrir()" title="Lancer une Séance de garde guidée">🚒<span> Séance</span></button>'}
 function gardeEl(){var el=document.getElementById("tvGarde");if(!el){el=document.createElement("div");el.id="tvGarde";el.className="hidden";document.body.appendChild(el)}return el}
 function gardeSauver(){try{localStorage.setItem("icp_garde",JSON.stringify(GARDE.R))}catch(e){}}
 function gardeHaut(titre,sous){
