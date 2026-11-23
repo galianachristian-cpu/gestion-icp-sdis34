@@ -3163,6 +3163,12 @@ function radioJouer(){
   radioEtat="charge";radioMaj();radioMemo(true);
   var p=radioAudio.play();if(p&&p.catch)p.catch(function(e){if(e&&e.name==="NotAllowedError"){radioEtat="bloque";radioMaj()}});
 }
+// Sur certaines télés, le navigateur ne joue qu'un son à la fois : quand le Sergent-Chef parle, la radio est mise
+// en pause. Après chaque annonce (et par sécurité toutes les 30 s), on la relance si elle devait jouer.
+function radioReprendre(){
+  if(!radioAudio||radioEtat==="off"||radioEtat==="bloque"||!radioVoulue())return;
+  if(radioAudio.paused||radioAudio.ended)radioJouer();
+}
 function radioCouper(){clearTimeout(radioRelance);radioEtat="off";if(radioAudio){radioAudio.pause();radioAudio.removeAttribute("src");try{radioAudio.load()}catch(e){}}radioMemo(false);radioMaj()}
 function radioBasculer(){if(radioEtat==="joue"||radioEtat==="charge")radioCouper();else radioJouer()}
 function radioChanger(k){radioIdx=(radioIdx+k+RADIOS.length)%RADIOS.length;if(radioEtat==="off"||radioEtat==="bloque"){radioMemo(false);radioMaj();try{localStorage.setItem("icp_radio_idx",String(radioIdx))}catch(e){}}else radioJouer()}
@@ -3233,7 +3239,7 @@ function radioDucker(bas){
 function tvSonPossible(){return document.body.classList.contains("tv-on")&&!tvEstNuit()}
 function sgtDire(seq){if(!tvSonPossible()||GARDE.on||!seq||sgtFile.length>3)return;sgtFile.push(seq);if(!sgtOcc)sgtSuivant()}
 function sgtSuivant(){
-  var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);return}
+  var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);setTimeout(radioReprendre,300);return}
   sgtOcc=true;radioDucker(true);if(!sgtA){sgtA=new Audio();sgtA.preload="auto"}
   var i=0,a=sgtA;
   var joue=function(){clearTimeout(sgtGarde);if(i>=seq.length){setTimeout(sgtSuivant,700);return}
@@ -3366,7 +3372,12 @@ function fetesTvHtml(){
   if(M)h+='<div class="tv-carte tv-fete mois"><span class="tv-fete-ic">🏅</span><div><small>'+titreDuMois(M.pid)+' '+deMois(M.mois)+'</small><b>'+dfsEsc(dfsNom(M.pid))+'</b><em>'+M.jours+' jours d\'entraînement</em></div></div>';
   return h;
 }
-setInterval(function(){if(!document.body.classList.contains("tv-on"))return;tvNuitTic();sgtTic();chargerMeteo()},30000);
+setInterval(function(){if(!document.body.classList.contains("tv-on"))return;tvNuitTic();sgtTic();chargerMeteo();radioVeille()},30000);
+function radioVeille(){
+  var garde=GARDE.voix&&!GARDE.voix.paused;if(sgtOcc||garde||tvEstNuit())return;
+  if(radioAudio&&radioAudio.volume<0.99)radioDucker(false);
+  radioReprendre();
+}
 // Quand l'écran est plus petit que prévu (barre du navigateur de la TV), on rétrécit pour que tout tienne
 function tvAjuster(){
   document.querySelectorAll("#modeTV .tv-defi,#modeTV .tv-d").forEach(function(el){
@@ -3493,12 +3504,12 @@ function gardePlan(){
   return {P:P,rec:n.rec,tours:tours};
 }
 // ----- voix du coach : messages enregistrés (audio/garde/h ou f), la radio baisse pendant qu'il parle -----
-function gardeTaire(){GARDE.file=[];try{if(GARDE.voix){GARDE.voix.pause();GARDE.voix.onended=null}}catch(e){}radioDucker(false)}
+function gardeTaire(){GARDE.file=[];try{if(GARDE.voix){GARDE.voix.pause();GARDE.voix.onended=null}}catch(e){}radioDucker(false);setTimeout(radioReprendre,300)}
 function gardeDire(seq){
   if(tvEstNuit())return;GARDE.file=seq.slice();
   if(!GARDE.voix){GARDE.voix=new Audio();GARDE.voix.preload="auto"}
   var a=GARDE.voix;radioDucker(true);
-  var suivant=function(){var c=GARDE.file.shift();if(!c){radioDucker(false);return}
+  var suivant=function(){var c=GARDE.file.shift();if(!c){radioDucker(false);setTimeout(radioReprendre,300);return}
     a.onended=function(){setTimeout(suivant,120)};a.onerror=suivant;a.src="audio/garde/"+GARDE.R.coach+"/"+c+".mp3";
     var p=a.play();if(p&&p.catch)p.catch(function(){GARDE.file=[];radioDucker(false)})};
   try{a.pause()}catch(e){}setTimeout(suivant,radioEtat==="joue"?350:0);
