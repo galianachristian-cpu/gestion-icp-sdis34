@@ -1187,6 +1187,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .gd-qr .gd-qrsvg{width:100%;height:auto;display:block;border-radius:1.4vh}
 .gd-qr b{display:block;font-family:var(--titre);font-size:3.6vh;margin-top:1.4vh}
 .gd-qr span{font-size:1.9vh;color:var(--muted);line-height:1.35;display:block;margin-top:.6vh}
+.rame-carte a.pbtn{text-decoration:none;display:inline-block;color:inherit}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -6891,6 +6892,22 @@ function dfsTexteAnnonce(d){
   var hu=HUMOUR[themeHumour(d)];
   return "⏳ Ça commence "+quand+", le "+jour+" !"+(avantLundi?" Vous avez le week-end pour vous préparer psychologiquement 😄":hu?" "+phraseDuJour(hu.avenir,d.id):" Préparez-vous 💪");
 }
+// ----- Rame en direct : le Sergent-Chef rame avec toi (page rame.html, rameur Concept2 PM5 ou SkiErg en Bluetooth) -----
+function lienRame(){return lienAppli().replace(/[?#].*$/,"").replace(/index\.html$/,"").replace(/\/?$/,"/")+"rame.html"}
+function estIphoneSansBT(){return /iPhone|iPad|iPod/.test(navigator.userAgent)&&!navigator.bluetooth}
+function rameCopier(){var u=lienRame();
+  var ok=function(){showToast("📋 Adresse copiée : colle-la dans l'appli Bluefy","success")};
+  try{navigator.clipboard.writeText(u).then(ok,function(){prompt("Copie cette adresse et colle-la dans Bluefy :",u)})}catch(e){prompt("Copie cette adresse et colle-la dans Bluefy :",u)}}
+function rameCarteHtml(){
+  var ios=estIphoneSansBT();
+  return '<div class="pcard rame-carte"><div class="ptitre"><i>🚣</i> Rame en direct</div>'
+    +'<p class="psous" style="font-size:14px">Relie ton téléphone au <b>rameur</b> (écran PM5) ou au <b>SkiErg</b> en Bluetooth : le Sergent-Chef ou la Sergente-Chef rame avec toi sur la mer, contre un bateau fantôme.</p>'
+    +(ios?'<div class="note" style="margin:8px 0">🍏 <b>Sur iPhone</b>, Safari ne sait pas se connecter au rameur. Installe l\'appli gratuite <b>Bluefy</b> (App Store), puis ouvre la page <b>dans Bluefy</b> : copie l\'adresse avec le bouton ci-dessous et colle-la dans Bluefy.</div>':'')
+    +'<div class="prow" style="margin-top:10px;flex-wrap:wrap;gap:8px">'
+    +(ios?'<button class="pbtn pri" onclick="rameCopier()">📋 Copier l\'adresse pour Bluefy</button><a class="pbtn" href="'+lienRame()+'?demo">▶️ Essayer sans rameur</a>'
+         :'<a class="pbtn pri" href="'+lienRame()+'">🚣 Ouvrir Rame en direct</a>')
+    +'<a class="pbtn" href="'+lienRame().replace("rame.html","tuto-rame.html")+'">❓ Comment se connecter</a></div></div>';
+}
 function renderDefis(){
   var box=document.getElementById("dfsContent");if(!box)return;
   if(!dfsCharge){chargerDefis();box.innerHTML='<div class="pcard">Chargement…</div>';return}
@@ -6910,7 +6927,7 @@ function renderDefis(){
         +'<i>'+(themeHumour(d)?iconeDefi(d).replace('ic-illu','ic-theme'):themeIc(d.theme,t.ic))+'</i>'+dfsEsc(d.titre)+'</button>'}).join("")+'</div>';
     h+=dfsCarte(L[dfsSel]);
   }
-  box.innerHTML=h+(pannesChargees?salleHtml():'');
+  box.innerHTML=h+rameCarteHtml()+(pannesChargees?salleHtml():'');
   dfsEnterFx();
 }
 function dfsVoir(i){dfsSel=i;renderDefis()}
