@@ -44,6 +44,15 @@ html,body{margin:0;height:100%;background:#0b1d2e;color:var(--txt);font-family:I
 .etat{font-size:13px;color:var(--muet);margin-top:8px}
 .qualite{position:fixed;left:8px;bottom:6px;font-size:10px;color:rgba(255,255,255,.35);pointer-events:none}
 @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.cmd{top:auto;bottom:178px}}
+.direct{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:4;background:linear-gradient(135deg,#dc2626,#ea580c);color:#fff;font-weight:900;padding:8px 20px;border-radius:99px;font-size:clamp(15px,2.8vh,34px);box-shadow:0 6px 24px rgba(220,38,38,.45);display:none;white-space:nowrap}
+.direct.on{display:block}
+body.ecran .cmd{display:none}
+.att{text-align:center}.att h1{font-size:clamp(26px,5vh,56px)}.att p{font-size:clamp(14px,2.4vh,26px)}
+.att .qr{width:clamp(140px,26vh,300px);margin:14px auto 6px;background:#fff;border-radius:14px;padding:8px}.att .qr svg{display:block;width:100%;height:auto}
+.att .vague{display:inline-block;animation:attV 1.6s ease-in-out infinite}@keyframes attV{50%{transform:translateY(-6px)}}
+.tvopt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0;padding:10px;border-radius:14px;background:rgba(234,88,12,.12);border:1px solid rgba(234,88,12,.35)}
+.tvopt input[type=text]{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;width:150px}
+.fin-qr{display:flex;gap:16px;align-items:center;justify-content:center;margin-top:12px;text-align:left}.fin-qr .qr{width:150px;background:#fff;border-radius:12px;padding:6px}.fin-qr .qr svg{display:block;width:100%;height:auto}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -82,13 +91,18 @@ html,body{margin:0;height:100%;background:#0b1d2e;color:var(--txt);font-family:I
     <label>Personnage <select id="choixPerso"><option value="h">👨‍🚒 Sergent-Chef</option><option value="f">👩‍🚒 Sergente-Chef</option></select></label>
     <label>Fantôme <select id="choixFant"><option value="135">2:15 /500 m</option><option value="125" selected>2:05 /500 m</option><option value="115">1:55 /500 m</option><option value="105">1:45 /500 m</option></select></label>
   </div>
+  <div class="tvopt"><label style="color:#fff"><input type="checkbox" id="choixTV" checked> 📺 Afficher ma séance sur la télé de la salle</label><input type="text" id="choixPrenom" placeholder="Ton prénom" maxlength="20" autocomplete="given-name"></div>
   <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter la machine</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
   <div class="ligne"><a href="tuto-rame.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Comment connecter le rameur ou le SkiErg ?</a></div>
   <div class="etat" id="etat"></div>
 </div></div>
+<div class="panneau cache" id="attente"><div class="boite att"><h1>📺 RAME EN <b>DIRECT</b></h1><p><span class="vague">🚣</span> En attente d'un rameur…</p><div class="qr" id="attQR"></div><p style="font-size:clamp(13px,2vh,22px);color:var(--muet)">Scanne avec ton téléphone, connecte le rameur :<br>ta séance s'affiche ici, en direct, pour toute la salle.</p></div></div>
+<div class="direct" id="direct"></div>
 <div class="panneau cache" id="fin"><div class="boite" id="finBoite"></div></div>
 <div class="qualite" id="qualite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { Water } from 'three/addons/objects/Water.js';
@@ -587,7 +601,7 @@ function majHud(d,dFant,tps){
 function finir(){if(etat.fini)return;etat.fini=true;
   const p=etat.temps/(etat.distance/500),gagne=etat.temps<=etat.objectif*etat.fantPace/500;
   document.getElementById('finBoite').innerHTML='<h1>🏁 ARRIVÉE AU <b>PHARE</b></h1><p style="font-size:17px;color:#fff"><b>'+etat.distance.toLocaleString('fr-FR')+' m</b> en <b>'+fmt(etat.temps)+'</b> · moyenne <b>'+fmt(p)+' /500 m</b></p>'
-    +'<p>'+(gagne?'👻 Tu as battu le fantôme. Le Sergent-Chef range son sifflet… pour cette fois.':'👻 Le fantôme est arrivé avant toi. Il t\'attend pour la revanche.')+'</p>'
+    +'<p>'+(gagne?'👻 Tu as battu le fantôme. '+(document.getElementById('choixPerso').value==='f'?'La Sergente-Chef':'Le Sergent-Chef')+' range son sifflet… pour cette fois.':'👻 Le fantôme est arrivé avant toi. Il t\'attend pour la revanche.')+'</p>'
     +'<p class="etat">Dans la version finale, tes mètres seront ajoutés tout seuls au défi du centre.</p><div class="ligne"><button class="pri" onclick="location.reload()">🔁 Recommencer</button></div>';
   document.getElementById('fin').classList.remove('cache');ditSergent(gagne?"Respect ! Le phare est à toi.":"Arrivé ! Le fantôme a gagné cette manche.")}
 
@@ -604,6 +618,69 @@ const q=new URLSearchParams(location.search);if(q.has('qualite'))qualiteMax=qual
 if(q.has('demo')){etat.source='simu';setTimeout(demarrer,50)}
 if(q.has('tv')){cam=4}
 if(q.get('perso')==='f'){document.getElementById('choixPerso').value='f';choisirPerso(true)}
+
+// ===================== EN DIRECT SUR LA TÉLÉ DE LA SALLE =====================
+// Le téléphone relié au rameur envoie sa séance chaque seconde (Supabase Realtime, canal « rame-salle », rien n'est enregistré).
+// La télé ouvre rame.html?ecran : elle attend, puis rejoue la séance en direct (même mer, même coach, même fantôme).
+const SUPABASE_KEY = 'sb_publishable_Mb2oAqSqdnaxLV7mzQl5Yw_QEhjRbIa';
+const SB=(window.supabase&&window.supabase.createClient)?window.supabase.createClient('https://efowmupcstdccmfxniot.supabase.co',SUPABASE_KEY,{realtime:{params:{eventsPerSecond:5}}}):null;
+const CANAL='rame-salle',ECRAN=q.has('ecran'),moiId=Math.random().toString(36).slice(2,10);
+const lienPage=n=>location.origin+location.pathname.replace(/[^/]*$/,'')+n;
+function qrHtml(t){try{const c=qrcode(0,'M');c.addData(t);c.make();return c.createSvgTag({cellSize:6,margin:1,scalable:true})}catch(e){return ''}}
+// ----- côté téléphone -----
+const champPrenom=document.getElementById('choixPrenom');
+try{champPrenom.value=q.get('p')||localStorage.getItem('rame_prenom')||''}catch(e){}
+let canalTx=null,txPrenom='';
+function diffuserPret(){
+  if(!SB||ECRAN||canalTx||!document.getElementById('choixTV').checked)return;
+  if(etat.source==='simu'&&!q.has('diffuser'))return;          // la simulation reste sur le téléphone (sauf démo)
+  txPrenom=(champPrenom.value||'').trim().slice(0,20);try{localStorage.setItem('rame_prenom',txPrenom)}catch(e){}
+  canalTx=SB.channel(CANAL,{config:{broadcast:{self:false,ack:false}}});canalTx.subscribe();
+}
+function envoyer(){
+  if(!canalTx||!etat.enCours)return;
+  canalTx.send({type:'broadcast',event:'etat',payload:{id:moiId,prenom:txPrenom,perso:document.getElementById('choixPerso').value,objectif:etat.objectif,fantPace:etat.fantPace,
+    distance:Math.round(etat.distance*10)/10,temps:Math.round(etat.temps*10)/10,spm:Math.round(etat.spm),pace:Math.round(etat.pace*10)/10,watts:Math.round(etat.watts),vitesse:Math.round(etat.vitesse*100)/100,fini:etat.fini}});
+}
+setInterval(envoyer,1000);
+demarrer=(f=>function(){f();diffuserPret()})(demarrer);
+finir=(f=>function(){const deja=etat.fini;f();if(!deja){envoyer();if(canalTx&&!ECRAN)document.getElementById('finBoite').insertAdjacentHTML('beforeend','<p class="etat">📺 Ta séance est affichée sur la télé de la salle.</p>')}})(finir);
+// ----- côté télé -----
+let suivi=null,dernierRecu=0,prenomSuivi='',retourT=null;
+function retourAttente(){location.reload()}
+if(ECRAN){
+  document.body.classList.add('ecran');cam=4;document.getElementById('qui').textContent='Télé de la salle · en direct';
+  document.getElementById('accueil').classList.add('cache');document.getElementById('attente').classList.remove('cache');
+  document.getElementById('attQR').innerHTML=qrHtml(lienPage('rame.html'));
+  if(!SB){document.querySelector('#attente p').textContent='⚠️ Pas de connexion au serveur.'}
+  else SB.channel(CANAL,{config:{broadcast:{self:false}}}).on('broadcast',{event:'etat'},({payload:p})=>{
+    if(!p||typeof p!=='object')return;const now=performance.now();
+    if(!suivi){
+      if(p.fini)return;suivi=p.id;prenomSuivi=String(p.prenom||'').slice(0,20);
+      document.getElementById('choixPerso').value=p.perso==='f'?'f':'h';
+      const so=document.getElementById('choixObj');if(![...so.options].some(o=>+o.value===+p.objectif))so.add(new Option(p.objectif+' m',p.objectif));so.value=String(p.objectif);
+      const sf=document.getElementById('choixFant');if(![...sf.options].some(o=>+o.value===+p.fantPace))sf.add(new Option(fmt(p.fantPace),p.fantPace));sf.value=String(p.fantPace);
+      etat.source='distant';etat.ftms=true;etat.ftmsTemps=false;etat.temps=+p.temps||0;
+      document.getElementById('attente').classList.add('cache');demarrer();
+      const d=document.getElementById('direct');d.textContent='🚣 '+(prenomSuivi?prenomSuivi+' rame':'Ça rame')+' en direct !';d.classList.add('on');
+      document.getElementById('qui').textContent='En direct'+(prenomSuivi?' · '+prenomSuivi:'');ditSergent(prenomSuivi?'Attention tout le monde : '+prenomSuivi+' est sur le rameur !':'Un rameur est en piste ! Encouragez-le !');
+    }
+    if(p.id!==suivi)return;dernierRecu=now;
+    pm5DistReelle=+p.distance||0;pm5Derniere=now;etat.spm=+p.spm||0;if(+p.pace>0)etat.pace=+p.pace;etat.watts=+p.watts||0;etat.vitesse=+p.vitesse||0;
+    if(Math.abs(etat.temps-(+p.temps||0))>1.5)etat.temps=+p.temps||0;
+    if(p.fini&&!etat.fini){etat.distance=+p.distance||etat.distance;etat.temps=+p.temps||etat.temps;finir()}
+  }).subscribe();
+  // fin sur la télé : résultat, QR « Ajoute ta séance », retour à l'attente
+  finir=(f=>function(){if(etat.fini)return;f();
+    const qui=(prenomSuivi||'Le rameur').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),km=(etat.distance/1000).toLocaleString('fr-FR',{maximumFractionDigits:2});
+    document.getElementById('finBoite').querySelector('.etat').outerHTML='<div class="fin-qr"><div class="qr">'+qrHtml(lienPage('?ajout'))+'</div><div><b style="font-size:18px">'+qui+', ajoute tes '+km+' km au défi !</b><p class="etat" style="margin:6px 0 0">Scanne avec ton téléphone.</p></div></div><p class="etat" id="retourTxt">Retour à l\'attente dans 45 s</p>';
+    document.querySelector('#finBoite .ligne').remove();document.getElementById('direct').classList.remove('on');
+    let n=45;retourT=setInterval(()=>{n--;const r=document.getElementById('retourTxt');if(r)r.textContent='Retour à l\'attente dans '+n+' s';if(n<=0)retourAttente()},1000)})(finir);
+  // plus de nouvelles du téléphone : on prévient puis on revient à l'attente
+  setInterval(()=>{if(!suivi||etat.fini)return;const s=(performance.now()-dernierRecu)/1000;
+    if(s>20&&s<23)ditSergent('Liaison perdue avec le téléphone… '+(prenomSuivi||'le rameur')+', tu es toujours là ?');
+    if(s>45)retourAttente()},2000);
+}
 placerPhare();appliquerQualite();redim();
 camera.position.set(4.2,2.3,9.5);
 requestAnimationFrame(boucle);
