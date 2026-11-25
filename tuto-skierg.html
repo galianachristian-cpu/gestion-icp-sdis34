@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connecter le SkiErg · Rame en direct</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Inter:wght@500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<style>
+:root{--rouge:#c81e1e;--or:#f2b52a;--encre:#1c1917;--gris:#57534e;--fond:#fafaf9}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--encre);background:#e7e5e4}
+.page{max-width:820px;margin:16px auto;background:var(--fond);border-radius:18px;padding:28px 30px 22px;box-shadow:0 6px 30px rgba(0,0,0,.12)}
+.tete{display:flex;align-items:center;gap:18px;border-bottom:4px solid var(--rouge);padding-bottom:14px}
+.tete img{width:96px;height:auto}
+h1{font-family:Oswald,sans-serif;font-size:34px;margin:0;letter-spacing:.02em;line-height:1.05}h1 b{color:var(--rouge)}
+.tete p{margin:4px 0 0;color:var(--gris);font-weight:700}
+.qr{margin-left:auto;text-align:center;font-size:11px;font-weight:800;color:var(--gris)}.qr svg{width:112px;height:112px;display:block}
+h2{font-family:Oswald,sans-serif;font-size:21px;margin:18px 0 8px;display:flex;align-items:center;gap:8px}
+h2 span{background:var(--rouge);color:#fff;border-radius:8px;padding:2px 9px;font-size:15px}
+.deux{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.carte{background:#fff;border:2px solid #e7e5e4;border-radius:14px;padding:12px 14px}
+.carte.pm5{border-color:#c9b037}.carte.heu{border-color:#3b6fb6}
+.etapes{display:grid;gap:10px}.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#3b6fb6;color:#fff;font-weight:800;font-size:13px;margin-right:6px}
+.noel{margin-top:14px;background:#fef2f2;border:2px solid #fca5a5;border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.45}
+.carte h3{margin:0 0 6px;font-size:16px}
+ol{margin:0;padding-left:20px}li{margin:5px 0;line-height:1.35;font-size:14.5px}
+.tel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tel .carte p{margin:0;font-size:14.5px;line-height:1.4}
+.astuce{margin-top:14px;background:#fff7e0;border:2px dashed var(--or);border-radius:14px;padding:10px 14px;font-size:14px;line-height:1.45}
+.astuce b{color:var(--rouge)}
+.pied{margin-top:14px;display:flex;justify-content:space-between;color:var(--gris);font-size:12px;font-weight:700}
+kbd{font-family:inherit;background:#1c1917;color:#fff;border-radius:6px;padding:1px 7px;font-size:13px;white-space:nowrap}
+.imp{text-align:center;margin:10px}.imp button{font:800 15px Inter;border:0;border-radius:12px;padding:10px 18px;background:var(--rouge);color:#fff;cursor:pointer}
+@media (max-width:640px){.deux,.tel{grid-template-columns:1fr}.qr{display:none}h1{font-size:27px}.page{padding:18px}}
+@media print{body{background:#fff}.page{box-shadow:none;margin:0;max-width:none;border-radius:0;padding:12mm 12mm 8mm}.imp{display:none}@page{size:A4;margin:0}}
+</style>
+</head>
+<body>
+<div class="imp"><button onclick="print()">🖨️ Imprimer l'affiche</button></div>
+<div class="page">
+  <div class="tete">
+    <img src="img/mascotte/grand/sergent-fier.webp" alt="">
+    <div><h1>🎿 LE <b>SKIERG</b><br>se connecter en Bluetooth</h1><p>Tes tirages font avancer le bateau de Rame en direct, et s'affichent sur la télé de la salle.</p></div>
+    <div class="qr"><div id="qr"></div>Scanne pour ouvrir</div>
+  </div>
+
+  <h2><span>1</span> Ton téléphone (une seule fois)</h2>
+  <div class="tel">
+    <div class="carte"><h3>🤖 Android</h3><p>Ouvre le lien avec <b>Chrome</b>. Active le <b>Bluetooth</b> et la <b>localisation</b> (Android en a besoin pour trouver la machine).</p></div>
+    <div class="carte"><h3>🍏 iPhone</h3><p>Safari ne sait pas parler au SkiErg. Installe l'appli gratuite <b>Bluefy</b> (App Store).<br>Dans l'appli du centre, onglet <b>Défis</b> → <kbd>📋 Copier l'adresse pour Bluefy</kbd>, colle-la dans Bluefy et mets-la en <b>favori</b>.</p></div>
+  </div>
+
+  <h2><span>2</span> Réveiller le SkiErg (écran Heubozen)</h2>
+  <div class="carte"><ol>
+    <li>Donne <b>2 ou 3 tirages</b> sur les poignées : l'écran s'allume.</li>
+    <li>Si l'écran a un <b>symbole Bluetooth</b>, il doit <b>clignoter</b> : la machine attend un téléphone.</li>
+    <li><b>Une seule connexion à la fois</b> : si quelqu'un est relié au SkiErg avec une autre appli (Kinomap, Zwift, l'appli de la marque…), il doit la fermer d'abord.</li></ol></div>
+
+  <h2><span>3</span> Se connecter</h2>
+  <div class="carte"><ol>
+    <li>Ouvre <b>Rame en direct</b> (QR code ci-dessus, ou carte « Rame en direct » de l'onglet Défis).</li>
+    <li>Choisis ton <b>objectif</b>, ton <b>personnage</b> et le <b>fantôme</b>. Écris ton <b>prénom</b> et laisse la case <b>📺 télé de la salle</b> cochée si tu veux t'afficher.</li>
+    <li>Appuie sur <kbd>🔗 Connecter la machine</kbd>.</li>
+    <li>Dans la liste, choisis <b>le SkiErg</b> : son nom est souvent celui de la marque ou un code (par exemple « FS-… » ou « SKI… »). <b>Pas « PM5 »</b> : ça, c'est le rameur.</li>
+    <li>Appuie sur <b>Associer</b>, puis <b>tire sur les poignées</b> : c'est parti !</li></ol></div>
+
+  <h2><span>4</span> Pendant et après</h2>
+  <div class="carte"><ol>
+    <li>Pose le téléphone sur le support, <b>écran allumé</b>, et ne change pas d'appli pendant la séance.</li>
+    <li>À l'arrivée, <b>scanne le QR code</b> pour ajouter tes km au <b>défi du centre</b>.</li></ol></div>
+
+  <div class="noel">🎅 <b>Défi de décembre : « Aidons le Père Noël à skier »</b>. Le SkiErg est LA machine du mois : chaque km de ski compte pour emmener le Père Noël jusqu'au chalet !</div>
+
+  <div class="astuce">🎖️ <b>Ça ne marche pas ?</b>
+  <br>• Le SkiErg <b>n'apparaît pas</b> dans la liste : donne 10 secondes de tirages, éteins et rallume le Bluetooth du téléphone, rapproche-toi de l'écran, et vérifie qu'aucune autre appli n'est reliée.
+  <br>• Message <b>« Connexion impossible »</b> : fais une capture d'écran et envoie-la à l'admin.
+  <br>• Pour essayer sans machine : bouton <kbd>▶️ Essayer en simulation</kbd>.
+  <br><i>« Pas de neige ? Pas grave. On skie quand même. » — Le Sergent-Chef</i></div>
+
+  <div class="pied"><span>CIS CRUZY-QUARANTE · SDIS 34</span><span id="lien"></span></div>
+</div>
+<script>
+const url='https://galianachristian-cpu.github.io/gestion-icp-sdis34/rame.html';
+document.getElementById('lien').textContent=url.replace(/^https?:\/\//,'');
+try{const q=qrcode(0,'M');q.addData(url);q.make();document.getElementById('qr').innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){}
+</script>
+</body>
+</html>

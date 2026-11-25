@@ -6906,7 +6906,7 @@ function rameCarteHtml(){
     +'<div class="prow" style="margin-top:10px;flex-wrap:wrap;gap:8px">'
     +(ios?'<button class="pbtn pri" onclick="rameCopier()">📋 Copier l\'adresse pour Bluefy</button><a class="pbtn" href="'+lienRame()+'?demo">▶️ Essayer sans rameur</a>'
          :'<a class="pbtn pri" href="'+lienRame()+'">🚣 Ouvrir Rame en direct</a>')
-    +'<a class="pbtn" href="'+lienRame().replace("rame.html","tuto-rame.html")+'">❓ Comment se connecter</a></div></div>';
+    +'<a class="pbtn" href="'+lienRame().replace("rame.html","tuto-rame.html")+'">❓ Connecter le rameur</a><a class="pbtn" href="'+lienRame().replace("rame.html","tuto-skierg.html")+'">❓ Connecter le SkiErg</a></div></div>';
 }
 function renderDefis(){
   var box=document.getElementById("dfsContent");if(!box)return;

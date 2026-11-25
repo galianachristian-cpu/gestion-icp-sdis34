@@ -93,7 +93,7 @@ body.ecran .cmd{display:none}
   </div>
   <div class="tvopt"><label style="color:#fff"><input type="checkbox" id="choixTV" checked> 📺 Afficher ma séance sur la télé de la salle</label><input type="text" id="choixPrenom" placeholder="Ton prénom" maxlength="20" autocomplete="given-name"></div>
   <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter la machine</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
-  <div class="ligne"><a href="tuto-rame.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Comment connecter le rameur ou le SkiErg ?</a></div>
+  <div class="ligne" style="gap:14px"><a href="tuto-rame.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Connecter le rameur</a><a href="tuto-skierg.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Connecter le SkiErg</a></div>
   <div class="etat" id="etat"></div>
 </div></div>
 <div class="panneau cache" id="attente"><div class="boite att"><h1>📺 RAME EN <b>DIRECT</b></h1><p><span class="vague">🚣</span> En attente d'un rameur…</p><div class="qr" id="attQR"></div><p style="font-size:clamp(13px,2vh,22px);color:var(--muet)">Scanne avec ton téléphone, connecte le rameur :<br>ta séance s'affiche ici, en direct, pour toute la salle.</p></div></div>
@@ -390,7 +390,10 @@ async function connecterPM5(){
 
 // Rameur standard FTMS (service 0x1826, données 0x2AD1 « Rower Data »)
 async function connecterFTMS(gatt,dev){
-  const srv=await gatt.getPrimaryService(0x1826),c=await srv.getCharacteristic(0x2AD1);
+  const srv=await gatt.getPrimaryService(0x1826);
+  // rameur (Rower Data 0x2AD1) ; sinon SkiErg et machines « elliptiques » (Cross Trainer Data 0x2ACE)
+  let c=null;try{c=await srv.getCharacteristic(0x2AD1)}catch(x){}
+  if(!c){const ce=await srv.getCharacteristic(0x2ACE);await lireCrossTrainer(ce,dev);return}
   c.addEventListener('characteristicvaluechanged',ev=>{const v=ev.target.value;let i=2;const f=v.getUint16(0,true);
     const u8=()=>v.getUint8(i++),u16=()=>{const x=v.getUint16(i,true);i+=2;return x},s16=()=>{const x=v.getInt16(i,true);i+=2;return x},u24=()=>{const x=v.getUint8(i)|v.getUint8(i+1)<<8|v.getUint8(i+2)<<16;i+=3;return x};
     try{
@@ -408,6 +411,31 @@ async function connecterFTMS(gatt,dev){
   });
   await c.startNotifications();
   dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume son Bluetooth !")});
+  etat.source='pm5';etat.ftms=true;document.getElementById('qui').textContent='Relié à '+(dev.name||'la machine');demarrer();
+}
+
+// Machine « elliptique » / SkiErg : Cross Trainer Data (0x2ACE), drapeaux sur 3 octets
+async function lireCrossTrainer(c,dev){
+  c.addEventListener('characteristicvaluechanged',ev=>{const v=ev.target.value;let i=3;const f=v.getUint8(0)|v.getUint8(1)<<8|v.getUint8(2)<<16;
+    const u8=()=>v.getUint8(i++),u16=()=>{const x=v.getUint16(i,true);i+=2;return x},s16=()=>{const x=v.getInt16(i,true);i+=2;return x},u24=()=>{const x=v.getUint8(i)|v.getUint8(i+1)<<8|v.getUint8(i+2)<<16;i+=3;return x};
+    try{
+      if(!(f&1)){const k=u16()/100/3.6;etat.vitesse=k;etat.pace=k>0.2?500/k:etat.pace} // vitesse (0,01 km/h) -> m/s et rythme /500 m
+      if(f&2)u16();                                   // vitesse moyenne
+      if(f&4){pm5DistReelle=u24();pm5Derniere=performance.now()} // distance totale (m)
+      if(f&8){const spm=u16();u16();etat.spm=spm}     // pas (ou tirages) par minute, cadence moyenne
+      if(f&16)u16();                                  // nombre de foulées
+      if(f&32){u16();u16()}                           // dénivelé
+      if(f&64){s16();s16()}                           // inclinaison, rampe
+      if(f&128)s16();                                 // résistance
+      if(f&256)etat.watts=Math.max(0,s16());          // puissance instantanée
+      if(f&512)s16();                                 // puissance moyenne
+      if(f&1024){u16();u16();u8()}                    // calories
+      if(f&2048)u8();if(f&4096)u8();                  // pouls, MET
+      if(f&8192){etat.temps=u16();etat.ftmsTemps=true}// temps écoulé (s)
+    }catch(x){}
+  });
+  await c.startNotifications();
+  dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le SkiErg. Tire un coup pour le réveiller !")});
   etat.source='pm5';etat.ftms=true;document.getElementById('qui').textContent='Relié à '+(dev.name||'la machine');demarrer();
 }
 
