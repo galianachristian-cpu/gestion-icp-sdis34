@@ -280,6 +280,11 @@ function chargerPerso(B,fichier){
     const bassin0=os.bassin.getWorldPosition(new THREE.Vector3());
     habiller(m);B.g.add(m);
     B.perso={m,os,L,bassin0,piedsZ:-0.08+0.95*(L.cuisse+L.tibia)};
+    // sommet du casque (moyenne des points les plus hauts), mémorisé dans le repère de l'os de la tête : la mouette s'y pose
+    try{m.updateMatrixWorld(true);const pts=[];let ymax=-1e9;m.traverse(o=>{if(!o.isMesh||o.userData.contour)return;const P=o.geometry.attributes.position,v=new THREE.Vector3();
+        for(let i=0;i<P.count;i+=3){v.fromBufferAttribute(P,i).applyMatrix4(o.matrixWorld);pts.push(v.clone());if(v.y>ymax)ymax=v.y}});
+      const haut=pts.filter(v=>v.y>ymax-0.035),c=new THREE.Vector3();haut.forEach(v=>c.add(v));c.divideScalar(Math.max(1,haut.length));c.y=ymax;
+      if(os.tete)B.perso.casque=os.tete.worldToLocal(c.clone())}catch(e){}
     // les membres simples s'effacent derrière le vrai personnage
     B.siege.visible=false;B.membres.forEach(x=>Object.values(x).forEach(o=>{if(o&&o.isObject3D)o.visible=false}));
   },undefined,e=>console.warn('Personnage 3D indisponible, on garde la version simple',e));
@@ -422,23 +427,67 @@ function cri(){bip(1400,0,0.08,0.08,'sawtooth');bip(1100,0.09,0.12,0.08,'sawtoot
 
 // --- 1) Le camion de pompiers flottant : il croise le bateau, gyrophares et pin-pon ---
 function fabriquerCamion(){
-  const g=new THREE.Group();const m=c=>new THREE.MeshStandardMaterial({color:c,roughness:.5});
-  const coque=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.0,8.5),m(0xc81e1e));coque.position.y=0.55;g.add(coque);
-  const bande=new THREE.Mesh(new THREE.BoxGeometry(2.64,0.18,8.55),m(0xf5f5f4));bande.position.y=0.75;g.add(bande);
-  const cab=new THREE.Mesh(new THREE.BoxGeometry(2.5,1.5,2.4),m(0xc81e1e));cab.position.set(0,1.8,-2.8);g.add(cab);
-  const vitre=new THREE.Mesh(new THREE.BoxGeometry(2.3,0.7,0.06),new THREE.MeshStandardMaterial({color:0x9fd3ff,metalness:.6,roughness:.1}));vitre.position.set(0,2.1,-4.02);g.add(vitre);
-  const caisse=new THREE.Mesh(new THREE.BoxGeometry(2.5,1.3,5.6),m(0xb91c1c));caisse.position.set(0,1.7,1.3);g.add(caisse);
-  for(const x of[-1.27,1.27]){const v=new THREE.Mesh(new THREE.BoxGeometry(0.04,0.9,5),m(0xd6d3d1));v.position.set(x,1.7,1.3);g.add(v)}
-  // échelle en guise de mât, légèrement levée
-  const ech=new THREE.Group();ech.position.set(0,2.5,3.8);ech.rotation.x=0.35;g.add(ech);
-  for(const x of[-0.45,0.45]){const r=new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,7),m(0xe7e5e4));r.position.set(x,0,-3.2);ech.add(r)}
-  for(let i=0;i<12;i++){const b=new THREE.Mesh(new THREE.BoxGeometry(0.9,0.06,0.06),m(0xe7e5e4));b.position.set(0,0,-0.2-i*0.55);ech.add(b)}
-  // gyrophares bleus qui clignotent
-  const gyros=[];for(const x of[-0.8,0.8]){const l=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.25,0.35),new THREE.MeshStandardMaterial({color:0x1d4ed8,emissive:0x3b82f6,emissiveIntensity:2}));l.position.set(x,2.68,-3.2);g.add(l);gyros.push(l)}
-  // bouées de sauvetage sur les flancs et petit drapeau
-  for(const z of[-0.5,2.5])for(const x of[-1.34,1.34]){const b=new THREE.Mesh(new THREE.TorusGeometry(0.35,0.1,8,16),m(0xf97316));b.position.set(x,1.4,z);b.rotation.y=Math.PI/2;g.add(b)}
+  // FPT du SDIS 34 (fourgon pompe-tonne) : cabine rouge, rideaux jaunes, bande « SDIS 34 », échelle sur le toit, gyrophares bleus
+  const g=new THREE.Group();
+  const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.45,metalness:.05},o));
+  const toile=(w,h,dessin)=>{const c=document.createElement('canvas');c.width=w;c.height=h;dessin(c.getContext('2d'),w,h);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;return t};
+  const ROUGE='#d71920',JAUNE='#f6c400',NOIR='#1c1917';
+  // --- flanc de la caisse : bande haute « SDIS 34 », 3 rideaux jaunes, filet jaune en bas
+  const flancCaisse=toile(1024,384,(x,W,H)=>{x.fillStyle=ROUGE;x.fillRect(0,0,W,H);
+    // bande haute à chevrons noir/jaune + « SDIS 34 »
+    x.save();x.beginPath();x.rect(40,22,250,34);x.clip();for(let i=-2;i<14;i++){x.fillStyle=i%2?NOIR:JAUNE;x.beginPath();x.moveTo(40+i*22,56);x.lineTo(62+i*22,22);x.lineTo(84+i*22,22);x.lineTo(62+i*22,56);x.fill()}x.restore();
+    x.fillStyle=JAUNE;x.fillRect(110,22,180,34);x.fillStyle=NOIR;x.font='bold 30px Arial';x.textBaseline='middle';x.fillText('SDIS 34',125,40);
+    x.fillStyle='#fff';x.fillRect(900,24,90,30);x.fillStyle='#e11d48';x.font='bold 18px Arial';x.fillText('ICP',925,40);
+    // rideaux jaunes
+    const r0=74,r1=H-60;[[24,330],[352,330],[680,320]].forEach(([x0,w])=>{x.fillStyle='#8f1116';x.fillRect(x0-6,r0-6,w+12,r1-r0+12);
+      const gr=x.createLinearGradient(0,r0,0,r1);gr.addColorStop(0,'#ffd83a');gr.addColorStop(1,'#e8b100');x.fillStyle=gr;x.fillRect(x0,r0,w,r1-r0);
+      x.strokeStyle='rgba(120,80,0,.45)';x.lineWidth=2;for(let y=r0+9;y<r1;y+=9){x.beginPath();x.moveTo(x0,y);x.lineTo(x0+w,y);x.stroke()}
+      x.fillStyle='#57534e';x.fillRect(x0+w/2-22,r1-16,44,8)});
+    x.fillStyle=JAUNE;x.fillRect(0,H-30,W,10);
+  });
+  // --- flanc de la cabine : double cabine, 2 portes vitrées, logo « Le 18 », filet jaune
+  const flancCab=(sens)=>toile(512,384,(x,W,H)=>{x.fillStyle=ROUGE;x.fillRect(0,0,W,H);
+    if(sens<0){x.translate(W,0);x.scale(-1,1)}
+    x.fillStyle='#1f2a37';x.beginPath();x.roundRect(28,40,170,130,14);x.fill();x.beginPath();x.roundRect(226,40,190,130,14);x.fill();
+    x.fillStyle='rgba(180,220,255,.35)';x.fillRect(40,52,60,105);x.fillRect(240,52,70,105);
+    x.strokeStyle='#7f1d1d';x.lineWidth=4;x.beginPath();x.moveTo(214,24);x.lineTo(214,H-40);x.moveTo(440,24);x.lineTo(440,H-40);x.stroke();
+    x.fillStyle=JAUNE;x.fillRect(0,238,W,12);x.fillRect(0,H-30,W,10);
+    x.setTransform(1,0,0,1,0,0);
+    const lx=sens<0?W-330:300;x.fillStyle='#fff';x.fillRect(lx,190,64,40);x.fillStyle=ROUGE;x.font='bold 26px Arial';x.fillText('18',lx+14,220);x.font='bold 11px Arial';x.fillText('Le',lx+4,204);
+  });
+  // --- face avant : pare-brise, calandre, phares, bande jaune
+  const face=toile(512,512,(x,W,H)=>{x.fillStyle=ROUGE;x.fillRect(0,0,W,H);
+    x.fillStyle='#1f2a37';x.beginPath();x.roundRect(30,40,W-60,190,18);x.fill();x.fillStyle='rgba(180,220,255,.3)';x.fillRect(50,55,W-100,70);
+    x.fillStyle=NOIR;x.fillRect(120,280,W-240,120);x.strokeStyle='#44403c';x.lineWidth=6;for(let y=295;y<400;y+=18){x.beginPath();x.moveTo(130,y);x.lineTo(W-130,y);x.stroke()}
+    x.fillStyle='#fef3c7';x.beginPath();x.roundRect(30,300,74,40,8);x.fill();x.beginPath();x.roundRect(W-104,300,74,40,8);x.fill();
+    x.fillStyle=JAUNE;x.fillRect(0,250,W,14);x.fillStyle='#e7e5e4';x.fillRect(0,H-60,W,40);
+  });
+  const L=9.2,lc=2.6,Wd=2.5;  // longueur, longueur cabine, largeur
+  const rouge=mat(0xd71920),noir=mat(0x1c1917,{roughness:.8}),alu=mat(0xd6d3d1,{metalness:.7,roughness:.3});
+  // caisse arrière
+  const flancG=flancCaisse,flancD=flancCaisse.clone();flancD.wrapS=THREE.RepeatWrapping;flancD.repeat.x=-1;flancD.needsUpdate=true;
+  const caisse=new THREE.Mesh(new THREE.BoxGeometry(Wd,2.3,L-lc-0.15),[mat(0xffffff,{map:flancG}),mat(0xffffff,{map:flancD}),rouge,noir,rouge,rouge]);
+  caisse.position.set(0,1.95,(lc+0.15)/2);g.add(caisse);
+  // cabine
+  const cab=new THREE.Mesh(new THREE.BoxGeometry(Wd,2.1,lc),[mat(0xffffff,{map:flancCab(1)}),mat(0xffffff,{map:flancCab(-1)}),rouge,noir,rouge,mat(0xffffff,{map:face})]);
+  cab.position.set(0,1.85,-L/2+lc/2);g.add(cab);
+  // châssis, pare-chocs et roues (à moitié dans l'eau : le camion flotte)
+  const ch=new THREE.Mesh(new THREE.BoxGeometry(Wd-0.3,0.5,L-0.4),noir);ch.position.y=0.65;g.add(ch);
+  const pc=new THREE.Mesh(new THREE.BoxGeometry(Wd+0.05,0.35,0.25),mat(0x292524));pc.position.set(0,0.75,-L/2-0.05);g.add(pc);
+  const pneu=new THREE.CylinderGeometry(0.55,0.55,0.4,24),jante=new THREE.CylinderGeometry(0.3,0.3,0.42,16);
+  for(const z of[-L/2+1.3,L/2-1.9])for(const sx of[-1,1]){const r=new THREE.Mesh(pneu,noir);r.rotation.z=Math.PI/2;r.position.set(sx*(Wd/2-0.15),0.55,z);g.add(r);
+    const j=new THREE.Mesh(jante,alu);j.rotation.z=Math.PI/2;j.position.copy(r.position);g.add(j)}
+  // dévidoir à l'arrière
+  const dev=new THREE.Mesh(new THREE.TorusGeometry(0.55,0.12,10,24),mat(0xb91c1c));dev.position.set(0,1.7,L/2+0.18);g.add(dev);
+  // échelle alu sur le toit, d'un bout à l'autre
+  const ech=new THREE.Group();ech.position.set(0,3.2,0.4);g.add(ech);
+  for(const x of[-0.35,0.35]){const r=new THREE.Mesh(new THREE.BoxGeometry(0.08,0.12,L-0.6),alu);r.position.x=x;ech.add(r)}
+  for(let i=0;i<16;i++){const b=new THREE.Mesh(new THREE.CylinderGeometry(0.025,0.025,0.7,6),alu);b.rotation.z=Math.PI/2;b.position.set(0,0,-L/2+0.6+i*0.54);ech.add(b)}
+  // gyrophares bleus (avant de la cabine et arrière de la caisse) qui clignotent
+  const gyros=[];for(const [x,z,y] of[[-0.7,-L/2+0.35,2.98],[0.7,-L/2+0.35,2.98],[0,L/2-0.3,3.15]]){
+    const l=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.18,0.26,14),new THREE.MeshStandardMaterial({color:0x1d4ed8,emissive:0x3b82f6,emissiveIntensity:2}));l.position.set(x,y,z);g.add(l);gyros.push(l)}
   // l'écume à l'avant
-  const ecume=new THREE.Mesh(new THREE.PlaneGeometry(4,3),new THREE.MeshBasicMaterial({map:texGoutte,transparent:true,opacity:.7,depthWrite:false}));ecume.rotation.x=-Math.PI/2;ecume.position.set(0,0.06,-5);g.add(ecume);
+  const ecume=new THREE.Mesh(new THREE.PlaneGeometry(4,3),new THREE.MeshBasicMaterial({map:texGoutte,transparent:true,opacity:.7,depthWrite:false}));ecume.rotation.x=-Math.PI/2;ecume.position.set(0,0.06,-L/2-1);g.add(ecume);
   g.userData={gyros};g.visible=false;return g;
 }
 const camion=fabriquerCamion();scene.add(camion);
@@ -457,7 +506,7 @@ function fabriquerMouette(){
 }
 const mouette=fabriquerMouette();scene.add(mouette);
 let mouetteEtat='attente',mouetteT=45,mouetteVitesseRef=0;const mouetteDep=new THREE.Vector3(),_tete=new THREE.Vector3();
-function teteMonde(){const B=bateau;if(B.perso&&B.perso.os.tete){B.perso.os.tete.getWorldPosition(_tete);_tete.y+=0.3}else{B.tronc.getWorldPosition(_tete);_tete.y+=1.05}return _tete}
+function teteMonde(){const B=bateau;if(B.perso&&B.perso.os.tete&&B.perso.casque){_tete.copy(B.perso.casque);B.perso.os.tete.localToWorld(_tete);_tete.y+=0.11}else if(B.perso&&B.perso.os.tete){B.perso.os.tete.getWorldPosition(_tete);_tete.y+=0.3}else{B.tronc.getWorldPosition(_tete);_tete.y+=1.05}return _tete}
 
 // --- 3) La douche surprise : immobile 10 secondes, une vague l'arrose ---
 const vague=new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,40,1,true,0,Math.PI),new THREE.MeshStandardMaterial({color:0x2a8bc0,transparent:true,opacity:.75,roughness:.2,metalness:.1,side:THREE.DoubleSide,emissive:0x0b3b5c}));
@@ -468,7 +517,7 @@ function douche(){doucheT=0;vague.visible=true;plouf();ditSergent(["Tu dors ? Ti
 function loufoque(dt,tps){
   const bz=bateau.g.position.z,v=etat.vitesse||0,vMoy=etat.pace>0&&etat.spm>2?500/etat.pace:v,actif=etat.enCours&&!etat.fini;
   // camion : apparaît loin devant, sur le côté, et croise le bateau
-  if(actif&&!camionActif&&etat.distance>camionProchain){camionActif=true;camionChante=false;camion.visible=true;camion.position.set(-13,0,bz-260);camion.rotation.y=0}
+  if(actif&&!camionActif&&etat.distance>camionProchain){camionActif=true;camionChante=false;camion.visible=true;camion.position.set(-13,0,bz-260);camion.rotation.y=Math.PI}
   if(camionActif){camion.position.z+=9*dt;camion.position.y=Math.sin(tps*1.6)*0.12;camion.rotation.z=Math.sin(tps*1.1)*0.03;
     camion.userData.gyros.forEach((l,i)=>l.material.emissiveIntensity=(Math.floor(tps*6)+i)%2?4:0.2);
     if(!camionChante&&camion.position.z>bz-70){camionChante=true;pinPon();ditSergent(["Pin-pon ! Les collègues de l'équipe nautique !","Même le FPT va plus vite que toi. Allez !","Salut les gars ! Non, je ne monte pas, je rame."][Math.floor(Math.random()*3)])}
@@ -479,12 +528,12 @@ function loufoque(dt,tps){
   else{const cible=teteMonde();
     if(mouetteEtat==='arrive'){ // l'écart à la tête se réduit, dans le repère du bateau (qui avance pendant ce temps)
       mouetteDep.multiplyScalar(Math.max(0,1-dt*1.4));const l=mouetteDep.length();if(l>0.01)mouetteDep.addScaledVector(mouetteDep,-Math.min(1,dt*1.2/l));
-      M.position.copy(cible).add(mouetteDep);M.lookAt(cible.x,M.position.y,cible.z+1);ail.forEach(a=>a.piv.rotation.z=a.s*Math.sin(tps*18)*0.7);
+      M.position.copy(cible).add(mouetteDep);M.lookAt(cible.x,M.position.y,cible.z+1);ail.forEach(a=>{a.piv.rotation.y=0;a.piv.rotation.z=a.s*Math.sin(tps*18)*0.7});
       if(mouetteDep.length()<0.15){mouetteEtat='posee';mouetteT=0;mouetteVitesseRef=Math.max(vMoy,2.5);ditSergent("Une mouette sur mon casque ! Accélère pour la faire décoller !")}}
-    else if(mouetteEtat==='posee'){M.position.copy(cible);M.rotation.set(0,Math.PI+Math.sin(tps*2)*0.4,0);ail.forEach(a=>a.piv.rotation.z=a.s*0.15);mouetteT+=dt;
+    else if(mouetteEtat==='posee'){M.position.copy(cible);M.rotation.set(0,Math.PI+Math.sin(tps*2)*0.4,0);ail.forEach(a=>{a.piv.rotation.z=-a.s*0.12;a.piv.rotation.y=-a.s*1.3});mouetteT+=dt;
       if(Math.floor(tps*1.3)%4===0&&Math.random()<dt*2)cri();
       if((mouetteT>3&&vMoy>mouetteVitesseRef*1.08)||mouetteT>14){mouetteEtat='part';mouetteDep.set(-4,6,8);cri();ditSergent(mouetteT>14?"Elle est partie toute seule… Tu ne lui as même pas fait peur.":"Bien joué ! La mouette a pris la fuite !")}}
-    else if(mouetteEtat==='part'){M.position.addScaledVector(mouetteDep,dt*0.9);ail.forEach(a=>a.piv.rotation.z=a.s*Math.sin(tps*20)*0.8);M.lookAt(M.position.clone().add(mouetteDep));
+    else if(mouetteEtat==='part'){M.position.addScaledVector(mouetteDep,dt*0.9);ail.forEach(a=>{a.piv.rotation.y=0;a.piv.rotation.z=a.s*Math.sin(tps*20)*0.8});M.lookAt(M.position.clone().add(mouetteDep));
       if(M.position.distanceTo(cible)>40){mouetteEtat='attente';M.visible=false;mouetteT=70+Math.random()*60}}}
   // douche
   if(actif&&doucheT<0){immobile=v<0.3?immobile+dt:0;if(immobile>10){immobile=-8;douche()}}
