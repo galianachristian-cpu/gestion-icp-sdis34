@@ -68,8 +68,8 @@ function SceneNoel(cv,IMG,opt){
     const h=H*0.22,saut=fini?Math.abs(Math.sin(t*3))*H*0.03:Math.sin(t*4)*H*0.004;
     // gerbe de neige derrière les skis
     if(!fini&&Math.random()<0.7)eclats.push({x:x*W-h*0.25,y:y*H,vx:-(40+Math.random()*60),vy:-(30+Math.random()*50),v:1});
-    const n=fini?'arrivee':(opt.skieur&&IMG[opt.skieur]?opt.skieur:'perenoel');
-    img(n,x*W,y*H-saut,fini?h*1.15:h,{rot:fini?0:-0.06});
+    const n=fini?(IMG.traineau?'traineau':'arrivee'):(opt.skieur&&IMG[opt.skieur]?opt.skieur:'perenoel');
+    if(fini&&IMG.traineau){img('traineau',x*W-W*0.06,y*H-saut-H*0.02,h*1.25)}else img(n,x*W,y*H-saut,fini?h*1.15:h,{rot:fini?0:-0.06});
   }
   function particules(dt){
     eclats=eclats.filter(p=>(p.v-=dt*1.6)>0);eclats.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=160*dt;g.fillStyle='rgba(255,255,255,'+p.v+')';g.beginPath();g.arc(p.x,p.y,2.2,0,7);g.fill()});
@@ -87,17 +87,13 @@ function SceneNoel(cv,IMG,opt){
       img('ccf',x,y+Math.sin(t*6)*2,h);for(let i=0;i<4;i++)eclats.push({x:x+h*0.95,y:y-h*0.35,vx:60+Math.random()*120,vy:-(80+Math.random()*90),v:1})}},
     vtu:{dur:9,txt:"Le VTU a mis les chaînes… et les skis. Personne ne sait pourquoi.",dessin(k,t){const x=W*(1.2-1.45*k),y=H*0.76;const h=H*0.14;
       img('vtu',x,y,h,{rot:Math.sin(t*5)*0.12,flip:true});g.fillStyle='#b91c1c';g.fillRect(x-h*1.2,y-2,h*2.4,4)}},
-    traineau:{dur:10,txt:"Le vrai Père Noël passe devant la lune. Lui, il triche : il vole !",dessin(k,t){const x=W*(1.08-1.25*k),y=H*(0.24+0.04*Math.sin(k*7)),h=H*0.12;
-      g.save();g.shadowColor='rgba(255,225,150,.95)';g.shadowBlur=22;
-      img('rennes',x-h*1.6,y+Math.sin(t*8)*2,h*0.95,{flip:true});
-      // le traîneau : caisse rouge recourbée, patins dorés, sac de cadeaux, et le Père Noël dedans
-      g.fillStyle='#b91c1c';g.beginPath();g.moveTo(x-h*0.6,y-h*0.55);g.lineTo(x+h*0.7,y-h*0.55);g.quadraticCurveTo(x+h*1.05,y-h*0.9,x+h*0.95,y-h*1.15);g.lineTo(x+h*0.75,y-h*0.2);g.lineTo(x-h*0.55,y-h*0.2);g.closePath();g.fill();
-      g.strokeStyle='#fbbf24';g.lineWidth=Math.max(2,h*0.06);g.beginPath();g.moveTo(x-h*0.85,y-h*0.02);g.quadraticCurveTo(x-h*0.95,y-h*0.25,x-h*0.7,y-h*0.25);g.moveTo(x-h*0.85,y-h*0.02);g.lineTo(x+h*0.85,y-h*0.02);g.stroke();
-      g.fillStyle='#7c3aed';g.beginPath();g.arc(x+h*0.5,y-h*0.75,h*0.28,0,7);g.fill();
-      img('perenoel',x-h*0.05,y-h*0.3,h*0.95,{flip:true});
-      g.strokeStyle='rgba(124,45,18,.9)';g.lineWidth=1.5;g.beginPath();g.moveTo(x-h*0.6,y-h*0.45);g.lineTo(x-h*1.25,y-h*0.55);g.stroke();g.restore();
-      // poussière d'étoiles derrière lui
-      if(Math.random()<0.8)feux.push({x:x+h*0.9,y:y-h*0.2,vx:20+Math.random()*30,vy:10+Math.random()*20,v:1,c:'rgba(255,230,150,A)'})}},
+    traineau:{dur:11,txt:"Le Sergent-Chef et la Sergente-Chef font un tour de traîneau. Ils trichent : ils volent !",dessin(k,t){const x=W*(-0.2+1.4*k),y=H*(0.36+0.05*Math.sin(k*7));
+      img('traineau',x,y,H*0.2,{ombre:'rgba(255,230,150,.9)',flou:24});
+      if(Math.random()<0.8)feux.push({x:x-H*0.16,y:y-H*0.04,vx:-(20+Math.random()*30),vy:10+Math.random()*20,v:1,c:'rgba(255,230,150,A)'})}},
+    lutin:{dur:9,txt:"Le lutin pompier fait une reconnaissance… et arrose tout le monde de neige !",dessin(k,t){const a=k<0.12?k/0.12:k>0.88?(1-k)/0.12:1;const x=W*(0.06+0.16*a),y=H*0.99;
+      img('lutin',x+H*0.2,y,H*0.3,{a});for(let i=0;i<5;i++)eclats.push({x:x+H*0.42,y:y-H*0.19,vx:120+Math.random()*160,vy:-(40+Math.random()*90),v:1})}},
+    renne:{dur:9,txt:"Rudolph s'entraîne pour Noël. Il a encore du boulot…",dessin(k,t){const a=k<0.12?k/0.12:k>0.88?(1-k)/0.12:1;const x=W*(1.08-0.24*a),y=H*0.99+Math.sin(t*5)*2;
+      img('renne',x,y,H*0.26,{a})}},
     bonhomme:{dur:8,txt:"Un bonhomme de neige en tenue d'intervention. Casque réglementaire !",dessin(k,t){const a=k<0.15?k/0.15:k>0.85?(1-k)/0.15:1;const x=W*0.30,y=H*(0.98-0.16*a);bonhommeNeige(x,y,H*0.2,t)}}
   };
   function bonnetSur(x,y,s){g.fillStyle='#dc2626';g.beginPath();g.moveTo(x-s,y);g.quadraticCurveTo(x,y-s*1.6,x+s*1.2,y-s*0.6);g.lineTo(x+s*0.8,y);g.fill();g.fillStyle='#fff';g.fillRect(x-s*1.1,y-s*0.15,s*2,s*0.35);g.beginPath();g.arc(x+s*1.2,y-s*0.6,s*0.3,0,7);g.fill()}
@@ -108,7 +104,7 @@ function SceneNoel(cv,IMG,opt){
     const cg=g.createLinearGradient(x-r3,ty-r3*1.5,x+r3,ty-r3*0.4);cg.addColorStop(0,'#f8fafc');cg.addColorStop(0.5,'#94a3b8');cg.addColorStop(1,'#e2e8f0');g.fillStyle=cg;g.beginPath();g.ellipse(x,ty-r3*0.55,r3*1.05,r3*0.85,0,Math.PI,0);g.fill();g.fillStyle='#1c1917';g.fillRect(x-r3*1.3,ty-r3*0.6,r3*2.6,r3*0.18);
     // un bras-branche qui salue
     g.strokeStyle='#7c4a1e';g.lineWidth=3;g.beginPath();const by=y-r1-(r1+r2*0.8);g.moveTo(x+r2*0.8,by);g.lineTo(x+r2*1.8,by-r2*(0.8+0.3*Math.sin(t*6)));g.stroke()}
-  function lancerGag(n){const k=n||Object.keys(GAGS)[Math.floor(Math.random()*5)];gag={n:k,t:0};if(opt.dire)opt.dire(GAGS[k].txt);bulle={txt:GAGS[k].txt,t:0}}
+  function lancerGag(n){const L=Object.keys(GAGS),k=n||L[Math.floor(Math.random()*L.length)];gag={n:k,t:0};if(opt.dire)opt.dire(GAGS[k].txt);bulle={txt:GAGS[k].txt,t:0}}
   function dessinerBulle(dt){if(!bulle||opt.dire)return;bulle.t+=dt;if(bulle.t>6){bulle=null;return}
     const a=Math.min(1,bulle.t*3,(6-bulle.t)*2),x=W*0.025,y=H*0.19,h=H*0.10;g.globalAlpha=a;img('sergent',x+h*0.5,y+h,h);
     g.font='700 '+Math.round(H*0.032)+'px Inter,system-ui,sans-serif';const w=Math.min(W*0.6,g.measureText(bulle.txt).width+H*0.05);
