@@ -92,7 +92,7 @@ body.ecran .cmd{display:none}
     <label>Fantôme <select id="choixFant"><option value="135">2:15 /500 m</option><option value="125" selected>2:05 /500 m</option><option value="115">1:55 /500 m</option><option value="105">1:45 /500 m</option></select></label>
   </div>
   <div class="tvopt"><label style="color:#fff"><input type="checkbox" id="choixTV" checked> 📺 Afficher ma séance sur la télé de la salle</label><input type="text" id="choixPrenom" placeholder="Ton prénom" maxlength="20" autocomplete="given-name"></div>
-  <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter la machine</button><button id="btnSimu">▶️ Essayer en simulation</button></div>
+  <div class="ligne"><button class="pri" id="btnPM5">🔗 Connecter la machine</button><button id="btnSimu">▶️ Essayer en simulation</button><button id="btnDiag" style="font-size:13px">🔍 Diagnostic Bluetooth</button></div>
   <div class="ligne" style="gap:14px"><a href="tuto-rame.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Connecter le rameur</a><a href="tuto-skierg.html" target="_blank" style="color:#fbbf24;font-weight:800;font-size:14px">❓ Connecter le SkiErg</a></div>
   <div class="etat" id="etat"></div>
 </div></div>
@@ -369,13 +369,22 @@ function simuler(dt){ // un rameur réaliste : ~24 coups/min, 2:05/500 m, petite
 // --- PM5 Concept2 en Bluetooth (service « rowing » du PM5) ---
 const PM5={service:'ce060030-43e5-11e4-916c-0800200c9a66',general:'ce060031-43e5-11e4-916c-0800200c9a66',add1:'ce060032-43e5-11e4-916c-0800200c9a66',add2:'ce060033-43e5-11e4-916c-0800200c9a66',taux:'ce060034-43e5-11e4-916c-0800200c9a66'};
 let pm5Derniere=0,pm5DistAff=0,pm5DistReelle=0;
+const FTMS_UUID='00001826-0000-1000-8000-00805f9b34fb',UU=n=>'0000'+n.toString(16).padStart(4,'0')+'-0000-1000-8000-00805f9b34fb';
+function messageBT(x,etape){const n=(x&&x.name)||'',m=(x&&x.message)||String(x);
+  if(n==='NotFoundError'&&/cancel|annul/i.test(m))return 'Recherche annulée.';
+  if(n==='NotFoundError')return '❌ Aucune machine compatible trouvée. Réveille l\'écran (quelques tirages), vérifie qu\'aucune autre appli n\'y est reliée, puis réessaie.<br>Sinon, appuie sur <b>🔍 Diagnostic Bluetooth</b> et envoie une capture à l\'admin.';
+  return '❌ Problème à l\'étape « '+etape+' » ('+(n?n+' : ':'')+m+').<br>Appuie sur <b>🔍 Diagnostic Bluetooth</b> et envoie une capture à l\'admin.'}
 async function connecterPM5(){
   const e=document.getElementById('etat');
   if(!navigator.bluetooth){e.innerHTML='Ce navigateur ne sait pas se connecter en Bluetooth. Sur iPhone, ouvre cette page dans l\'appli gratuite <b>Bluefy</b>. Sur Android, utilise <b>Chrome</b>.';return}
-  try{e.textContent='Recherche du rameur…';
-    // Concept2 (PM5) ou machine « connectée » standard (Bluetooth FTMS : Kinomap, Zwift…)
-    const dev=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'PM5'},{services:[0x1826]}],optionalServices:[PM5.service,0x1826]});
-    e.textContent='Connexion à '+(dev.name||'la machine')+'…';const gatt=await dev.gatt.connect();
+  let etape='recherche de la machine';
+  try{e.textContent='Recherche de la machine…';
+    // Concept2 (PM5) ou machine « connectée » standard (Bluetooth FTMS : Kinomap, Zwift…). UUID en texte : Bluefy les préfère.
+    // toutes les machines à portée : certaines (SkiErg Heubozen…) n'annoncent pas leur service dans la liste, le filtre les cachait
+    const dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[PM5.service,FTMS_UUID]});
+    etape='connexion à '+(dev.name||'la machine');e.textContent='Connexion à '+(dev.name||'la machine')+'…';
+    const gatt=await dev.gatt.connect();etape='lecture des données';
+    if(!/^PM5/.test(dev.name||'')){try{await gatt.getPrimaryService(FTMS_UUID)}catch(x){try{gatt.disconnect()}catch(y){}throw new Error('cet appareil n\'est pas une machine de sport connectée (FTMS). Choisis bien le SkiErg dans la liste')}}
     if(!/^PM5/.test(dev.name||'')){await connecterFTMS(gatt,dev);return}
     const srv=await gatt.getPrimaryService(PM5.service);
     try{const t=await srv.getCharacteristic(PM5.taux);await t.writeValue(new Uint8Array([3]))}catch(x){} // 100 ms si possible
@@ -385,15 +394,15 @@ async function connecterPM5(){
     await ecoute(PM5.add2,v=>{try{etat.watts=v.getUint16(4,true)}catch(x){}});
     dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume le Bluetooth du PM5 !")});
     etat.source='pm5';document.getElementById('qui').textContent='Relié à '+dev.name;demarrer();
-  }catch(x){e.textContent='Connexion impossible : '+(x.message||x)}
+  }catch(x){e.innerHTML=messageBT(x,etape)}
 }
 
 // Rameur standard FTMS (service 0x1826, données 0x2AD1 « Rower Data »)
 async function connecterFTMS(gatt,dev){
-  const srv=await gatt.getPrimaryService(0x1826);
+  const srv=await gatt.getPrimaryService(FTMS_UUID);
   // rameur (Rower Data 0x2AD1) ; sinon SkiErg et machines « elliptiques » (Cross Trainer Data 0x2ACE)
-  let c=null;try{c=await srv.getCharacteristic(0x2AD1)}catch(x){}
-  if(!c){const ce=await srv.getCharacteristic(0x2ACE);await lireCrossTrainer(ce,dev);return}
+  let c=null;try{c=await srv.getCharacteristic(UU(0x2AD1))}catch(x){}
+  if(!c){const ce=await srv.getCharacteristic(UU(0x2ACE));await lireCrossTrainer(ce,dev);return}
   c.addEventListener('characteristicvaluechanged',ev=>{const v=ev.target.value;let i=2;const f=v.getUint16(0,true);
     const u8=()=>v.getUint8(i++),u16=()=>{const x=v.getUint16(i,true);i+=2;return x},s16=()=>{const x=v.getInt16(i,true);i+=2;return x},u24=()=>{const x=v.getUint8(i)|v.getUint8(i+1)<<8|v.getUint8(i+2)<<16;i+=3;return x};
     try{
@@ -439,6 +448,23 @@ async function lireCrossTrainer(c,dev){
   etat.source='pm5';etat.ftms=true;document.getElementById('qui').textContent='Relié à '+(dev.name||'la machine');demarrer();
 }
 
+
+// ----- Diagnostic Bluetooth : montre tous les appareils, puis la liste des services de celui qu'on choisit -----
+async function diagnosticBT(){
+  const e=document.getElementById('etat');if(!navigator.bluetooth){e.textContent='Pas de Bluetooth dans ce navigateur (sur iPhone : Bluefy).';return}
+  const cand=[0x1826,0x1816,0x1818,0x180d,0x180a,0x180f,0xfff0,0xffe0,0xfee7,0x1800,0x1801].map(UU).concat([PM5.service,'49535343-fe7d-4ae5-8fa9-9fafd205e455','6e400001-b5a3-f393-e0a9-e50e24dcca9e','0000fff0-0000-1000-8000-00805f9b34fb']);
+  let L=[];
+  try{e.textContent='Choisis la machine dans la liste…';
+    const dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:cand});
+    L.push('Appareil : <b>'+(dev.name||'(sans nom)')+'</b>');e.textContent='Connexion…';
+    const gatt=await dev.gatt.connect();L.push('Connexion : OK');
+    const srvs=await gatt.getPrimaryServices();
+    for(const sv of srvs){let ch=[];try{ch=(await sv.getCharacteristics()).map(c=>c.uuid.replace(/-0000-1000-8000-00805f9b34fb$/,'').replace(/^0000/,'')+'('+[c.properties.notify?'N':'',c.properties.read?'R':'',c.properties.write?'W':''].join('')+')')}catch(x){ch=['?']}
+      L.push('• '+sv.uuid.replace(/-0000-1000-8000-00805f9b34fb$/,'').replace(/^0000/,'')+' : '+ch.join(', '))}
+    try{gatt.disconnect()}catch(x){}
+  }catch(x){L.push('Erreur : '+((x&&x.name)||'')+' '+((x&&x.message)||x))}
+  e.innerHTML='<div style="text-align:left;font-size:12px;background:rgba(0,0,0,.35);border-radius:10px;padding:8px;margin-top:6px">🔍 <b>Diagnostic</b> (fais une capture d\'écran et envoie-la à l\'admin)<br>'+L.join('<br>')+'</div>';
+}
 // ===================== SERGENT-CHEF =====================
 let sergentT=0;
 function ditSergent(t){const s=document.getElementById('sergent');document.getElementById('sergentTxt').textContent=t;s.classList.add('on');clearTimeout(sergentT);sergentT=setTimeout(()=>s.classList.remove('on'),5000)}
@@ -655,7 +681,7 @@ function finir(){if(etat.fini)return;etat.fini=true;
 // ===================== COMMANDES =====================
 let qualiteMax=3,qualiteFixe=false;
 document.getElementById('btnSimu').onclick=()=>{etat.source='simu';demarrer()};
-document.getElementById('btnPM5').onclick=connecterPM5;
+document.getElementById('btnPM5').onclick=connecterPM5;document.getElementById('btnDiag').onclick=diagnosticBT;
 document.getElementById('btnCam').onclick=()=>{cam=(cam+1)%cams.length;camT=0;ditSergent('Caméra : '+['poursuite','de côté','gros plan','drone','TV (automatique)'][cam])};
 document.getElementById('btnPlus').onclick=()=>{simuForce=Math.min(1,simuForce+.12)};
 document.getElementById('btnMoins').onclick=()=>{simuForce=Math.max(0,simuForce-.12)};
