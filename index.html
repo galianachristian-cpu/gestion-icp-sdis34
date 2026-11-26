@@ -3413,7 +3413,7 @@ function renderTV(){
     +'<small>Défi collectif du centre · du '+deb.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</small></div>'
     +'<span class="tv-pill">'+(avenir?'J-'+dfsJoursAvant(d):S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
     +'<div class="tv-chiffres"><b data-n="'+S.total+'">'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+(S.atteint?' ✅':'')+'</em><span class="pct">'+pctAffiche(d,S)+' %</span></div>'
-    +(estNoel(d)&&!MOUVEMENT_REDUIT?noelSceneHtml("tv"):'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+(!avenir&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,avenir,attendu)+'</div></div>')
+    +(estNoel(d)&&!avenir&&!MOUVEMENT_REDUIT?noelSceneHtml("tv"):'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+(!avenir&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,avenir,attendu)+'</div></div>')
     +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
     +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
@@ -3434,7 +3434,7 @@ function renderTV(){
   if(hs.length)dernieres+='<div class="tv-carte tv-hs"><div class="tv-sec">⚠️ Hors service</div>'+hs.map(function(p){return '<div class="tv-l"><span class="n">🔧 '+dfsEsc(p.machine)+'</span><span class="v">'+(p.description?dfsEsc(p.description).slice(0,40):'en attente de réparation')+'</span></div>'}).join("")+'</div>';
   var qr='<div class="tv-qr">'+qrSvg(lienAjout())+'<div><b>Fini ta séance ?</b><span>Scanne avec ton téléphone<br>et ajoute ce que tu viens de faire.</span></div></div>';
   el.innerHTML='<div class="tv">'+haut+'<div class="tv-corps"><div class="tv-g">'+gauche+'</div><div class="tv-d">'+fetesTvHtml()+podium+dernieres+qr+'</div></div></div>';
-  if(estNoel(d))noelBrancher("tv",avenir?0:noelPct(d,S));
+  if(estNoel(d)&&!avenir)noelBrancher("tv",noelPct(d,S));
   tvAjuster();
 }
 // ===== SÉANCE DE GARDE (mode TV) : séance guidée au poids du corps, Sergent-Chef ou Sergente-Chef à l'écran =====
@@ -7082,7 +7082,7 @@ function renderDefis(){
   }
   box.innerHTML=h+rameCarteHtml()+(pannesChargees?salleHtml():'');
   dfsEnterFx();
-  try{var dn=L&&L[dfsSel];if(dn&&estNoel(dn))noelBrancher("app",dfsAVenir(dn)?0:noelPct(dn,dfsStats(dn)))}catch(e){}
+  try{var dn=L&&L[dfsSel];if(dn&&estNoel(dn)&&!dfsAVenir(dn))noelBrancher("app",noelPct(dn,dfsStats(dn)))}catch(e){}
 }
 function dfsVoir(i){dfsSel=i;renderDefis()}
 function dfsCarte(d){
@@ -7098,7 +7098,7 @@ function dfsCarte(d){
              :'<span class="dfs-pill fin">clos</span>')+'</div>'
     +'<div class="dfs-chiffres"><b>'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+'</em></div>'
     +'<div class="dfs-jauge'+(!dfsAVenir(d)&&themeHumour(d)?' avec-perso':'')+(!dfsAVenir(d)&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,dfsAVenir(d),null)+'</div>'
-    +(estNoel(d)?noelSceneHtml("app"):'')
+    +(estNoel(d)&&!dfsAVenir(d)?noelSceneHtml("app"):'')
     +'<div class="dfs-sous"><span>'+pctAffiche(d,S)+' %</span>'
     +(S.atteint?'<span class="dfs-ok">🎉 Objectif atteint !</span>'
                :'<span>il reste '+dfsNum(Number(d.objectif)-S.total)+' '+dfsEsc(d.unite)+'</span>')+'</div>'
