@@ -3266,7 +3266,7 @@ function sgtSuivant(){
   var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);setTimeout(radioReprendre,300);return}
   sgtOcc=true;radioDucker(true);
   var c0=sonContexte();
-  if(c0&&c0.state==="running"){setTimeout(function(){jouerSuite(seq.map(function(x){return SGT_BASE+x+".mp3"}),function(ok){if(ok){setTimeout(sgtSuivant,700)}else sgtAncien(seq)},seq.map(function(x){return x==="clairon"?0.3:0.12}))},radioEtat==="joue"?600:0);return}
+  if(c0&&c0.state==="running"){setTimeout(function(){jouerSuite(seq.map(function(x){return SGT_BASE+x+".mp3"}),function(ok){if(ok){setTimeout(sgtSuivant,700)}else sgtAncien(seq)},seq.map(function(x){return x==="clairon"||x==="birdy"?0.3:0.12}))},radioEtat==="joue"?600:0);return}
   sgtAncien(seq);
 }
 function sgtAncien(seq){
@@ -3305,7 +3305,7 @@ function tvAlerteSuivante(){
     +'<span>vient d\'ajouter <em>+'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+'</em></span><i>'+dfsEsc(d.titre)+'</i></div></div>';
   el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
   try{if(!tvEstNuit())confettis()}catch(e){}
-  var n=sgtNom(x.pompier_id);sgtDire(n?["clairon",n,"seance-"+(1+hasard(5))]:["clairon","seance-0"]);
+  var n=sgtNom(x.pompier_id);sgtDire(n?["birdy",n,"seance-"+(1+hasard(5))]:["birdy","seance-0"]);
   setTimeout(tvAlerteSuivante,8000);
 }
 // Palier bonus franchi depuis la dernière visite de cet appareil ? (la première fois, on note sans fêter)
