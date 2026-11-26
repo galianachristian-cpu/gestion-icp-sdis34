@@ -3242,9 +3242,35 @@ function radioDucker(bas){
 }
 function tvSonPossible(){return document.body.classList.contains("tv-on")&&!tvEstNuit()}
 function sgtDire(seq){if(!tvSonPossible()||GARDE.on||!seq||sgtFile.length>3)return;sgtFile.push(seq);if(!sgtOcc)sgtSuivant()}
+// Lecture d'une annonce d'un seul tenant (Web Audio) : les morceaux (clairon, prénom, phrase) sont enchaînés sans coupure,
+// précédés de 0,8 s de « réveil » inaudible pour l'enceinte branchée sur la télé (elle se met en veille et rate le début).
+var sonCtx=null,sonCache={};
+function sonContexte(){try{if(!sonCtx)sonCtx=new (window.AudioContext||window.webkitAudioContext)();if(sonCtx.state==="suspended")sonCtx.resume()}catch(e){sonCtx=null}return sonCtx}
+document.addEventListener("click",function(){sonContexte()},{capture:true});document.addEventListener("keydown",function(){sonContexte()},{capture:true});
+function sonCharger(url){var c=sonContexte();if(!c)return Promise.reject("pas de Web Audio");
+  if(!sonCache[url])sonCache[url]=fetch(url).then(function(r){if(!r.ok)throw r.status;return r.arrayBuffer()}).then(function(b){return new Promise(function(ok,ko){c.decodeAudioData(b,ok,ko)})});
+  return sonCache[url].catch(function(e){delete sonCache[url];throw e})}
+function jouerSuite(urls,fin,ecart){
+  var c=sonContexte();if(!c||c.state!=="running"){fin(false);return}
+  Promise.all(urls.map(function(u){return sonCharger(u).catch(function(){return null})})).then(function(bufs){
+    var t=c.currentTime+0.05;
+    // réveil de l'enceinte : un souffle très faible (inaudible) pendant 0,8 s
+    var n=Math.floor(c.sampleRate*0.8),bb=c.createBuffer(1,n,c.sampleRate),d=bb.getChannelData(0);for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*0.0015;
+    var r=c.createBufferSource();r.buffer=bb;r.connect(c.destination);r.start(t);t+=0.8;
+    var g=c.createGain();g.gain.value=1;g.connect(c.destination);
+    bufs.forEach(function(b,i){if(!b)return;var src=c.createBufferSource();src.buffer=b;src.connect(g);src.start(t);t+=b.duration+((ecart&&ecart[i])||0.12)});
+    setTimeout(function(){fin(true)},(t-c.currentTime)*1000+100);
+  },function(){fin(false)});
+}
 function sgtSuivant(){
   var seq=sgtFile.shift();if(!seq){sgtOcc=false;radioDucker(false);setTimeout(radioReprendre,300);return}
-  sgtOcc=true;radioDucker(true);if(!sgtA){sgtA=new Audio();sgtA.preload="auto"}
+  sgtOcc=true;radioDucker(true);
+  var c0=sonContexte();
+  if(c0&&c0.state==="running"){setTimeout(function(){jouerSuite(seq.map(function(x){return SGT_BASE+x+".mp3"}),function(ok){if(ok){setTimeout(sgtSuivant,700)}else sgtAncien(seq)},seq.map(function(x){return x==="clairon"?0.3:0.12}))},radioEtat==="joue"?600:0);return}
+  sgtAncien(seq);
+}
+function sgtAncien(seq){
+  if(!sgtA){sgtA=new Audio();sgtA.preload="auto"}
   var i=0,a=sgtA;
   var joue=function(){clearTimeout(sgtGarde);if(i>=seq.length){setTimeout(sgtSuivant,700);return}
     var c=seq[i++];a.onended=function(){setTimeout(joue,c==="clairon"?250:110)};a.onerror=function(){joue()};
@@ -3511,7 +3537,11 @@ function gardePlan(){
 // ----- voix du coach : messages enregistrés (audio/garde/h ou f), la radio baisse pendant qu'il parle -----
 function gardeTaire(){GARDE.file=[];try{if(GARDE.voix){GARDE.voix.pause();GARDE.voix.onended=null}}catch(e){}radioDucker(false);setTimeout(radioReprendre,300)}
 function gardeDire(seq){
-  if(tvEstNuit())return;GARDE.file=seq.slice();
+  if(tvEstNuit())return;
+  var c0=sonContexte();
+  if(c0&&c0.state==="running"){radioDucker(true);var jeton=GARDE.jeton=(GARDE.jeton||0)+1;
+    setTimeout(function(){if(jeton!==GARDE.jeton)return;jouerSuite(seq.map(function(x){return "audio/garde/"+GARDE.R.coach+"/"+x+".mp3"}),function(){if(jeton===GARDE.jeton){radioDucker(false);setTimeout(radioReprendre,300)}})},radioEtat==="joue"?350:0);return}
+  GARDE.file=seq.slice();
   if(!GARDE.voix){GARDE.voix=new Audio();GARDE.voix.preload="auto"}
   var a=GARDE.voix;radioDucker(true);
   var suivant=function(){var c=GARDE.file.shift();if(!c){radioDucker(false);setTimeout(radioReprendre,300);return}
