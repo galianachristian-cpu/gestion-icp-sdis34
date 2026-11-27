@@ -7238,7 +7238,7 @@ function dfsCopierRelance(id){
   (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(function(){showToast("📋 Liste copiée","success")},function(){prompt("Copie la liste :",txt)});
 }
 function dfsAdminHtml(d){
-  var h=dfsSuiviHtml(d);
+  var h=dfsSuiviHtml(d)+(dfsAVenir(d)?"":dfsDiplomeEditeurHtml(d));
   {
     h+='<div class="pcard"><div class="sec">Administration</div><div class="prow">'
       +'<button class="pbtn" onclick="dfsModifier('+d.id+')">✏️ Modifier</button>'
@@ -7528,7 +7528,10 @@ function dfsAfficheFinalePdf(d,photo,ratio){
 var DIPLOME_HORS_PODIUM=[15];
 var DIPLOME_SIGNATURE={titre:"Le référent sport",nom:"C. Galiana"};
 function dfsDiplomeClassement(S){return S.classement.filter(function(c){return DIPLOME_HORS_PODIUM.indexOf(c.pid)===-1})}
-function dfsDiplomeRang(S,pid){var L=dfsDiplomeClassement(S);for(var i=0;i<L.length&&i<3;i++)if(L[i].pid===pid)return i+1;return 0}
+function dfsDiplomeReglages(d){var c=d.diplome||{};return {titre:c.titre||"",ligne1:c.ligne1||"",ligne2:c.ligne2||"",sig_titre:c.sig_titre!=null?c.sig_titre:DIPLOME_SIGNATURE.titre,sig_nom:c.sig_nom!=null?c.sig_nom:DIPLOME_SIGNATURE.nom,podium:c.podium!==false}}
+// remplace {total} {unite} {participants} dans les phrases personnalisées
+function dfsDiplomeTexte(t,d,S){return String(t).replace(/\{total\}/g,dfsNum(S.total)).replace(/\{unite\}/g,d.unite||"").replace(/\{participants\}/g,S.classement.length)}
+function dfsDiplomeRang(S,pid,d){if(d&&!dfsDiplomeReglages(d).podium)return 0;var L=dfsDiplomeClassement(S);for(var i=0;i<L.length&&i<3;i++)if(L[i].pid===pid)return i+1;return 0}
 function dfsDiplomeMoustache(doc,cx,cy,k,rgb){
   // moustache dessinée en courbes de Bézier (coordonnées relatives, échelle k mm)
   doc.setFillColor(rgb[0],rgb[1],rgb[2]);
@@ -7547,7 +7550,7 @@ function dfsDiplomeMedaille(doc,cx,cy,r,rgb,rang){
 function dfsDiplomePage(doc,d,S,pid){
   var W=297,H=210,cx=W/2,v=0,u=dfsTextePdf(d.unite),F=sexeDe(pid)==="F",mov=estMovember(d),noel=estNoel(d);
   S.classement.forEach(function(c){if(c.pid===pid)v=c.v});
-  var rang=dfsDiplomeRang(S,pid),METAL=[[212,167,44],[184,188,196],[192,122,69]],accent=rang?METAL[rang-1]:[229,69,63];
+  var R=dfsDiplomeReglages(d),rang=dfsDiplomeRang(S,pid,d),METAL=[[212,167,44],[184,188,196],[192,122,69]],accent=rang?METAL[rang-1]:[229,69,63];
   var BLEU=[82,182,225],CLAIR=[201,203,211],BLANC=[242,241,232];
   doc.setFillColor(11,26,58);doc.rect(0,0,W,H,'F');
   if(rang){doc.setDrawColor(accent[0],accent[1],accent[2]);doc.setLineWidth(1.4);doc.rect(9,9,W-18,H-18,'S');doc.setLineWidth(0.4);doc.rect(13,13,W-26,H-26,'S');}
@@ -7555,7 +7558,7 @@ function dfsDiplomePage(doc,d,S,pid){
   doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(BLEU[0],BLEU[1],BLEU[2]);
   doc.text("SAPEURS-POMPIERS  CIS CRUZY-QUARANTE  ·  SDIS 34",cx,27,{align:"center",charSpace:0.6});
   if(mov)dfsDiplomeMoustache(doc,cx,35,0.9,[201,42,37]);
-  var titre=rang?"Diplôme d'honneur — "+(rang===1?"1re":rang+"e")+" place":"Diplôme de participation";
+  var titre=rang?"Diplôme d'honneur — "+(rang===1?"1re":rang+"e")+" place":dfsTextePdf(R.titre||"Diplôme de participation");
   doc.setFont("helvetica","bold");doc.setFontSize(rang?30:32);
   doc.setTextColor(rang?accent[0]:BLANC[0],rang?accent[1]:BLANC[1],rang?accent[2]:BLANC[2]);
   doc.text(titre,cx,53,{align:"center"});
@@ -7575,6 +7578,7 @@ function dfsDiplomePage(doc,d,S,pid){
   doc.text(dfsNum(v)+" "+u,bx,125,{align:"center"});
   var fin=["et contribué aux "+dfsNum(S.total)+" "+u+" de l'équipe"+(mov?" pour la santé des hommes":noel?" pour aider le Père Noël à skier":"")];
   if(mov&&S.total>=177)fin.push("du pont de la Croisade (Cruzy) jusqu'à Toulouse, par le Canal du Midi");
+  if(R.ligne1||R.ligne2)fin=[R.ligne1,R.ligne2].filter(function(l){return l}).map(function(l){return dfsDiplomeTexte(l,d,S)});
   doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);
   fin.forEach(function(l,i){doc.text(dfsTextePdf(l),bx,137+i*6,{align:"center",maxWidth:rang?180:230})});
   // pied de page
@@ -7582,14 +7586,49 @@ function dfsDiplomePage(doc,d,S,pid){
   doc.setFontSize(10);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);
   doc.text("Du "+du+" au "+au,24,181);
   doc.text(S.classement.length+" participant"+(S.classement.length>1?"s":"")+" · "+dfsNum(S.total)+" "+u+" au total",24,187);
-  doc.text(DIPLOME_SIGNATURE.titre,W-24,181,{align:"right"});
+  if(R.sig_titre)doc.text(dfsTextePdf(R.sig_titre),W-24,181,{align:"right"});
   doc.setFont("times","italic");doc.setFontSize(15);doc.setTextColor(BLANC[0],BLANC[1],BLANC[2]);
-  doc.text(DIPLOME_SIGNATURE.nom,W-24,188,{align:"right"});
+  if(R.sig_nom)doc.text(dfsTextePdf(R.sig_nom),W-24,188,{align:"right"});
 }
 function dfsDiplomePdf(d,pids,nomFichier){
   var S=dfsStats(d),doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
   pids.forEach(function(pid,i){if(i)doc.addPage();dfsDiplomePage(doc,d,S,pid)});
   doc.save(nomFichier);
+}
+// Réglages des diplômes (admin) : enregistrés dans la colonne « diplome » du défi
+function dfsDiplomeEditeurHtml(d){
+  var R=dfsDiplomeReglages(d),S=dfsStats(d),v=function(x){return escAttr(x||"")};
+  var defaut="et contribué aux "+dfsNum(S.total)+" "+(d.unite||"")+" de l'équipe"+(estMovember(d)?" pour la santé des hommes":estNoel(d)?" pour aider le Père Noël à skier":"");
+  return '<div class="pcard"><details><summary class="sec" style="cursor:pointer;margin:0">🎓 Personnaliser les diplômes</summary>'
+    +'<p class="note">Laisse un champ vide pour garder le texte automatique. Dans les phrases, <b>{total}</b>, <b>{unite}</b> et <b>{participants}</b> sont remplacés par les chiffres du défi.</p>'
+    +'<div class="ss">Titre du diplôme classique</div><input id="dipTitre'+d.id+'" value="'+v(R.titre)+'" placeholder="Diplôme de participation" style="width:100%">'
+    +'<div class="ss">Phrase du bas (ligne 1)</div><input id="dipL1'+d.id+'" value="'+v(R.ligne1)+'" placeholder="'+v(defaut)+'" style="width:100%">'
+    +'<div class="ss">Phrase du bas (ligne 2)</div><input id="dipL2'+d.id+'" value="'+v(R.ligne2)+'" placeholder="facultatif" style="width:100%">'
+    +'<div class="dfs-g2"><div><div class="ss">Signature : titre</div><input id="dipST'+d.id+'" value="'+v(R.sig_titre)+'" style="width:100%"></div>'
+    +'<div><div class="ss">Signature : nom</div><input id="dipSN'+d.id+'" value="'+v(R.sig_nom)+'" style="width:100%"></div></div>'
+    +'<label class="note" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="dipPod'+d.id+'"'+(R.podium?' checked':'')+' style="width:auto"> Diplômes d\'honneur or / argent / bronze pour le podium</label>'
+    +'<div class="prow"><button class="pbtn" onclick="dfsDiplomeApercu('+d.id+')">👀 Aperçu (PDF)</button><button class="pbtn pri" onclick="dfsDiplomeEnregistrer('+d.id+')">💾 Enregistrer</button></div>'
+    +'</details></div>';
+}
+function dfsDiplomeLireForm(id){
+  var g=function(k){var e=document.getElementById(k+id);return e?e.value.trim():""};
+  var pod=document.getElementById("dipPod"+id);
+  return {titre:g("dipTitre"),ligne1:g("dipL1"),ligne2:g("dipL2"),sig_titre:g("dipST"),sig_nom:g("dipSN"),podium:pod?pod.checked:true};
+}
+function dfsDiplomeApercu(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  var t=Object.assign({},d,{diplome:dfsDiplomeLireForm(id)}),S=dfsStats(t);
+  if(!S.classement.length){showToast("Aucun participant pour l'instant","info");return}
+  // un diplôme d'honneur (le 1er du podium) + un diplôme classique
+  var L=S.classement.map(function(c){return c.pid}),pod=L.filter(function(p){return dfsDiplomeRang(S,p,t)===1}),cla=L.filter(function(p){return !dfsDiplomeRang(S,p,t)});
+  dfsDiplomePdf(t,pod.concat(cla.slice(0,1)),"Apercu_diplome.pdf");
+}
+async function dfsDiplomeEnregistrer(id){
+  if(!isAdmin||dfsOccupe)return;dfsOccupe=true;
+  try{var r=await supabaseClient.from("defis").update({diplome:dfsDiplomeLireForm(id)}).eq("id",id);if(r.error)throw r.error;
+    showToast("🎓 Réglages des diplômes enregistrés","success");await chargerDefis(true);}
+  catch(e){showToast("Impossible : "+(e.message||e),"error")}
+  finally{dfsOccupe=false}
 }
 function dfsMonDiplome(id){
   var d=dfsListe.filter(function(x){return x.id===id})[0],moi=dfsMoi();if(!d||!moi)return;
