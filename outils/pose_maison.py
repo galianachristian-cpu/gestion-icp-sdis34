@@ -1,6 +1,6 @@
 # Fabrique une animation « maison » (position tenue + respiration) sur le squelette Mixamo du Sergent-Chef.
 # Usage : python pose_maison.py squelette_mixamo.fbx exercice sortie.glb texture.png
-# Exercices : gainage, gainage_lateral, chaise, pont_fessier, superman, hollow, fentes, mountain_climbers, montees_genoux
+# Exercices : gainage, gainage_lateral, chaise, pont_fessier, superman, hollow, fentes, mountain_climbers, montees_genoux, etire_quadri, etire_epaule, etire_ischios, etire_dos
 import bpy, sys, math
 from mathutils import Vector, Matrix
 SRC, EX, OUT, TEX = sys.argv[1:5]
@@ -232,12 +232,59 @@ def montees_genoux(t):
         viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
         bras_balance(c, s, kb)
 
+def etire_quadri(t):
+    """Étirement des quadriceps debout : talon droit tenu contre la fesse, main gauche tendue pour l'équilibre, respiration lente."""
+    r = math.sin(t * 2 * math.pi); debout(0.03, r)
+    for c, s in (('Left', 1), ('Right', -1)):
+        if c == 'Right':   # jambe pliée : genou vers le bas, talon vers la fesse
+            viser(c + 'UpLeg', Vector((s * 0.05, 0.08, -1)).normalized()); viser(c + 'Leg', Vector((0, 0.35, 0.94)).normalized())
+            viser(c + 'Foot', Vector((0, 0.9, 0.3)).normalized()); viser(c + 'ToeBase', Vector((0, 1, 0)).normalized())
+            viser(c + 'Arm', Vector((s * 0.25, 0.35, -0.9)).normalized()); viser(c + 'ForeArm', Vector((s * 0.05, 0.85, -0.5)).normalized()); viser(c + 'Hand', Vector((0, 0.9, -0.4)).normalized())
+        else:
+            viser(c + 'UpLeg', Vector((s * 0.06, 0, -1)).normalized()); viser(c + 'Leg', Vector((s * 0.03, 0.02, -1)).normalized())
+            viser(c + 'Foot', Vector((0, -0.85, -0.5)).normalized()); viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+            bras = Vector((s * 0.75, -0.35, 0.05 + 0.03 * r)).normalized(); viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+
+def etire_epaule(t):
+    """Étirement de l'épaule : bras droit tendu en travers de la poitrine, tenu par l'avant-bras gauche ; on alterne à mi-temps."""
+    r = math.sin(t * 2 * math.pi); debout(0.0, r); cote = 'Right' if t < 0.5 else 'Left'
+    for c, s in (('Left', 1), ('Right', -1)):
+        viser(c + 'UpLeg', Vector((s * 0.1, 0, -1)).normalized()); viser(c + 'Leg', Vector((s * 0.05, 0.02, -1)).normalized())
+        viser(c + 'Foot', Vector((0, -0.85, -0.5)).normalized()); viser(c + 'ToeBase', Vector((0, -1, -0.05)).normalized())
+        if c == cote:   # bras étiré : en travers, horizontal
+            bras = Vector((-s * 0.9, -0.42, -0.05)).normalized(); viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+        else:           # bras qui tient : coude plié, avant-bras sous le bras étiré
+            viser(c + 'Arm', Vector((s * 0.15, -0.35, -0.92)).normalized()); viser(c + 'ForeArm', Vector((-s * 0.85, -0.4, 0.35)).normalized()); viser(c + 'Hand', Vector((-s * 0.9, -0.3, 0.2)).normalized())
+
+def etire_ischios(t):
+    """Étirement des ischio-jambiers assis : jambes tendues devant, buste penché vers les pieds, mains vers les chevilles."""
+    k = 0.5 - 0.5 * math.cos(2 * math.pi * t)      # on se penche, on revient doucement
+    a = 0.55 + 0.45 * k                              # buste : de presque droit à bien penché
+    for n, f in (('Hips', 0.5), ('Spine', 0.8), ('Spine1', 1.0), ('Spine2', 1.0)): orienter(n, (0, -math.sin(a * f), math.cos(a * f)), (0, -1, 0))
+    orienter('Neck', (0, -math.sin(a), math.cos(a) + 0.3), (0, -1, 0)); orienter('Head', (0, -math.sin(a) - 0.2, math.cos(a) + 0.2), (0, -1, 0))
+    for c, s in (('Left', 1), ('Right', -1)):
+        jambe = Vector((s * 0.08, -1, 0)).normalized(); viser(c + 'UpLeg', jambe); viser(c + 'Leg', jambe)
+        viser(c + 'Foot', Vector((0, -0.2, 1)).normalized()); viser(c + 'ToeBase', Vector((0, -0.5, 1)).normalized())
+        bras = Vector((s * 0.12, -1, -0.25 - 0.3 * k)).normalized(); viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', bras)
+
+def etire_dos(t):
+    """Posture de l'enfant : à genoux, fesses sur les talons, bras tendus loin devant, front vers le sol."""
+    r = math.sin(t * 2 * math.pi)
+    for n, k in (('Hips', 0.0), ('Spine', 0.15), ('Spine1', 0.3), ('Spine2', 0.4)): orienter(n, (0, -1, -0.55 + k * 0.4 + 0.02 * r), (0, 0, -1))
+    orienter('Neck', (0, -1, -0.5), (0, 0, -1)); orienter('Head', (0, -1, -0.6), (0, 0, -1))
+    for c, s in (('Left', 1), ('Right', -1)):
+        viser(c + 'UpLeg', Vector((s * 0.12, -0.55, -0.83)).normalized()); viser(c + 'Leg', Vector((0, 1, -0.05)).normalized())
+        viser(c + 'Foot', Vector((0, 1, 0.2)).normalized()); viser(c + 'ToeBase', Vector((0, 1, 0.2)).normalized())
+        bras = Vector((s * 0.15, -1, -0.12)).normalized(); viser(c + 'Arm', bras); viser(c + 'ForeArm', bras); viser(c + 'Hand', Vector((s * 0.1, -1, -0.15)).normalized(), Vector((0, 0, -1)), garder=False)
+
 # nom : (pose, mesure de calage ou None, bornes de recherche, mouvement par image ou None)
 POSES = {'gainage': (gainage, ecart_gainage, 0.0, 0.3, None), 'gainage_lateral': (gainage_lateral, ecart_lateral, 0.2, 0.5, None),
          'chaise': (chaise, None, 0, 0, None), 'pont_fessier': (pont_fessier, ecart_pont, 0.4, 1.0, phase),
          'superman': (superman, None, 0, 0, phase), 'hollow': (hollow, None, 0, 0, None),
          'fentes': (fentes, ecart_fentes, 0.3, 0.9, None), 'mountain_climbers': (mountain_climbers, ecart_mc, 0.1, 0.5, None),
-         'montees_genoux': (montees_genoux, None, 0, 0, None)}
+         'montees_genoux': (montees_genoux, None, 0, 0, None),
+         'etire_quadri': (etire_quadri, None, 0, 0, None), 'etire_epaule': (etire_epaule, None, 0, 0, None),
+         'etire_ischios': (etire_ischios, None, 0, 0, None), 'etire_dos': (etire_dos, None, 0, 0, None)}
 pose, mesure, A0, A1, mouvement = POSES[EX]
 
 # Calage : on cherche l'inclinaison du corps qui pose l'appui et les pieds à la même hauteur (sol)

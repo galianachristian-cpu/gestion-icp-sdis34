@@ -3485,7 +3485,11 @@ var GARDE_EX=[
   ["gainage_lateral","Gainage latéral","Hanches hautes. On change de côté à mi-temps.","abdos",1],
   ["hollow","Hollow hold","Le corps en banane, bas du dos collé au sol.","abdos",1],
   ["situps","Sit-up","On remonte le buste jusqu’aux genoux, on redescend doucement.","abdos",1],
-  ["burpee","Burpees","Squat, planche, pompe, retour et saut !","cardio",2]
+  ["burpee","Burpees","Squat, planche, pompe, retour et saut !","cardio",2],
+  ["etire_quadri","Étirement des cuisses","On attrape le pied derrière, genou vers le sol. On change de jambe à mi-temps.","calme",9],
+  ["etire_ischios","Étirement de l'arrière des cuisses","Assis jambes tendues, on se penche doucement vers les pieds. On respire.","calme",9],
+  ["etire_epaule","Étirement des épaules","Le bras en travers de la poitrine, on change à mi-temps.","calme",9],
+  ["etire_dos","Posture de l'enfant","À genoux, les bras loin devant, on relâche tout le dos.","calme",9]
 ].map(function(a){return {k:a[0],n:a[1],aide:a[2],fam:a[3],niv:a[4]}});
 var GARDE_BY={};GARDE_EX.forEach(function(e){GARDE_BY[e.k]=e});
 var GARDE_NIV=[{nom:"Recrue",eff:30,rec:20},{nom:"Équipier",eff:40,rec:15},{nom:"Chef d'agrès",eff:45,rec:15}];
@@ -3532,7 +3536,7 @@ function gardePlan(){
       if(c){pris[c.k]=1;nb++;P.push({ex:c,d:n.eff,etape:"Tour "+(t+1)+" / "+tours,tour:t})}
     }
   }
-  P.push({ex:GARDE_BY.pont_fessier,d:40,etape:"Retour au calme",enchaine:true,calme:true},{ex:GARDE_BY.superman,d:30,etape:"Retour au calme",enchaine:true});
+  ["etire_quadri","etire_ischios","etire_epaule","etire_dos"].forEach(function(k,i){P.push({ex:GARDE_BY[k],d:30,etape:"Retour au calme",enchaine:true,calme:i===0})});
   return {P:P,rec:n.rec,tours:tours};
 }
 // ----- voix du coach : messages enregistrés (audio/garde/h ou f), la radio baisse pendant qu'il parle -----
@@ -3595,7 +3599,7 @@ function gardeMajChrono(){
 function gardeSeconde(){
   var S=GARDE.S;if(!S||S.pause||S.fini)return;S.reste--;
   if(S.phase==="effort"&&S.reste===Math.floor(S.total/2)&&S.total>=30){
-    if(S.P[S.i].ex.k==="gainage_lateral"){gardeDire(["cote"]);gardeBulle("On change de côté !")}
+    if(["gainage_lateral","etire_quadri","etire_epaule"].indexOf(S.P[S.i].ex.k)>=0){gardeDire(["cote"]);gardeBulle("On change de côté !")}
     else{var m=1+Math.floor(Math.random()*3);gardeDire(["mi-"+m]);gardeBulle(GARDE_BULLES.mi[m-1])}}
   if(S.reste>0&&S.reste<=3)gardeBip(S.phase==="effort"?880:660,0.09);
   if(S.reste<=0)return gardeSuite();
