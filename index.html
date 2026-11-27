@@ -3336,7 +3336,7 @@ function sgtAnnonce(i,forceType){
   if(!seq&&(type==="etat"||type==="duel"||type==="tete")&&d){
     var S=dfsStats(d),deb=new Date(d.debut+"T00:00:00"),fin=new Date(d.fin+"T23:59:59"),att=100*Math.min(1,Math.max(0,(t-deb)/(fin-deb)));
     var e=dfsAVenir(d)?"avenir":S.atteint?"atteint":S.pct>=att?"avance":"retard";
-    seq=["clairon",estNoel(d)&&e!=="avenir"&&jour%2?"noel-1":e+"-"+(e==="avenir"?1:1+hasard(2,jour+i))];}
+    seq=["clairon",estNoel(d)&&e==="atteint"?"noel-fin":estNoel(d)&&e!=="avenir"&&(jour+i)%3?"noel-"+(1+hasard(8,jour*5+i)):e+"-"+(e==="avenir"?1:1+hasard(2,jour+i))];}
   if(!seq)seq=["clairon","general-"+(1+hasard(7,jour*3+i))];
   sgtDire(seq);
 }
