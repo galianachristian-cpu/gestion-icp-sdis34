@@ -7181,7 +7181,7 @@ function dfsCarte(d){
   if(moi&&!dfsAVenir(d)&&!(d.actif&&d.fin>=dfsIso(new Date()))){var MB=dfsMonBilan(d,moi.id);
     if(MB.seances)h+='<div class="pcard"><div class="sec">Mon bilan</div><div class="dfs-moi"><div class="dfs-mv"><b>'+dfsNum(MB.v)+'</b><em>'+dfsEsc(d.unite)+'</em></div>'
       +'<span class="note" style="margin:0">'+MB.seances+' séance'+(MB.seances>1?'s':'')+' · '+MB.jours+' jour'+(MB.jours>1?'s':'')+' · '+MB.part+' % du total du centre</span></div>'
-      +'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button></div></div>';}
+      +'<div class="prow" style="margin-top:10px"><button class="pbtn pri" onclick="dfsCarteBilan('+d.id+')">🖼️ Ma carte du défi (à partager)</button><button class="pbtn" onclick="dfsMonDiplome('+d.id+')">🎓 Mon diplôme (PDF)</button></div></div>';}
   if(d.par_garde)h+=dfsGardesHtml(d);
   if(!dfsAVenir(d))h+=duelsHtml(d);
   if(!dfsAVenir(d))h+=dfsPodiumHtml(d);
@@ -7247,6 +7247,7 @@ function dfsAdminHtml(d){
       +'<button class="pbtn" onclick="dfsSupprimer('+d.id+')">🗑️ Supprimer</button>'
       +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button>'
       +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button>'
+      +'<button class="pbtn" onclick="dfsTousDiplomes('+d.id+')">🎓 Tous les diplômes (PDF)</button>'
       +'<button class="pbtn" onclick="ouvrirModeTV()">📺 Mode TV (salle)</button>'
       +'<button class="pbtn" onclick="dfsAffichetteQR()">🖨️ Affichettes QR rameur / SkiErg</button>'
       +'<button class="pbtn" onclick="apercuNoel()">🎄 '+((function(){try{return localStorage.getItem("icp_noel_force")==="1"}catch(e){return false}})()?'Couper l\'aperçu de Noël':'Aperçu de la déco de Noël')+'</button></div>'
@@ -7519,6 +7520,88 @@ function dfsAfficheFinalePdf(d,photo,ratio){
   doc.setFont("helvetica","italic");doc.setFontSize(9);doc.setTextColor(120,113,108);
   doc.text("Chaque contribution a compté. Bravo à tout le centre !",W/2,288,{align:"center"});
   doc.save("Defi_bilan_"+d.titre.replace(/[^a-zA-Z0-9]+/g,"_")+".pdf");
+}
+// ===== DIPLÔMES DE FIN DE DÉFI (PDF A4 paysage) =====
+// Diplôme classique pour chaque participant ; diplôme d'honneur or / argent / bronze pour le podium.
+// Le podium du diplôme ignore les fiches listées ici (Christian ne veut pas y figurer) :
+// elles reçoivent le diplôme classique et le podium passe aux suivants.
+var DIPLOME_HORS_PODIUM=[15];
+var DIPLOME_SIGNATURE={titre:"Le référent sport",nom:"C. Galiana"};
+function dfsDiplomeClassement(S){return S.classement.filter(function(c){return DIPLOME_HORS_PODIUM.indexOf(c.pid)===-1})}
+function dfsDiplomeRang(S,pid){var L=dfsDiplomeClassement(S);for(var i=0;i<L.length&&i<3;i++)if(L[i].pid===pid)return i+1;return 0}
+function dfsDiplomeMoustache(doc,cx,cy,k,rgb){
+  // moustache dessinée en courbes de Bézier (coordonnées relatives, échelle k mm)
+  doc.setFillColor(rgb[0],rgb[1],rgb[2]);
+  doc.lines([[-2.5,-3,-7.5,-3,-10.5,0],[-2,2,-4.5,2.5,-6.5,1],[1.5,4,7.5,5,11.5,3],[2.5,-1,4.5,-2,5.5,-3],
+             [1,1,3,2,5.5,3],[4,2,10,1,11.5,-3],[-2,1.5,-4.5,1,-6.5,-1],[-3,-3,-8,-3,-10.5,0]],cx,cy-1,[k,k],'F',true);
+}
+function dfsDiplomeMedaille(doc,cx,cy,r,rgb,rang){
+  doc.setFillColor(201,42,37);
+  doc.triangle(cx-r*0.75,cy-r*1.9,cx-r*0.15,cy-r*1.9,cx,cy-r*0.7,'F');
+  doc.triangle(cx+r*0.75,cy-r*1.9,cx+r*0.15,cy-r*1.9,cx,cy-r*0.7,'F');
+  doc.setFillColor(rgb[0],rgb[1],rgb[2]);doc.circle(cx,cy,r,'F');
+  doc.setDrawColor(11,26,58);doc.setLineWidth(0.5);doc.circle(cx,cy,r*0.78,'S');
+  doc.setFont("helvetica","bold");doc.setFontSize(r*2.6);doc.setTextColor(11,26,58);
+  doc.text(String(rang),cx,cy+r*0.36,{align:"center"});
+}
+function dfsDiplomePage(doc,d,S,pid){
+  var W=297,H=210,cx=W/2,v=0,u=dfsTextePdf(d.unite),F=sexeDe(pid)==="F",mov=estMovember(d),noel=estNoel(d);
+  S.classement.forEach(function(c){if(c.pid===pid)v=c.v});
+  var rang=dfsDiplomeRang(S,pid),METAL=[[212,167,44],[184,188,196],[192,122,69]],accent=rang?METAL[rang-1]:[229,69,63];
+  var BLEU=[82,182,225],CLAIR=[201,203,211],BLANC=[242,241,232];
+  doc.setFillColor(11,26,58);doc.rect(0,0,W,H,'F');
+  if(rang){doc.setDrawColor(accent[0],accent[1],accent[2]);doc.setLineWidth(1.4);doc.rect(9,9,W-18,H-18,'S');doc.setLineWidth(0.4);doc.rect(13,13,W-26,H-26,'S');}
+  else{doc.setDrawColor(201,42,37);doc.setLineWidth(1);doc.rect(10,10,W-20,H-20,'S');}
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(BLEU[0],BLEU[1],BLEU[2]);
+  doc.text("SAPEURS-POMPIERS  CIS CRUZY-QUARANTE  ·  SDIS 34",cx,27,{align:"center",charSpace:0.6});
+  if(mov)dfsDiplomeMoustache(doc,cx,35,0.9,[201,42,37]);
+  var titre=rang?"Diplôme d'honneur — "+(rang===1?"1re":rang+"e")+" place":"Diplôme de participation";
+  doc.setFont("helvetica","bold");doc.setFontSize(rang?30:32);
+  doc.setTextColor(rang?accent[0]:BLANC[0],rang?accent[1]:BLANC[1],rang?accent[2]:BLANC[2]);
+  doc.text(titre,cx,53,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(13);doc.setTextColor(BLEU[0],BLEU[1],BLEU[2]);
+  doc.text(dfsTextePdf(d.titre),cx,62,{align:"center",maxWidth:220});
+  // bloc central (décalé à droite si une médaille est dessinée)
+  var bx=rang?cx+22:cx;
+  if(rang)dfsDiplomeMedaille(doc,cx-88,112,17,accent,rang);
+  doc.setFont("helvetica","normal");doc.setFontSize(12);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);doc.text("est décerné à",bx,82,{align:"center"});
+  doc.setFont("times","bolditalic");doc.setFontSize(34);doc.setTextColor(BLANC[0],BLANC[1],BLANC[2]);
+  doc.text(dfsTextePdf(dfsNom(pid)),bx,98,{align:"center",maxWidth:rang?170:230});
+  var phrase=rang===1?(mov?(F?"meilleure rameuse du centre avec":"meilleur rameur du centre avec"):"à la première place du centre avec")
+    :rang===2?"à la deuxième place du centre avec":rang===3?"à la troisième place du centre avec"
+    :(/km|m$/i.test(d.unite||"")?"pour avoir parcouru":"pour sa contribution de");
+  doc.setFont("helvetica","normal");doc.setFontSize(12.5);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);doc.text(phrase,bx,109,{align:"center"});
+  doc.setFont("helvetica","bold");doc.setFontSize(40);doc.setTextColor(accent[0],accent[1],accent[2]);
+  doc.text(dfsNum(v)+" "+u,bx,125,{align:"center"});
+  var fin=["et contribué aux "+dfsNum(S.total)+" "+u+" de l'équipe"+(mov?" pour la santé des hommes":noel?" pour aider le Père Noël à skier":"")];
+  if(mov&&S.total>=177)fin.push("du pont de la Croisade (Cruzy) jusqu'à Toulouse, par le Canal du Midi");
+  doc.setFont("helvetica","normal");doc.setFontSize(11.5);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);
+  fin.forEach(function(l,i){doc.text(dfsTextePdf(l),bx,137+i*6,{align:"center",maxWidth:rang?180:230})});
+  // pied de page
+  var du=new Date(d.debut+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"}),au=new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  doc.setFontSize(10);doc.setTextColor(CLAIR[0],CLAIR[1],CLAIR[2]);
+  doc.text("Du "+du+" au "+au,24,181);
+  doc.text(S.classement.length+" participant"+(S.classement.length>1?"s":"")+" · "+dfsNum(S.total)+" "+u+" au total",24,187);
+  doc.text(DIPLOME_SIGNATURE.titre,W-24,181,{align:"right"});
+  doc.setFont("times","italic");doc.setFontSize(15);doc.setTextColor(BLANC[0],BLANC[1],BLANC[2]);
+  doc.text(DIPLOME_SIGNATURE.nom,W-24,188,{align:"right"});
+}
+function dfsDiplomePdf(d,pids,nomFichier){
+  var S=dfsStats(d),doc=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+  pids.forEach(function(pid,i){if(i)doc.addPage();dfsDiplomePage(doc,d,S,pid)});
+  doc.save(nomFichier);
+}
+function dfsMonDiplome(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0],moi=dfsMoi();if(!d||!moi)return;
+  if(!dfsMonBilan(d,moi.id).seances){showToast("Pas de diplôme sans participation 😉","info");return}
+  dfsDiplomePdf(d,[moi.id],"Diplome_"+d.titre.replace(/[^A-Za-z0-9]+/g,"_")+"_"+dfsNom(moi.id).replace(/[^A-Za-z0-9]+/g,"_")+".pdf");
+  showToast("🎓 Ton diplôme est prêt","success");
+}
+function dfsTousDiplomes(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  var S=dfsStats(d);if(!S.classement.length){showToast("Aucun participant pour l'instant","info");return}
+  dfsDiplomePdf(d,S.classement.map(function(c){return c.pid}),"Diplomes_"+d.titre.replace(/[^A-Za-z0-9]+/g,"_")+".pdf");
+  showToast("🎓 "+S.classement.length+" diplômes générés","success");
 }
 // effets, repris de l'onglet Mon sport
 function dfsEnterFx(){
