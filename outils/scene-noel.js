@@ -90,6 +90,8 @@ function SceneNoel(cv,IMG,opt){
     traineau:{dur:11,txt:"Le Sergent-Chef et la Sergente-Chef font un tour de traîneau. Ils trichent : ils volent !",dessin(k,t){const x=W*(-0.2+1.4*k),y=H*(0.36+0.05*Math.sin(k*7));
       img('traineau',x,y,H*0.2,{ombre:'rgba(255,230,150,.9)',flou:24});
       if(Math.random()<0.8)feux.push({x:x-H*0.16,y:y-H*0.04,vx:-(20+Math.random()*30),vy:10+Math.random()*20,v:1,c:'rgba(255,230,150,A)'})}},
+    brigade:{dur:14,txt:"La brigade de la forêt rentre d'intervention. Le loup n'a pas lâché son café.",dessin(k,t){const x=W*(-0.35+1.7*k),y=H*0.995+Math.abs(Math.sin(t*6))*-2;
+      img('brigade',x,y,H*0.24);if(Math.random()<0.5)eclats.push({x:x-H*0.25,y:y,vx:-(20+Math.random()*40),vy:-(20+Math.random()*30),v:1})}},
     lutin:{dur:9,txt:"Le lutin pompier fait une reconnaissance… et arrose tout le monde de neige !",dessin(k,t){const a=k<0.12?k/0.12:k>0.88?(1-k)/0.12:1;const x=W*(0.06+0.16*a),y=H*0.99;
       img('lutin',x+H*0.2,y,H*0.3,{a});for(let i=0;i<5;i++)eclats.push({x:x+H*0.42,y:y-H*0.19,vx:120+Math.random()*160,vy:-(40+Math.random()*90),v:1})}},
     renne:{dur:9,txt:"Rudolph s'entraîne pour Noël. Il a encore du boulot…",dessin(k,t){const a=k<0.12?k/0.12:k>0.88?(1-k)/0.12:1;const x=W*(1.08-0.24*a),y=H*0.99+Math.sin(t*5)*2;
