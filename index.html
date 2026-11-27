@@ -309,6 +309,24 @@ html body #tab-defis .dfs-h{position:relative;overflow:hidden}
 img.moustache{width:54px;height:18px;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
 img.medaille{width:22px;height:30px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))}
 #tab-defis .dfs-l .r img.medaille{animation:pop .5s cubic-bezier(.2,1.6,.4,1) both}
+/* ===== COMPTE À REBOURS DU DÉFI ===== */
+.dfs-cr{margin-top:14px;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid rgba(251,191,36,.35)}
+.dfs-cr .cr-haut{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px}
+.dfs-cr .cr-km b{font-size:30px;font-weight:800;color:#fbbf24;font-variant-numeric:tabular-nums}
+.dfs-cr .cr-km em{font-style:normal;font-size:14px;color:var(--pmuted,#a8a29e);margin-left:6px}
+.dfs-cr .cr-t{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+.dfs-cr .cr-t small{font-size:12px;font-weight:600;color:var(--pmuted,#a8a29e);margin-right:6px}
+.dfs-cr .cr-l{font-size:13.5px;line-height:1.5;margin-top:6px;color:var(--ptext,#fafaf9)}
+.dfs-cr .cr-l b{color:#fbbf24}
+.dfs-cr .cr-proj.ok b{color:#4ade80}.dfs-cr .cr-proj.ko b{color:#f87171}
+.dfs-cr .cr-sgt{display:none;margin-top:8px;font-weight:700;color:#fecaca}
+.dfs-cr.urgent{border-color:#ef4444;background:rgba(239,68,68,.12);animation:cr-pulse 1.6s ease-in-out infinite}
+.dfs-cr.urgent .cr-t,.dfs-cr.urgent .cr-km b{color:#f87171}
+.dfs-cr.urgent .cr-sgt{display:block}
+@keyframes cr-pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.45)}50%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
+@media (prefers-reduced-motion: reduce){.dfs-cr.urgent{animation:none}}
+.dfs-cr.tv{margin-top:18px;padding:18px 24px}
+.dfs-cr.tv .cr-km b{font-size:48px}.dfs-cr.tv .cr-t{font-size:40px}.dfs-cr.tv .cr-l{font-size:20px}.dfs-cr.tv .cr-km em,.dfs-cr.tv .cr-t small{font-size:18px}
 /* ===== MODE TV (salle de sport) ===== */
 #modeTV{position:fixed;inset:0;z-index:9000;background:radial-gradient(ellipse at 50% -10%,rgba(234,88,12,.28),transparent 60%),var(--bg);color:var(--text);overflow:hidden;cursor:default}
 #modeTV.hidden{display:none}
@@ -3441,7 +3459,7 @@ function renderTV(){
     +'<span class="tv-pill">'+(avenir?'J-'+dfsJoursAvant(d):S.reste<=0?'dernier jour':'J-'+S.reste)+'</span></div>'
     +'<div class="tv-chiffres"><b data-n="'+S.total+'">'+dfsNum(S.total)+'</b><em>/ '+dfsNum(d.objectif)+' '+dfsEsc(d.unite)+(S.atteint?' ✅':'')+'</em><span class="pct">'+pctAffiche(d,S)+' %</span></div>'
     +(estNoel(d)&&!avenir&&!MOUVEMENT_REDUIT?noelSceneHtml("tv"):'<div class="tv-jauge"><div class="bdf-jauge'+(!avenir&&th?' avec-perso':'')+(!avenir&&S.atteint?' avec-bonus':'')+'">'+jaugeContenu(d,S,avenir,attendu)+'</div></div>')
-    +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")
+    +'<div class="tv-rythme">'+rythme+'</div>'+dfsBonusHtml(d,S,"tv")+dfsCompteurHtml(d,S,"tv")
     +(estNoel(d)&&!avenir?'<div><span class="etape-noel">'+etapeNoel(S.pct)+'</span></div>':'')
     +(d.par_garde&&!avenir?'<div class="tv-gardes">'+gardesLigneHtml(d)+'</div>':'')
     +(hu?'<div class="tv-humour"><img src="img/mascotte/'+(function(){var x=humeurSergent();return x==="buste"?"sergent-chef-buste":"sergent-"+x})()+'.webp" alt="">« '+dfsEsc(phraseDuJour(hu[etat],d.id))+' »</div>':'')
@@ -7159,7 +7177,7 @@ function dfsCarte(d){
     +'<div class="dfs-sous"><span>'+pctAffiche(d,S)+' %</span>'
     +(S.atteint?'<span class="dfs-ok">🎉 Objectif atteint !</span>'
                :'<span>il reste '+dfsNum(Number(d.objectif)-S.total)+' '+dfsEsc(d.unite)+'</span>')+'</div>'
-    +dfsBonusHtml(d,S)
+    +dfsBonusHtml(d,S)+dfsCompteurHtml(d,S)
     +(d.recompense?'<div class="dfs-reco">🎁 <b>À la clé :</b> '+dfsEsc(d.recompense)+'</div>':'')
     +'</div>';
   // ma contribution
@@ -7521,6 +7539,48 @@ function dfsAfficheFinalePdf(d,photo,ratio){
   doc.text("Chaque contribution a compté. Bravo à tout le centre !",W/2,288,{align:"center"});
   doc.save("Defi_bilan_"+d.titre.replace(/[^a-zA-Z0-9]+/g,"_")+".pdf");
 }
+// ===== COMPTE À REBOURS DU DÉFI =====
+// Vers l'objectif, puis vers le prochain palier bonus une fois l'objectif atteint.
+// Chrono à la seconde, rythme à tenir, projection, mode « dernière ligne droite » les 24 dernières heures.
+var CR_SERGENT={movember:"« Dernier jour, les moustaches ! Chaque coup de rame compte. » — le Sergent-Chef",
+  noel:"« Dernière ligne droite : le Père Noël compte sur vous ! » — le Sergent-Chef",
+  autre:"« Dernier jour ! On lâche rien, tout le centre pousse. » — le Sergent-Chef"};
+function dfsCompteurDonnees(d,S){
+  if(!d||!d.actif||dfsAVenir(d))return null;
+  var now=new Date(),fin=new Date(d.fin+"T23:59:59"),deb=new Date(d.debut+"T00:00:00");
+  if(fin<=now)return null;
+  var B=dfsBonus(d,S),cible=S.atteint?(B?B.cible:Number(d.objectif)):Number(d.objectif),reste=Math.max(0,cible-S.total);
+  var jr=(fin-now)/864e5,ecoule=Math.max(0.5,(now-deb)/864e5),vitesse=S.total/ecoule,proj=S.total+vitesse*jr;
+  var passage=vitesse>0&&reste>0?new Date(now.getTime()+reste/vitesse*864e5):null;
+  return {cible:cible,reste:reste,fin:fin,jr:jr,proj:proj,passage:passage&&passage<=fin?passage:null,n:S.classement.length,bonus:S.atteint};
+}
+function dfsCompteurHtml(d,S,cls){
+  var C=dfsCompteurDonnees(d,S);if(!C||!C.reste)return "";
+  var u=dfsEsc(d.unite),mov=estMovember(d),qui=mov?"rameur":"participant";
+  var parJour=C.reste/Math.max(1,C.jr),chacun=C.n?C.reste/C.n:0;
+  var proj=C.passage?'<span class="cr-proj ok">📈 À ce rythme, vous passez les '+dfsNum(C.cible)+' '+u+' <b>'+(dfsIso(C.passage)===dfsIso(new Date())?"aujourd'hui":C.passage.toLocaleDateString("fr-FR",{weekday:"long"}))+'</b>.</span>'
+    :'<span class="cr-proj ko">📈 À ce rythme : <b>≈ '+dfsNum(Math.floor(C.proj))+' '+u+'</b> à la fin. Il faut accélérer !</span>';
+  return '<div class="dfs-cr '+(cls||"")+(C.jr<=1?' urgent':'')+'" data-fin="'+C.fin.getTime()+'">'
+    +'<div class="cr-haut"><div class="cr-km"><b>'+dfsNum(C.reste)+' '+u+'</b><em>à aller chercher'+(C.bonus?' pour les '+dfsNum(C.cible)+' '+u:'')+'</em></div>'
+    +'<div class="cr-t"><small>⏱️ fin dans</small><span class="cr-chrono">'+dfsChrono(C.fin-new Date())+'</span></div></div>'
+    +'<div class="cr-l">🎯 Rythme à tenir : <b>'+dfsNum(parJour)+' '+u+' par jour</b>'+(C.n?', soit <b>'+dfsNum(chacun)+' '+u+'</b> par '+qui+' si les '+C.n+' '+qui+'s s\'y mettent':'')+'.</div>'
+    +'<div class="cr-l">'+proj+'</div>'
+    +'<div class="cr-sgt">🔴 '+dfsEsc(CR_SERGENT[themeHumour(d)||"autre"])+'</div></div>';
+}
+function dfsChrono(ms){
+  if(ms<=0)return "terminé";var s=Math.floor(ms/1000),j=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60;
+  var p=function(n){return String(n).padStart(2,"0")};
+  return (j?j+" j ":"")+p(h)+" h "+p(m)+" min "+p(x)+" s";
+}
+// une seule horloge pour tous les comptes à rebours affichés (appli et mode TV)
+var crHorloge=null;
+function dfsCompteurTick(){
+  var L=document.querySelectorAll(".dfs-cr[data-fin]");
+  for(var i=0;i<L.length;i++){var el=L[i],ms=Number(el.getAttribute("data-fin"))-Date.now(),c=el.querySelector(".cr-chrono");
+    if(c)c.textContent=dfsChrono(ms);
+    if(ms<=864e5)el.classList.add("urgent");}
+}
+if(!crHorloge)crHorloge=setInterval(dfsCompteurTick,1000);
 // ===== DIPLÔMES DE FIN DE DÉFI (PDF A4 paysage) =====
 // Diplôme classique pour chaque participant ; diplôme d'honneur or / argent / bronze pour le podium.
 // Le podium du diplôme ignore les fiches listées ici (Christian ne veut pas y figurer) :
