@@ -720,7 +720,8 @@ demarrer=(f=>function(){f();diffuserPret()})(demarrer);
 finir=(f=>function(){const deja=etat.fini;f();if(!deja){envoyer();if(canalTx&&!ECRAN)document.getElementById('finBoite').insertAdjacentHTML('beforeend','<p class="etat">📺 Ta séance est affichée sur la télé de la salle.</p>')}})(finir);
 // ----- côté télé -----
 let suivi=null,dernierRecu=0,prenomSuivi='',retourT=null;
-function retourAttente(){location.reload()}
+// dans le mode TV du défi (iframe) : on prévient la télé, qui revient au défi ; sinon on revient à l'attente
+function retourAttente(){if(window.parent!==window){try{window.parent.postMessage({rame:'fin'},'*')}catch(e){}return}location.reload()}
 if(ECRAN){
   document.body.classList.add('ecran');cam=4;document.getElementById('qui').textContent='Télé de la salle · en direct';
   document.getElementById('accueil').classList.add('cache');document.getElementById('attente').classList.remove('cache');
@@ -746,9 +747,9 @@ if(ECRAN){
   // fin sur la télé : résultat, QR « Ajoute ta séance », retour à l'attente
   finir=(f=>function(){if(etat.fini)return;f();
     const qui=(prenomSuivi||'Le rameur').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),km=(etat.distance/1000).toLocaleString('fr-FR',{maximumFractionDigits:2});
-    document.getElementById('finBoite').querySelector('.etat').outerHTML='<div class="fin-qr"><div class="qr">'+qrHtml(lienPage('?ajout'))+'</div><div><b style="font-size:18px">'+qui+', ajoute tes '+km+' km au défi !</b><p class="etat" style="margin:6px 0 0">Scanne avec ton téléphone.</p></div></div><p class="etat" id="retourTxt">Retour à l\'attente dans 45 s</p>';
+    document.getElementById('finBoite').querySelector('.etat').outerHTML='<div class="fin-qr"><div class="qr">'+qrHtml(lienPage('?ajout'))+'</div><div><b style="font-size:18px">'+qui+', ajoute tes '+km+' km au défi !</b><p class="etat" style="margin:6px 0 0">Scanne avec ton téléphone.</p></div></div><p class="etat" id="retourTxt">'+(q.has('tvdefi')?'Retour au défi':'Retour à l\'attente')+' dans 45 s</p>';
     document.querySelector('#finBoite .ligne').remove();document.getElementById('direct').classList.remove('on');
-    let n=45;retourT=setInterval(()=>{n--;const r=document.getElementById('retourTxt');if(r)r.textContent='Retour à l\'attente dans '+n+' s';if(n<=0)retourAttente()},1000)})(finir);
+    let n=45;retourT=setInterval(()=>{n--;const r=document.getElementById('retourTxt');if(r)r.textContent=(q.has('tvdefi')?'Retour au défi':'Retour à l\'attente')+' dans '+n+' s';if(n<=0)retourAttente()},1000)})(finir);
   // plus de nouvelles du téléphone : on prévient puis on revient à l'attente
   setInterval(()=>{if(!suivi||etat.fini)return;const s=(performance.now()-dernierRecu)/1000;
     if(s>20&&s<23)ditSergent('Liaison perdue avec le téléphone… '+(prenomSuivi||'le rameur')+', tu es toujours là ?');

@@ -1191,6 +1191,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .noel-scene{position:relative;border-radius:16px;overflow:hidden;background:#0f172a;margin:12px 0 6px;aspect-ratio:16/7}
 .noel-scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .noel-tv{aspect-ratio:auto;height:34vh;border-radius:2.4vh;margin:1.6vh 0 1vh}
+#tvRame{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:9600;background:#000}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
 </head>
@@ -3110,14 +3111,14 @@ function ouvrirModeTV(){
   var el=document.getElementById("modeTV");
   if(!el){el=document.createElement("div");el.id="modeTV";el.addEventListener("click",function(e){if(!e.target.closest(".tv-x"))tvPleinEcran()});document.body.appendChild(el);}
   el.classList.remove("hidden");document.body.classList.add("tv-on");
-  tvPleinEcran();tvGarderAllume();renderTV();
+  tvPleinEcran();tvGarderAllume();renderTV();rameEcouter();
   tvNuitAvant=null;tvNuitTic();chargerMeteo();
   if(radioVoulue()&&radioEtat==='off'&&!tvEstNuit())radioJouer();
   clearInterval(tvTimer);clearInterval(tvHorloge);
   tvTimer=setInterval(function(){Promise.resolve(chargerDefis(true)).then(renderTV,renderTV)},30000);
   tvHorloge=setInterval(function(){var h=document.querySelector("#modeTV .tv-heure");if(h)h.textContent=new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})},15000);
 }
-function fermerModeTV(){
+function fermerModeTV(){rameFermer();
   clearInterval(tvTimer);clearInterval(tvHorloge);
   var el=document.getElementById("modeTV");if(el){el.classList.add("hidden");el.innerHTML="";}
   if(radioAudio&&radioEtat!=='off'){var garde=radioVoulue();radioCouper();radioMemo(garde)}
@@ -3627,6 +3628,26 @@ function gardeTerminer(){
   gardeDire(["fin"]);gardeBip(880,0.15,3);
   var n=60;clearInterval(GARDE.retour);GARDE.retour=setInterval(function(){n--;var r=document.getElementById("gdRetour");if(r)r.textContent="Retour au mode TV dans "+n+" s";if(n<=0)gardeFermer()},1000);
 }
+
+// ===== RAME EN DIRECT sur le mode TV : dès qu'un téléphone diffuse une séance de rameur/SkiErg, la télé l'affiche =====
+// Canal Supabase Realtime « rame-salle » (rien n'est enregistré). La scène est rame.html?ecran dans un cadre plein écran ;
+// à la fin (ou si la liaison est perdue), elle prévient la télé qui revient au défi.
+var rameCanal=null,rameCadre=null,rameDernier=0;
+function rameEcouter(){
+  if(rameCanal||typeof supabaseClient==="undefined")return;
+  try{rameCanal=supabaseClient.channel("rame-salle",{config:{broadcast:{self:false}}}).on("broadcast",{event:"etat"},function(m){
+    var p=m&&m.payload;if(!p||p.fini||!document.body.classList.contains("tv-on")||tvEstNuit()||(typeof GARDE!=="undefined"&&GARDE.on))return;
+    rameDernier=Date.now();if(!rameCadre)rameOuvrir();
+  }).subscribe()}catch(e){rameCanal=null}
+}
+function rameOuvrir(){
+  rameCadre=document.createElement("iframe");rameCadre.id="tvRame";rameCadre.src="rame.html?ecran&tvdefi";rameCadre.allow="autoplay";
+  document.body.appendChild(rameCadre);
+}
+function rameFermer(){if(rameCadre){rameCadre.remove();rameCadre=null}}
+window.addEventListener("message",function(e){if(e.data&&e.data.rame==="fin")rameFermer()});
+// filet de sécurité : plus aucune nouvelle depuis 2 minutes
+setInterval(function(){if(rameCadre&&Date.now()-rameDernier>120000)rameFermer()},10000);
 // Après chaque chargement du défi : mode TV automatique (compte écran ou lien ?tv) et lien QR « ?ajout »
 function apresChargementDefis(){
   renderMotSergent();renderAccueilPerso();renderAvent();
