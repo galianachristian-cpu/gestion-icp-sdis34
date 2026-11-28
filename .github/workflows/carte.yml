@@ -1,0 +1,23 @@
+# Vérifie que la carte du code (docs/CARTE.md) correspond bien au code.
+# Si ce contrôle échoue : lancer « node outils/carte.cjs » puis envoyer le résultat.
+# N'a aucun effet sur la publication du site.
+name: Carte du code
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  carte:
+    name: Carte du code à jour
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node outils/carte.cjs --check
