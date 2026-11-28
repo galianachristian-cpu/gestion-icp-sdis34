@@ -1495,6 +1495,10 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 </div>
 </div>
 <div id="tab-seances" class="hidden">
+<details class="card" id="emomCard" style="margin-bottom:16px" ontoggle="if(this.open)renderEmom()">
+<summary class="card-title" style="cursor:pointer;margin:0">⏱️ EMOM à 3 niveaux — SkiErg / Thrusters / Burpees</summary>
+<div id="emomContent" style="margin-top:12px"></div>
+</details>
 <div class="card">
 <div class="card-title">🗓️ Générateur de séance — d'après le livret des ressources EAP2</div>
 <div class="filters" style="margin-bottom:12px">
@@ -6224,6 +6228,56 @@ function pdfRpeGauge(doc,x,y,width,range){
 }
 // Idee #5 : petit accent orange devant chaque titre de section du PDF, pour se rapprocher du rendu
 // noir/orange de la trame de reference (au lieu du gris jsPDF par defaut).
+// ===== EMOM à 3 niveaux (fiche fixe, indépendante du générateur de séance) =====
+var EMOM_NIVEAUX=["Débutant / reprise","Intermédiaire","Confirmé"];
+var EMOM_LIGNES=[
+  ["Tours","6","8","10"],
+  ["Durée","24 min","32 min","40 min"],
+  ["Min. 1 — SkiErg","8 cal","10 cal","12 cal"],
+  ["Min. 2 — Thrusters","8 × 20 kg","10 × 30 kg","12 × 40 kg"],
+  ["Min. 3 — Burpees","8","10","12"],
+  ["Min. 4","Repos","Repos","Repos"]
+];
+var EMOM_CONSIGNES=[
+  "Un poste par minute : on récupère le temps qui reste dans la minute.",
+  "Chaque poste doit être fini en 45 secondes maximum, sinon on baisse la charge ou les répétitions.",
+  "Charges et répétitions : des repères à ajuster à chacun.",
+  "Arrêter les thrusters si le dos s'arrondit ou si la technique se dégrade.",
+  "À plusieurs : 4 groupes, chacun démarre sur une minute différente (SkiErg, thrusters, burpees, repos)."
+];
+var EMOM_ECHAUFFEMENT="10 à 15 min : cardio léger, puis mobilité épaules, hanches et poignets, et séries de thrusters à vide.";
+function renderEmom(){
+  var box=document.getElementById("emomContent");if(!box)return;
+  box.innerHTML='<p style="font-size:13px;margin-bottom:10px"><b>Échauffement :</b> '+EMOM_ECHAUFFEMENT+'</p>'
+    +'<div style="overflow-x:auto"><table style="font-size:13px;width:100%"><thead><tr><th></th>'
+    +EMOM_NIVEAUX.map(function(l,i){return '<th><span class="niveau-badge '+classeNiveau(i)+'">'+l+'</span></th>'}).join("")
+    +'</tr></thead><tbody>'
+    +EMOM_LIGNES.map(function(r){return '<tr><td><b>'+r[0]+'</b></td>'+r.slice(1).map(function(v){return '<td style="text-align:center">'+v+'</td>'}).join("")+'</tr>'}).join("")
+    +'</tbody></table></div>'
+    +'<ul style="font-size:13px;margin:10px 0 12px;padding-left:18px;line-height:1.7">'+EMOM_CONSIGNES.map(function(c){return '<li>'+c+'</li>'}).join("")+'</ul>'
+    +'<button class="btn btn-success btn-sm" onclick="generateEmomPDF()">📄 Affiche EMOM (PDF)</button>';
+}
+function generateEmomPDF(){
+  var jsPDF=window.jspdf.jsPDF,doc=new jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+  var W=doc.internal.pageSize.getWidth(),m=14;
+  doc.setFillColor(15,23,42);doc.rect(0,0,W,28,'F');
+  doc.setFillColor(234,88,12);doc.rect(0,28,W,1.4,'F');
+  pdfLogo(doc,m-4,2,24);
+  doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(255,255,255);
+  doc.text("EMOM À 3 NIVEAUX",W/2,13,{align:"center"});
+  doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(251,146,60);
+  doc.text("SkiErg / Thrusters / Burpees — Caserne Cruzy-Quarante, SDIS 34",W/2,22,{align:"center"});
+  doc.autoTable({startY:36,theme:'grid',margin:{left:m,right:m},
+    head:[[""].concat(EMOM_NIVEAUX)],body:EMOM_LIGNES,
+    styles:{fontSize:14,halign:'center',cellPadding:3.2},headStyles:{fillColor:[234,88,12]},
+    columnStyles:{0:{halign:'left',fontStyle:'bold'}}});
+  var y=doc.lastAutoTable.finalY+9;
+  doc.setTextColor(15,23,42);doc.setFontSize(11);
+  ["Échauffement : "+EMOM_ECHAUFFEMENT].concat(EMOM_CONSIGNES).forEach(function(t){
+    var L=doc.splitTextToSize("• "+t,W-2*m);doc.text(L,m,y);y+=5.5*L.length;
+  });
+  doc.save("EMOM_3_niveaux.pdf");
+}
 function pdfSectionTitle(doc,x,y,text,size){
   doc.setFillColor(234,88,12);
   doc.rect(x,y-3.3,3,3,'F');
