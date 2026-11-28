@@ -4446,6 +4446,85 @@ async function dfsAfficheWhatsapp(id){
   var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});
   if(blob)diffuserImage(blob,"Sergent_Chef_"+dfsIso(new Date())+".png","Le point du Sergent-Chef");
 }
+// ===== INFOGRAPHIE « DE CRUZY À TOULOUSE » (bilan d'un défi en km, image à partager) =====
+// Trajet : le Canal du Midi, du Pont de la Croisade (commune de Cruzy) jusqu'à Toulouse.
+// Mis à l'échelle pour que 200 km arrivent pile à Toulouse (étapes placées d'après les points kilométriques du canal).
+var TRAJET_TOULOUSE=[
+ {n:"Pont de la Croisade",km:0,lon:2.985,lat:43.292},
+ {n:"Le Somail",km:7,lon:2.962,lat:43.264},
+ {n:"Homps",km:35,lon:2.721,lat:43.268},
+ {n:"Trèbes",km:63,lon:2.441,lat:43.208},
+ {n:"Carcassonne",km:77,lon:2.353,lat:43.213},
+ {n:"Castelnaudary",km:126,lon:1.953,lat:43.318},
+ {n:"Seuil de Naurouze",km:140,lon:1.818,lat:43.351},
+ {n:"Toulouse",km:200,lon:1.444,lat:43.604}];
+function trajetPosition(km){var T=TRAJET_TOULOUSE;if(km<=0)return {i:0,f:0};
+  for(var i=1;i<T.length;i++)if(km<=T[i].km)return {i:i-1,f:(km-T[i-1].km)/(T[i].km-T[i-1].km)};
+  return {i:T.length-2,f:1}}
+async function dfsInfographieTrajet(id){
+  var d=dfsListe.filter(function(x){return x.id===id})[0];if(!d)return;
+  showToast("Création de l'infographie…","info");
+  try{await document.fonts.load("700 80px Oswald");await document.fonts.load("700 30px Inter");await document.fonts.load("600 30px Inter");}catch(e){}
+  var P=dfsPointSituation(d),S=P.S,T=TRAJET_TOULOUSE,arrivee=T[T.length-1].km,total=S.total,arrive=total>=arrivee;
+  var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var g=cv.getContext("2d");
+  var OR="#fbbf24",BL="#fafaf9",GR="#a8a29e",EAU="#38bdf8";
+  var rg=g.createRadialGradient(W*.5,H*.35,20,W*.5,H*.35,H*.85);rg.addColorStop(0,"#0c4a6e");rg.addColorStop(1,"#0c0a09");g.fillStyle=rg;g.fillRect(0,0,W,H);
+  g.textBaseline="alphabetic";
+  // titre
+  g.textAlign="left";g.fillStyle=OR;g.font="700 34px Oswald, sans-serif";g.fillText((d.titre||"").toUpperCase().slice(0,48)+" · LE BILAN",60,86);
+  g.fillStyle=BL;g.font="700 "+(arrive?86:72)+"px Oswald, sans-serif";
+  g.fillText(arrive?"DE CRUZY À TOULOUSE":"CAP SUR TOULOUSE",60,180);
+  g.fillStyle="#bae6fd";g.font="600 32px Inter, sans-serif";
+  var sous=arrive?"Du Pont de la Croisade à Toulouse, par le Canal du Midi.":"Le centre s'est arrêté à "+dfsNum(Math.max(0.1,T[T.length-1].km-total))+" "+d.unite+" de Toulouse.";
+  g.fillText(sous,62,232);
+  // carte
+  var mx=60,my=270,mw=W-120,mh=440;g.fillStyle="rgba(15,23,42,.75)";rectArrondi(g,mx,my,mw,mh,30);g.fill();g.strokeStyle="#1e3a5f";g.lineWidth=2;g.stroke();
+  var lo0=1.40,lo1=3.02,la0=43.18,la1=43.63,k=Math.cos(43.4*Math.PI/180);
+  var ech=Math.min((mw-260)/((lo1-lo0)*k),(mh-150)/(la1-la0)),ox=mx+(mw-(lo1-lo0)*k*ech)/2-40,oy=my+40;
+  var pt=function(s){return [ox+(s.lon-lo0)*k*ech,oy+(la1-s.lat)*ech]};
+  var trace=function(jusqua){g.beginPath();T.forEach(function(s,i){var p=pt(s);if(i===0)g.moveTo(p[0],p[1]);else if(i<=jusqua.i)g.lineTo(p[0],p[1])});
+    var a=pt(T[jusqua.i]),b=pt(T[jusqua.i+1]);g.lineTo(a[0]+(b[0]-a[0])*jusqua.f,a[1]+(b[1]-a[1])*jusqua.f);g.stroke()};
+  g.lineCap="round";g.lineJoin="round";
+  g.strokeStyle="rgba(148,163,184,.35)";g.lineWidth=12;g.setLineDash([2,18]);trace({i:T.length-2,f:1});g.setLineDash([]);
+  var pos=trajetPosition(total);g.strokeStyle=EAU;g.lineWidth=12;g.shadowColor=EAU;g.shadowBlur=16;trace(pos);g.shadowBlur=0;
+  // position de chaque étiquette : [décalage x, décalage y, alignement]
+  var ETQ={"Pont de la Croisade":[10,-34,"right"],"Le Somail":[0,42,"center"],"Homps":[0,42,"center"],"Trèbes":[14,-22,"left"],
+    "Carcassonne":[-6,44,"center"],"Castelnaudary":[10,42,"center"],"Seuil de Naurouze":[-18,-16,"right"],"Toulouse":[26,12,"left"]};
+  T.forEach(function(s,i){var p=pt(s),fait=total>=s.km,cle=i===0||i===T.length-1,e=ETQ[s.n]||[0,40,"center"];
+    g.fillStyle=fait?OR:"#475569";g.beginPath();g.arc(p[0],p[1],cle?13:8,0,Math.PI*2);g.fill();
+    g.textAlign=e[2];g.fillStyle=fait?BL:GR;g.font=(cle?"700 28px":"600 21px")+" Inter, sans-serif";g.fillText(s.n,p[0]+e[0],p[1]+e[1]);
+    if(cle||s.n==="Carcassonne"){g.fillStyle=GR;g.font="600 18px Inter, sans-serif";g.fillText(s.km+" km"+(i===0?" · Cruzy":""),p[0]+e[0],p[1]+e[1]+(e[1]<0?-30:24))}});
+  // le bateau du centre
+  var a=pt(T[pos.i]),b=pt(T[pos.i+1]),bx=a[0]+(b[0]-a[0])*pos.f,by=a[1]+(b[1]-a[1])*pos.f;
+  g.textAlign=arrive?"center":"right";g.font="54px sans-serif";g.fillText(arrive?"🏁":"🚣",arrive?bx:bx-14,arrive?by-14:by+18);
+  g.textAlign="left";g.fillStyle=GR;g.font="600 17px Inter, sans-serif";g.fillText("Canal du Midi, du Pont de la Croisade (Cruzy) à Toulouse · trajet à l'échelle des 200 km",mx+24,my+mh-20);
+  // chiffres
+  var y=740,cases=[[dfsNum(total),d.unite+" ramés"],[String(S.contribs.length),"séances"],[String(P.participants),"participant"+(P.participants>1?"s":"")],[Math.round(100*total/Number(d.objectif))+" %","de l'objectif"]];
+  var cw=(W-120-3*20)/4;
+  cases.forEach(function(c,i){var x=60+i*(cw+20);g.fillStyle="#1c1917";rectArrondi(g,x,y,cw,150,24);g.fill();g.strokeStyle="#44403c";g.lineWidth=2;g.stroke();
+    g.textAlign="center";g.fillStyle=i===0?OR:BL;g.font="700 "+(c[0].length>5?54:64)+"px Oswald, sans-serif";g.fillText(c[0],x+cw/2,y+88);
+    g.fillStyle=GR;g.font="600 22px Inter, sans-serif";g.fillText(c[1],x+cw/2,y+126)});
+  g.textAlign="left";
+  // phrase du trajet
+  y=940;g.fillStyle=BL;g.font="700 36px Oswald, sans-serif";
+  var reste=Math.max(0,arrivee-total);
+  g.fillText(arrive?(total-arrivee>=1?"Toulouse atteinte, et encore "+dfsNum(total-arrivee)+" "+d.unite+" de rab.":"Toulouse atteinte. Pile poil."):"Encore "+dfsNum(reste)+" "+d.unite+" et on était à Toulouse.",60,y);
+  // podium (régularité, comme sur la télé)
+  y=990;g.fillStyle=OR;g.font="700 32px Oswald, sans-serif";g.fillText("LES PLUS RÉGULIERS",60,y+26);
+  var meds=[];for(var m=0;m<3;m++)meds.push(await chargerImageCarte("img/defis/medaille-"+["or","argent","bronze"][m]+".webp"));
+  P.podium.slice(0,3).forEach(function(o,i){var yy=y+48+i*62;if(meds[i])g.drawImage(meds[i],62,yy-2,40,54);
+    g.fillStyle=BL;g.font="700 30px Inter, sans-serif";g.fillText(prenomDe(o.pid),118,yy+28);
+    g.fillStyle=GR;g.font="600 22px Inter, sans-serif";g.fillText(o.jours+" jour"+(o.jours>1?"s":"")+" · "+dfsNum(o.v)+" "+d.unite+(sexeDe(o.pid)==="F"&&estMovember(d)?" · Mo Sister":""),118,yy+54)});
+  // Sergent-Chef
+  var img=await chargerImageCarte("img/mascotte/grand/sergent-fete.webp");
+  if(img){g.save();g.shadowColor="rgba(0,0,0,.55)";g.shadowBlur=24;g.drawImage(img,W-330,990,280,280);g.restore();}
+  g.fillStyle="#fff";rectArrondi(g,60,1236,W-420,70,20);g.fill();
+  g.fillStyle="#1c1917";g.font="700 22px Inter, sans-serif";g.fillText(arrive?"« Toulouse à la rame. Le TGV peut aller se rhabiller. »":"« Pas mal. La prochaine fois, on pousse jusqu'au bout. »",82,1266);
+  g.fillStyle="#78716c";g.font="600 18px Inter, sans-serif";g.fillText("— Le Sergent-Chef",82,1292);
+  g.textAlign="center";g.fillStyle=GR;g.font="700 22px Oswald, sans-serif";g.fillText("CIS CRUZY-QUARANTE · SDIS 34",W/2,H-14);
+  var blob=await new Promise(function(ok){cv.toBlob(ok,"image/png")});
+  if(blob)diffuserImage(blob,"Bilan_"+dfsIso(new Date())+".png","De Cruzy à Toulouse");
+}
 // ===== « MON ANNÉE » (carte à partager, de décembre à fin janvier ; l'admin la voit toute l'année) =====
 function monAnnee(p,an){
   var deb=an+"-01-01",fin=an+"-12-31",mes=dfsContrib.filter(function(x){return x.pompier_id===p.id&&x.date>=deb&&x.date<=fin});
@@ -7327,6 +7406,7 @@ function dfsAdminHtml(d){
       +'<button class="pbtn" onclick="dfsSupprimer('+d.id+')">🗑️ Supprimer</button>'
       +'<button class="pbtn" onclick="dfsAffiche('+d.id+')">📄 Affiche du défi (PDF)</button>'
       +'<button class="pbtn pri" onclick="dfsAfficheFinale('+d.id+')">🏁 Affiche finale (PDF)</button>'
+      +(d.unite==='km'&&!dfsAVenir(d)?'<button class="pbtn pri" onclick="dfsInfographieTrajet('+d.id+')">🗺️ Bilan « De Cruzy à Toulouse » (image)</button>':'')
       +'<button class="pbtn" onclick="dfsTousDiplomes('+d.id+')">🎓 Tous les diplômes (PDF)</button>'
       +'<button class="pbtn" onclick="ouvrirModeTV()">📺 Mode TV (salle)</button>'
       +'<button class="pbtn" onclick="dfsAffichetteQR()">🖨️ Affichettes QR rameur / SkiErg</button>'

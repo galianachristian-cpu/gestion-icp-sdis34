@@ -2,7 +2,7 @@
 
 _Générée par `node outils/carte.cjs`, ne pas modifier à la main. Numéros de ligne : début de chaque section._
 
-# index.html : 94 sections, 700 fonctions
+# index.html : 95 sections, 704 fonctions
 
 ## EFFETS VISUELS · ligne 53
 
@@ -172,109 +172,113 @@ Fonctions : `estPeriodeNoel`, `bonnetSvg`, `guirlandeHtml`, `appliquerNoel`, `ne
 
 Fonctions : `dfsPointSituation`, `prenomDe`, `dfsMessageWhatsapp`, `dfsAfficheWhatsapp`
 
-## « MON ANNÉE » (carte à partager, de décembre à fin janvier ; l'admin la voit toute l'année) · ligne 4449
+## INFOGRAPHIE « DE CRUZY À TOULOUSE » (bilan d'un défi en km, image à partager) · ligne 4449
+
+Fonctions : `trajetPosition`, `dfsInfographieTrajet`, `pt`, `trace`
+
+## « MON ANNÉE » (carte à partager, de décembre à fin janvier ; l'admin la voit toute l'année) · ligne 4528
 
 Fonctions : `monAnnee`, `boutonAnneeHtml`, `carteAnnee`
 
-## BADGES DE DÉFI SUR LA FICHE · ligne 4500
+## BADGES DE DÉFI SUR LA FICHE · ligne 4579
 
 Fonctions : `badgesDefis`, `h`
 
-## INSCRIPTIONS AUX SESSIONS ICP (table inscriptions_icp ; places limitées par sessions_icp.places) · ligne 4514
+## INSCRIPTIONS AUX SESSIONS ICP (table inscriptions_icp ; places limitées par sessions_icp.places) · ligne 4593
 
 Fonctions : `chargerInscriptions`, `inscritsDe`, `estInscrit`, `basculerInscription`, `inscriptionHtml`
 
-## BILAN DU MOIS POUR LES CHEFS (PDF d'une page, chiffres collectifs uniquement) · ligne 4541
+## BILAN DU MOIS POUR LES CHEFS (PDF d'une page, chiffres collectifs uniquement) · ligne 4620
 
 Fonctions : `bilanMoisPDF`
 
-## LA SALLE : MACHINES EN PANNE (table pannes) · ligne 4583
+## LA SALLE : MACHINES EN PANNE (table pannes) · ligne 4662
 
 Fonctions : `chargerPannes`, `pannesOuvertes`, `salleHtml`, `ouvrirPanne`, `fermerPanne`, `photoPanne`, `envoyerPanne`, `panneReparee`, `voirPhotoPanne`
 
-## PROGRAMMER LES DÉFIS DE L'ANNÉE (admin) · ligne 4644
+## PROGRAMMER LES DÉFIS DE L'ANNÉE (admin) · ligne 4723
 
 Fonctions : `moisAVenir`, `defiDuMois`, `programmeAnneeHtml`, `programmerDefi`, `programmerTout`
 
-## TABLEAU DE BORD D'UTILISATION (admin, onglet Comptes) · ligne 4685
+## TABLEAU DE BORD D'UTILISATION (admin, onglet Comptes) · ligne 4764
 
 Fonctions : `chargerUtilisation`, `utilisationHtml`
 
-## DUELS (un pompier en défie un autre sur le défi en cours, jusqu'au dimanche) · ligne 4708
+## DUELS (un pompier en défie un autre sur le défi en cours, jusqu'au dimanche) · ligne 4787
 
 Fonctions : `chargerDuels`, `scoreDuel`, `dimancheProchain`, `duelsHtml`, `lancerDuel`, `repondreDuel`
 
-## MUR DES PHOTOS (photo d'une séance, validée par l'admin avant de s'afficher) · ligne 4754
+## MUR DES PHOTOS (photo d'une séance, validée par l'admin avant de s'afficher) · ligne 4833
 
 Fonctions : `chargerPhotosSeances`, `photoDeContrib`, `ajouterPhotoSeance`, `retirerPhotoSeance`, `validerPhotoSeance`, `voirPhotoSeance`, `murPhotosHtml`, `tvPhotoHtml`, `feterPalierDefi`
 
-## TROISIÈME VAGUE · ligne 4814
+## TROISIÈME VAGUE · ligne 4893
 
 Fonctions : `iconeSvg`, `poserIconesOnglets`
 
-## PERSONNAGES ANIMÉS · ligne 4846
+## PERSONNAGES ANIMÉS · ligne 4925
 
 Fonctions : `humeurDefi`, `themeIc`, `iconeDefi`, `personnageHtml`, `IMG_D`, `decorsHtml`
 
-## HUMOUR DES DÉFIS (Noël, Movember) · ligne 4895
+## HUMOUR DES DÉFIS (Noël, Movember) · ligne 4974
 
 Fonctions : `themeHumour`, `phraseDuJour`, `phraseAuHasard`, `sexeDe`, `titreHumour`, `oeufDePaques`
 
-## THÈME NOËL : « Aidons le Père Noël à skier » · ligne 4932
+## THÈME NOËL : « Aidons le Père Noël à skier » · ligne 5011
 
 Fonctions : `estNoel`, `neigeHtml`, `etapeNoel`, `estMovember`, `bateauHtml`, `chargerPhotos`, `avatarMini`, `initialesDe`, `peutChangerPhoto`, `choisirPhoto`, `retirerPhoto`, `majPastilleDefis`, `etatVide`, `pdfEntete`
 
-## OBJECTIFS ET ÉVOLUTION PAR TEST · ligne 5008
+## OBJECTIFS ET ÉVOLUTION PAR TEST · ligne 5087
 
 Fonctions : `seuilsRameur`, `niveauTest`, `nombreFr`, `objectifTest`, `niveauPrecedentTest`, `evolutionTest`, `evolutionCampagne`
 
-## PROGRAMME D'ENTRAÎNEMENT PERSONNALISÉ · ligne 5063
+## PROGRAMME D'ENTRAÎNEMENT PERSONNALISÉ · ligne 5142
 
 Fonctions : `allureKmh`, `tempsSur`, `construireProgramme`, `poids`, `texteNiveauCourt`, `renderProgramme`, `textePdf`, `programmePDF`, `renderFiche`, `ficheExportPDF`
 
-## JOURNAL DES MODIFICATIONS (administrateur) · ligne 5255
+## JOURNAL DES MODIFICATIONS (administrateur) · ligne 5334
 
 Fonctions : `chargerJournal`, `vide`, `generateFichePDF`, `generateToutesFichesPDF`, `generateSynthesePDF`, `presence`, `renderBilan`, `getNiveauGlobal`, `getAge`, `renderEchelles`
 
-## ZONES CARDIO — méthode FC Réserve (Karvonen) · ligne 5412
+## ZONES CARDIO — méthode FC Réserve (Karvonen) · ligne 5491
 
 Fonctions : `getFcMax`, `getFcRepos`, `vo2maxRameur`, `setCardioField`, `reprendrePompierCalc`, `renderCalcVo2`, `renderCardio`
 
-## VMA et VO2max estimés à partir du test Luc Léger · ligne 5540
+## VMA et VO2max estimés à partir du test Luc Léger · ligne 5619
 
 Fonctions : `vmaLuc`, `vo2maxLuc`
 
-## HISTORIQUE DES CAMPAGNES · ligne 5556
+## HISTORIQUE DES CAMPAGNES · ligne 5635
 - Vue « une campagne, tous les pompiers »
 - Vue « un pompier, son historique »
 
 Fonctions : `chargerHistoriqueReferenceDistant`, `getHistorique`, `setHistorique`, `aDesDonnees`, `normNom`, `fusionnerHistoriqueImport`, `chargerHistoriqueDeReference`, `importerHistorique`, `cloturerCampagne`, `archiverCampagne`, `deltaHtml`, `deltaTempsHtml`, `listeCampagnes`, `ligneCampagne`, `lignesTriees`, `celluleEvo`, `renderProgression`
 
-## MODE TERRAIN (saisie mobile, un pompier à la fois) · ligne 5788
+## MODE TERRAIN (saisie mobile, un pompier à la fois) · ligne 5867
 
 Fonctions : `terrainStep`, `normaliserSaisie`, `niveauChamp`, `terrainChamps`, `terrainPompierCourant`, `libelleOptionTerrain`, `majTerrainProgression`, `renderTerrain`, `terrainMaj`, `focusPremierVide`, `terrainEntree`, `renderAtelier`, `vide`, `atelierMaj`
 
-## MUSCULATION — 1 RM et charges d'entraînement · ligne 5930
+## MUSCULATION — 1 RM et charges d'entraînement · ligne 6009
 
 Fonctions : `effetPourReps`, `coefBrzycki`, `rmBrzycki`, `rmPoliquin`, `polarPt`, `sectorPath`, `midArcPath`, `renderMuscuGauge`, `renderMuscu`, `generateMuscuPDF`
 
-## SÉANCES EN GARDE — « Développer la force musculaire, quelques repères » (CNFPT) · ligne 6094
+## SÉANCES EN GARDE — « Développer la force musculaire, quelques repères » (CNFPT) · ligne 6173
 
-## FICHE DE SEANCE — nouveau rendu (pictogrammes uniformises, photos perso Cross Training) · ligne 6120
+## FICHE DE SEANCE — nouveau rendu (pictogrammes uniformises, photos perso Cross Training) · ligne 6199
 
 Fonctions : `getRpeRange`, `isCircuit`, `getMateriel`, `iconeMateriel`, `iconeSeance`, `classeNiveau`, `rpeGaugeHtml`, `animateRpeThermos`, `pdfRpeGauge`
 
-## EMOM à 3 niveaux (fiche fixe, indépendante du générateur de séance) · ligne 6231
+## EMOM à 3 niveaux (fiche fixe, indépendante du générateur de séance) · ligne 6310
 
 Fonctions : `renderEmom`, `generateEmomPDF`, `pdfSectionTitle`, `drawExerciseGrid`
 
-## GÉNÉRATEUR DE SÉANCE — Livret des ressources, formation EAP2 (CNFPT) · ligne 6355
+## GÉNÉRATEUR DE SÉANCE — Livret des ressources, formation EAP2 (CNFPT) · ligne 6434
 
 Fonctions : `showToast`, `tirerSeance`, `alea`, `choisirZoneExercice`, `getExerciceZone`
 
-## Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier · ligne 6498
+## Carnet de suivi (idee #3) : persistance des entrees RPE / charge de seance (UA) par pompier · ligne 6577
 
-## MON SPORT (l'application de Christian, mise à disposition de la caserne) · ligne 6500
+## MON SPORT (l'application de Christian, mise à disposition de la caserne) · ligne 6579
 - effets repris de mon-app-sport
 - rendu
 - Participation du centre (administrateur) et point faible ICP
@@ -282,16 +286,16 @@ Fonctions : `showToast`, `tirerSeance`, `alea`, `choisirZoneExercice`, `getExerc
 
 Fonctions : `sptMoi`, `sptEsc`, `sptCharger`, `sptMarquerVu`, `sptRevoir`, `sptReduit`, `sptEnterFx`, `sptSlide`, `renderProgramme`, `sptAller`, `sptFil`, `sptAccueil`, `sptCadre`, `sptChargerPart`, `sptCarteParticipation`, `sptPointFaible`, `sptCartePointFaible`, `pushDispo`, `pushB64`, `pushCharger`, `pushActiver`, `pushCouper`, `pushRegler`, `pushToggleJour`, `pushCarte`
 
-## AIDE · ligne 6818
+## AIDE · ligne 6897
 
 Fonctions : `aideEsc`, `aideMoi`, `aideBascule`, `aideBloc`, `renderAide`
 
-## DÉFIS COLLECTIFS · ligne 6931
+## DÉFIS COLLECTIFS · ligne 7010
 - rendu
 
 Fonctions : `dfsEsc`, `dfsMoi`, `dfsTheme`, `chargerAnnuaire`, `dfsNom`, `dfsNum`, `dfsRythme`, `dfsIso`, `chargerDefis`, `dfsStats`, `dfsAVenir`, `dfsVisibles`, `dfsJoursAvant`, `dfsTexteAnnonce`
 
-## SCÈNE DE NOËL : « Aidons le Père Noël à skier » · ligne 7034
+## SCÈNE DE NOËL : « Aidons le Père Noël à skier » · ligne 7113
 - les gags
 - Branchement de la scène de Noël : télé (à la place de la jauge) et onglet Défis (sous la jauge)
 - Rame en direct : le Sergent-Chef rame avec toi (page rame.html, rameur Concept2 PM5 ou SkiErg en Bluetooth)
@@ -299,58 +303,58 @@ Fonctions : `dfsEsc`, `dfsMoi`, `dfsTheme`, `chargerAnnuaire`, `dfsNom`, `dfsNum
 
 Fonctions : `SceneNoel`, `R`, `chaine`, `piste`, `taille`, `img`, `ciel`, `montagnes`, `sol`, `trace`, `decors`, `skieur`, `particules`, `neige`, `bonnetSur`, `bonhommeNeige`, `lancerGag`, `dessinerBulle`, `feuArtifice`, `image`, `noelImages`, `noelCoach`, `noelSceneHtml`, `noelBrancher`, `noelPct`, `lienRame`, `estIphoneSansBT`, `rameCopier`, `ok`, `rameCarteHtml`, `renderDefis`, `dfsVoir`, `dfsCarte`, `dfsSuiviHtml`, `nom`, `bloc`, `dfsCopierRelance`, `dfsAdminHtml`, `dfsMesLignes`, `dfsAjouter`, `dfsRetirer`, `dfsNouveau`, `dfsModifier`, `dfsAnnuler`, `dfsSetTheme`, `dfsSetCouleur`, `dfsLireForm`, `dfsFormulaire`, `dfsEnregistrer`, `dfsBasculer`, `dfsSupprimer`, `dfsAffiche`
 
-## PODIUM DE LA SEMAINE (régularité) · ligne 7497
+## PODIUM DE LA SEMAINE (régularité) · ligne 7577
 
 Fonctions : `dfsLundi`, `dfsSemaine`, `dfsLibSemaine`, `f`, `dfsPodium`, `dfsPodiumHtml`, `bloc`
 
-## AFFICHE FINALE (PDF, avec photo de groupe facultative) · ligne 7535
+## AFFICHE FINALE (PDF, avec photo de groupe facultative) · ligne 7615
 
 Fonctions : `illuPourPdf`, `dfsAfficheFinale`, `dfsTextePdf`, `dfsAfficheFinalePdf`
 
-## COMPTE À REBOURS DU DÉFI · ligne 7604
+## COMPTE À REBOURS DU DÉFI · ligne 7684
 
 Fonctions : `dfsCompteurDonnees`, `dfsCompteurHtml`, `dfsChrono`, `p`, `dfsCompteurTick`
 
-## DIPLÔMES DE FIN DE DÉFI (PDF A4 paysage) · ligne 7646
+## DIPLÔMES DE FIN DE DÉFI (PDF A4 paysage) · ligne 7726
 
 Fonctions : `dfsDiplomeClassement`, `dfsDiplomeReglages`, `dfsDiplomeTexte`, `dfsDiplomeRang`, `dfsDiplomeMoustache`, `dfsDiplomeMedaille`, `dfsDiplomePage`, `dfsDiplomePdf`, `dfsDiplomeEditeurHtml`, `dfsDiplomeLireForm`, `g`, `dfsDiplomeApercu`, `dfsDiplomeEnregistrer`, `dfsMonDiplome`, `dfsTousDiplomes`, `dfsEnterFx`
 
-## MÉNAGE (planning de nettoyage de la salle) · ligne 7777
+## MÉNAGE (planning de nettoyage de la salle) · ligne 7857
 - Bloc « aujourd'hui » : je coche ma mission
 - Statistiques
 - Grille du mois (saisie de la feuille papier, administrateur)
 
 Fonctions : `menEsc`, `menMission`, `menIniDe`, `menIniValide`, `menTokens`, `menCouleur`, `menPastille`, `menDateCle`, `menSansAccent`, `menageMoi`, `menageChoisirMoi`, `menageChangerMoi`, `menageSelectQui`, `nomPourInitiales`, `chargerMenage`, `menagePeriode`, `renderMenage`, `renderMenageAujourdhui`, `basculerMaMission`, `menageStats`, `renderMenagePodium`, `renderMenageZones`, `renderMenageGrille`, `menageSaisie`, `menNormaliserCode`, `menageParseCase`, `enregistrerMenage`, `exporterMenagePDF`, `chargerCarnetSiBesoin`, `majCarnetUA`, `step`, `ajouterCarnetEntree`, `sparklineSvg`, `renderCarnetHistorique`, `zoneSelectHtml`, `catalogueSeances`, `majObjectifs`, `renderSeance`
 
-## Matériel · ligne 8317
+## Matériel · ligne 8397
 
-## Outil de suivi RPE / Borg · ligne 8324
+## Outil de suivi RPE / Borg · ligne 8404
 
-## Tableau des 3 niveaux (séances de type Circuit uniquement) · ligne 8335
+## Tableau des 3 niveaux (séances de type Circuit uniquement) · ligne 8415
 
-## Règles à ne jamais oublier + Repères de récupération (toutes les séances de musculation) · ligne 8434
+## Règles à ne jamais oublier + Repères de récupération (toutes les séances de musculation) · ligne 8514
 
 Fonctions : `pdfLogo`, `chargerImagesPdf`, `generateSeancePDF`, `genererSeancePDF`, `checkPage`, `togglePPA`, `renderPPA`, `renderExport`, `copyExport`, `importData`
 
-## PDF — zones cardio · ligne 8735
+## PDF — zones cardio · ligne 8815
 - Taux de participation
 - Répartition des niveaux, avec les noms
 - Résultats détaillés (uniquement les pompiers évalués)
 
 Fonctions : `hexToRgb`, `tintRgb`, `cardioRows`, `generateCardioPDF`, `generateBilanPDF`, `age`, `generatePDF`
 
-## EN-TÊTE · ligne 8918
+## EN-TÊTE · ligne 8998
 
-## STATISTIQUES GLOBALES · ligne 8937
+## STATISTIQUES GLOBALES · ligne 9017
 
-## TABLEAU DES POMPIERS · ligne 8967
+## TABLEAU DES POMPIERS · ligne 9047
 - Interface : en-tête, menu du compte, thème, navigation téléphone
 - Mon mot de passe (tout compte connecté)
 - Gestion des comptes secondaires (onglet Comptes, admin uniquement)
 
 Fonctions : `gradeComplet`, `nomGrade`, `galonSvg`, `afficherCompteEntete`, `basculerMenuCompte`, `fermerMenuCompte`, `majBoutonTheme`, `basculerTheme`, `infoOnglet`, `ongletsVisibles`, `ongletActif`, `construireNavBas`, `majNavActive`, `ouvrirPlus`, `ouvrirGroupe`, `fermerPlus`, `ouvrirMonMdp`, `fermerMonMdp`, `changerMonMdp`, `appelerGererComptes`, `chargerComptes`, `checkboxesOnglets`, `ongletsCoches`
 
-## CONNEXIONS · ligne 9217
+## CONNEXIONS · ligne 9297
 - Envoi du lien et des identifiants (email, SMS, WhatsApp, copier)
 - Carte d'accès (image PNG) à envoyer par WhatsApp : emblème, lien, identifiant, mot de passe
 - Visuels à partager (WhatsApp) : session ICP et carte de résultats individuelle
