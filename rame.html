@@ -370,10 +370,34 @@ function simuler(dt){ // un rameur réaliste : ~24 coups/min, 2:05/500 m, petite
 const PM5={service:'ce060030-43e5-11e4-916c-0800200c9a66',general:'ce060031-43e5-11e4-916c-0800200c9a66',add1:'ce060032-43e5-11e4-916c-0800200c9a66',add2:'ce060033-43e5-11e4-916c-0800200c9a66',taux:'ce060034-43e5-11e4-916c-0800200c9a66'};
 let pm5Derniere=0,pm5DistAff=0,pm5DistReelle=0;
 const FTMS_UUID='00001826-0000-1000-8000-00805f9b34fb',UU=n=>'0000'+n.toString(16).padStart(4,'0')+'-0000-1000-8000-00805f9b34fb';
+// Bluefy (iPhone) rejette parfois avec un simple nombre (ex. 2) au lieu d'une vraie erreur : on le décrit tel quel
+function decrireErr(x){if(x&&(x.name||x.message))return (x.name?x.name+' : ':'')+(x.message||'');let j='';try{j=JSON.stringify(x)}catch(e){}return 'valeur brute '+typeof x+' '+(j||String(x))}
+// Cherche la machine en essayant plusieurs façons de demander la liste, car Bluefy en refuse certaines sans expliquer.
+// On n'insiste pas si la liste s'est vraiment ouverte (annulation, ou plus d'1,5 s avant l'erreur).
+let btJournal=[];
+async function demanderMachine(){
+  btJournal=[];
+  const essais=[
+    ['toutes les machines',{acceptAllDevices:true,optionalServices:[PM5.service,FTMS_UUID]}],
+    ['machines de sport (FTMS)',{filters:[{services:[FTMS_UUID]}],optionalServices:[PM5.service]}],
+    ['par nom (PM5, SkiErg…)',{filters:[{namePrefix:'PM5'},{namePrefix:'Ski'},{namePrefix:'SKI'},{namePrefix:'Concept'}],optionalServices:[PM5.service,FTMS_UUID]}],
+    ['toutes, sans options',{acceptAllDevices:true}]
+  ];
+  let derniere;
+  for(const [nom,o] of essais){const t0=performance.now();
+    try{const d=await navigator.bluetooth.requestDevice(o);btJournal.push('✅ '+nom+' ('+Math.round(performance.now()-t0)+' ms) → '+(d.name||'(sans nom)'));return d}
+    catch(x){const ms=Math.round(performance.now()-t0);btJournal.push('✖ '+nom+' : '+decrireErr(x)+' ('+ms+' ms)');derniere=x;
+      if((x&&x.name==='NotFoundError')||ms>1500)throw x}
+  }
+  throw derniere;
+}
+async function etatBluetooth(){try{if(navigator.bluetooth.getAvailability)return (await navigator.bluetooth.getAvailability())?'disponible':'INDISPONIBLE (éteint ou non autorisé)'}catch(e){return 'inconnu ('+decrireErr(e)+')'}return 'inconnu'}
+function journalHtml(dispo){return '<div style="text-align:left;font-size:12px;background:rgba(0,0,0,.35);border-radius:10px;padding:8px;margin-top:6px">🔍 Bluetooth : '+dispo+'<br>'+btJournal.join('<br>')+'<br><small>'+navigator.userAgent.replace(/[<>]/g,'')+'</small></div>'}
 function messageBT(x,etape){const n=(x&&x.name)||'',m=(x&&x.message)||String(x);
   if(n==='NotFoundError'&&/cancel|annul/i.test(m))return 'Recherche annulée.';
   if(n==='NotFoundError')return '❌ Aucune machine compatible trouvée. Réveille l\'écran (quelques tirages), vérifie qu\'aucune autre appli n\'y est reliée, puis réessaie.<br>Sinon, appuie sur <b>🔍 Diagnostic Bluetooth</b> et envoie une capture à l\'admin.';
-  return '❌ Problème à l\'étape « '+etape+' » ('+(n?n+' : ':'')+m+').<br>Appuie sur <b>🔍 Diagnostic Bluetooth</b> et envoie une capture à l\'admin.'}
+  if(!n&&typeof x!=='object')return '❌ Bluefy refuse d\'ouvrir la recherche (code '+m+').<br>Vérifie : <b>Bluetooth allumé</b> ; Réglages de l\'iPhone → <b>Bluefy</b> → <b>Bluetooth</b> autorisé ; aucune autre appli (Kinomap, appli du SkiErg…) ni autre onglet relié à la machine. Puis ferme complètement Bluefy (balayer vers le haut) et rouvre la page.<br>Si ça bloque encore, fais une capture de cet écran pour l\'admin.';
+  return '❌ Problème à l\'étape « '+etape+' » ('+(n?n+' : ':'')+m+').<br>Fais une capture de cet écran pour l\'admin.'}
 async function connecterPM5(){
   const e=document.getElementById('etat');
   if(!navigator.bluetooth){e.innerHTML='Ce navigateur ne sait pas se connecter en Bluetooth. Sur iPhone, ouvre cette page dans l\'appli gratuite <b>Bluefy</b>. Sur Android, utilise <b>Chrome</b>.';return}
@@ -381,7 +405,7 @@ async function connecterPM5(){
   try{e.textContent='Recherche de la machine…';
     // Concept2 (PM5) ou machine « connectée » standard (Bluetooth FTMS : Kinomap, Zwift…). UUID en texte : Bluefy les préfère.
     // toutes les machines à portée : certaines (SkiErg Heubozen…) n'annoncent pas leur service dans la liste, le filtre les cachait
-    const dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[PM5.service,FTMS_UUID]});
+    const dev=await demanderMachine();
     etape='connexion à '+(dev.name||'la machine');e.textContent='Connexion à '+(dev.name||'la machine')+'…';
     const gatt=await dev.gatt.connect();etape='lecture des données';
     if(!/^PM5/.test(dev.name||'')){try{await gatt.getPrimaryService(FTMS_UUID)}catch(x){try{gatt.disconnect()}catch(y){}throw new Error('cet appareil n\'est pas une machine de sport connectée (FTMS). Choisis bien le SkiErg dans la liste')}}
@@ -394,7 +418,7 @@ async function connecterPM5(){
     await ecoute(PM5.add2,v=>{try{etat.watts=v.getUint16(4,true)}catch(x){}});
     dev.addEventListener('gattserverdisconnected',()=>{ditSergent("Liaison perdue avec le rameur. Rallume le Bluetooth du PM5 !")});
     etat.source='pm5';document.getElementById('qui').textContent='Relié à '+dev.name;demarrer();
-  }catch(x){e.innerHTML=messageBT(x,etape)}
+  }catch(x){const msg=messageBT(x,etape);if(msg==='Recherche annulée.'){e.innerHTML=msg;return}e.innerHTML=msg+journalHtml(await etatBluetooth())}
 }
 
 // Rameur standard FTMS (service 0x1826, données 0x2AD1 « Rower Data »)
@@ -452,17 +476,22 @@ async function lireCrossTrainer(c,dev){
 // ----- Diagnostic Bluetooth : montre tous les appareils, puis la liste des services de celui qu'on choisit -----
 async function diagnosticBT(){
   const e=document.getElementById('etat');if(!navigator.bluetooth){e.textContent='Pas de Bluetooth dans ce navigateur (sur iPhone : Bluefy).';return}
-  const cand=[0x1826,0x1816,0x1818,0x180d,0x180a,0x180f,0xfff0,0xffe0,0xfee7,0x1800,0x1801].map(UU).concat([PM5.service,'49535343-fe7d-4ae5-8fa9-9fafd205e455','6e400001-b5a3-f393-e0a9-e50e24dcca9e','0000fff0-0000-1000-8000-00805f9b34fb']);
-  let L=[];
+  const cand=[0x1826,0x1816,0x1818,0x180d,0x180a,0x180f,0xfff0,0xffe0,0xfee7].map(UU).concat([PM5.service,'49535343-fe7d-4ae5-8fa9-9fafd205e455','6e400001-b5a3-f393-e0a9-e50e24dcca9e','0000fff0-0000-1000-8000-00805f9b34fb']);
+  let L=['Bluetooth : '+(await etatBluetooth())];btJournal=[];
   try{e.textContent='Choisis la machine dans la liste…';
-    const dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:cand});
+    let dev,t0=performance.now();
+    try{dev=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:cand})}
+    catch(x){const ms=Math.round(performance.now()-t0);L.push('✖ liste complète : '+decrireErr(x)+' ('+ms+' ms)');
+      if((x&&x.name==='NotFoundError')||ms>1500)throw x;
+      try{dev=await demanderMachine()}finally{L=L.concat(btJournal)}}
     L.push('Appareil : <b>'+(dev.name||'(sans nom)')+'</b>');e.textContent='Connexion…';
     const gatt=await dev.gatt.connect();L.push('Connexion : OK');
     const srvs=await gatt.getPrimaryServices();
     for(const sv of srvs){let ch=[];try{ch=(await sv.getCharacteristics()).map(c=>c.uuid.replace(/-0000-1000-8000-00805f9b34fb$/,'').replace(/^0000/,'')+'('+[c.properties.notify?'N':'',c.properties.read?'R':'',c.properties.write?'W':''].join('')+')')}catch(x){ch=['?']}
       L.push('• '+sv.uuid.replace(/-0000-1000-8000-00805f9b34fb$/,'').replace(/^0000/,'')+' : '+ch.join(', '))}
     try{gatt.disconnect()}catch(x){}
-  }catch(x){L.push('Erreur : '+((x&&x.name)||'')+' '+((x&&x.message)||x))}
+  }catch(x){L.push('Erreur : '+decrireErr(x))}
+  L.push('<small>'+navigator.userAgent.replace(/[<>]/g,'')+'</small>');
   e.innerHTML='<div style="text-align:left;font-size:12px;background:rgba(0,0,0,.35);border-radius:10px;padding:8px;margin-top:6px">🔍 <b>Diagnostic</b> (fais une capture d\'écran et envoie-la à l\'admin)<br>'+L.join('<br>')+'</div>';
 }
 // ===================== SERGENT-CHEF =====================
