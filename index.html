@@ -1208,7 +1208,7 @@ textarea{width:100%;min-height:200px;background:var(--bg);border:1px solid var(-
 .rame-carte a.pbtn{text-decoration:none;display:inline-block;color:inherit}
 .noel-scene{position:relative;border-radius:16px;overflow:hidden;background:#0f172a;margin:12px 0 6px;aspect-ratio:16/7}
 .noel-scene canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-.noel-tv{aspect-ratio:auto;height:34vh;border-radius:2.4vh;margin:1.6vh 0 1vh}
+.noel-tv{aspect-ratio:auto;height:30vh;flex-shrink:0;border-radius:2.4vh;margin:1.6vh 0 1vh}
 #tvRame{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:9600;background:#000}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
@@ -3120,6 +3120,9 @@ function preparerCompteEcran(){
 }
 function lienAjout(){return lienAppli()+"?ajout"}
 function qrSvg(t,cls){
+  // la bibliothèque QR est chargée en bas de page : si les données arrivent avant elle, on laisse la place vide
+  // (la télé se redessine dès qu'elle est chargée, voir la balise <script> de qrcode-generator)
+  if(typeof qrcode!=="function")return '<svg class="'+(cls||"qr")+'" viewBox="0 0 10 10" aria-label="QR code"><rect width="10" height="10" rx="1" fill="#fff"/></svg>';
   var q=qrcode(0,"M");q.addData(t);q.make();var n=q.getModuleCount(),p="";
   for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(q.isDark(r,c))p+="M"+c+" "+r+"h1v1h-1z";
   return '<svg class="'+(cls||"qr")+'" viewBox="-2 -2 '+(n+4)+' '+(n+4)+'" shape-rendering="crispEdges" aria-label="QR code"><rect x="-2" y="-2" width="'+(n+4)+'" height="'+(n+4)+'" rx="2" fill="#fff"/><path d="'+p+'" fill="#000"/></svg>';
@@ -6945,7 +6948,8 @@ function dfsStats(d){
   c.forEach(function(x){par[x.pompier_id]=(par[x.pompier_id]||0)+Number(x.valeur||0)});
   var classement=Object.keys(par).map(function(k){return {pid:+k,v:par[k]}})
     .sort(function(a,b){return b.v-a.v});
-  var fin=new Date(d.fin+"T23:59:59"),reste=Math.ceil((fin-new Date())/86400000);
+  // jours calendaires restants : 0 = dernier jour (le jour de fin), négatif = terminé
+  var auj=new Date();auj.setHours(12,0,0,0);var reste=Math.round((new Date(d.fin+"T12:00:00")-auj)/86400000);
   return {contribs:c,total:total,pct:Math.min(100,Math.round(100*total/Number(d.objectif))),
           classement:classement,reste:reste,atteint:total>=Number(d.objectif)};
 }
@@ -9546,7 +9550,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('sw.js').catch(function(e){ console.warn('Service worker :', e.message); });
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js" onload="try{if(document.body.classList.contains('tv-on'))renderTV()}catch(e){}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </body>
