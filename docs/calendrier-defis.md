@@ -10,7 +10,7 @@ Pour chaque défi, il faut 2 images : le **personnage** (il avance sur la jauge)
 
 | Mois | Défi | Activité | Objectif indicatif |
 |---|---|---|---|
-| Janvier | Opération Galette | Pompes | 10 000 pompes |
+| Janvier | Opération Galette | Squats (les pompes étaient trop dures pour beaucoup) | 10 000 squats (programmé du 1er au 31 janvier 2027) |
 | Février | Saint-Valentin du gainage | Gainage (minutes) | 1 000 min |
 | Mars | Cap sur la Corse | Rameur | 330 km (Sète → Ajaccio) |
 | Avril | Le Poisson d'avril qui fuit | SkiErg | 150 km |
@@ -28,7 +28,7 @@ Pour chaque défi, il faut 2 images : le **personnage** (il avance sur la jauge)
 ## Janvier — Opération Galette 👑
 *« Les galettes de l'amicale ne vont pas s'éliminer toutes seules. »*
 
-- **Personnage** : Un pompier cartoon costaud avec une couronne de galette des rois de travers sur la tête, en train de faire des pompes, l'air déterminé, des miettes qui volent.
+- **Personnage** : Un pompier cartoon costaud avec une couronne de galette des rois de travers sur la tête, en train de faire un squat, l’air déterminé, des miettes qui volent.
 - **Arrivée** : Le même pompier debout, triomphant, qui brandit une fève dorée géante comme un trophée, la couronne bien droite.
 - **Décors** : une part de galette ; une couronne en carton ; une fève dorée.
 

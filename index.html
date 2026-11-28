@@ -3079,7 +3079,7 @@ function renderBandeauDefi(){
   var rythme=avenir?dfsEsc(dfsTexteAnnonce(d))
     :S.atteint?'🎉 <b>Objectif atteint !</b>'
     :S.pct>=attendu?'<span class="bdf-rythme avance">🔥 En avance sur le rythme</span>'
-    :'<span class="bdf-rythme retard">⏱️ Il faut <b>'+dfsNum(reste/joursRestants)+' '+dfsEsc(d.unite)+'/jour</b> pour réussir</span>';
+    :'<span class="bdf-rythme retard">⏱️ Il faut <b>'+dfsRythme(reste/joursRestants,d.unite)+' '+dfsEsc(d.unite)+'/jour</b> pour réussir</span>';
   var maPart=moi?S.classement.filter(function(x){return x.pid===moi.id})[0]:null;
   var fil=S.contribs.slice().sort(function(a,b){return String(b.cree_le||b.date).localeCompare(String(a.cree_le||a.date))}).slice(0,3)
     .map(function(x){return '<span>💪 '+dfsEsc(dfsNom(x.pompier_id).split(" ")[0])+' +'+dfsNum(x.valeur)+' '+dfsEsc(d.unite)+' · '+quandContrib(x)+'</span>'}).join("");
@@ -3455,7 +3455,7 @@ function renderTV(){
   var hu=HUMOUR[th],etat=avenir?"avenir":S.atteint?"atteint":S.pct>=attendu?"avance":"retard";
   var rythme=avenir?dfsEsc(dfsTexteAnnonce(d)):S.atteint?'🎉 Objectif atteint ! Bravo à tout le centre !'
     :S.pct>=attendu?'<span class="ok">🔥 En avance sur le rythme</span>'
-    :'<span class="ko">⏱️ Il faut '+dfsNum(reste/jr)+' '+dfsEsc(d.unite)+' par jour pour réussir</span>';
+    :'<span class="ko">⏱️ Il faut '+dfsRythme(reste/jr,d.unite)+' '+dfsEsc(d.unite)+' par jour pour réussir</span>';
   var gauche='<div class="tv-defi bdf" style="--c:'+dfsEsc(d.couleur||"#ea580c")+'">'+(estNoel(d)?neigeHtml():'')
     +'<div class="tv-titre"><span class="tv-ic">'+iconeDefi(d)+'</span><div><div>'+dfsEsc(d.titre)+(estMovember(d)?MOUSTACHE:'')+'</div>'
     +'<small>Défi collectif du centre · du '+deb.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+' au '+new Date(d.fin+"T00:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long"})+'</small></div>'
@@ -4640,7 +4640,7 @@ function voirPhotoPanne(id){
 // ===== PROGRAMMER LES DÉFIS DE L'ANNÉE (admin) =====
 // D'après le calendrier docs/calendrier-defis.md ; chaque défi démarre le 1er du mois, l'annonce sort 7 jours avant.
 var CALENDRIER_DEFIS=[
- {m:1,titre:"Opération Galette",theme:"pompes",unite:"répétitions",objectif:10000,icone:"💪",couleur:"#fbbf24"},
+ {m:1,titre:"Opération Galette",theme:"libre",unite:"squats",objectif:10000,icone:"👑",couleur:"#fbbf24"},
  {m:2,titre:"Saint-Valentin du gainage",theme:"gainage",unite:"minutes",objectif:1000,icone:"🛡️",couleur:"#f472b6"},
  {m:3,titre:"Cap sur la Corse",theme:"rameur",unite:"km",objectif:330,icone:"🚣",couleur:"#22d3ee"},
  {m:4,titre:"Le Poisson d'avril qui fuit",theme:"ski",unite:"km",objectif:150,icone:"⛷️",couleur:"#34d399"},
@@ -6914,7 +6914,11 @@ function dfsNom(pid){
   var p=(data||[]).filter(function(x){return x.id===pid})[0]||ANNUAIRE[pid];
   return p?((p.prenom||"")+" "+(p.nom||"")).trim():"Pompier "+pid;
 }
-function dfsNum(v){var n=Math.round(v*10)/10;return (n%1===0?n.toFixed(0):n.toFixed(1)).replace(".",",")}
+function dfsNum(v){var n=Math.round(v*10)/10,t=(n%1===0?n.toFixed(0):n.toFixed(1)).replace(".",",");
+  // espace des milliers (10 000 squats), insécable pour ne pas couper le nombre
+  return t.replace(/^(-?\d+)/,function(e){return e.replace(/\B(?=(\d{3})+(?!\d))/g,"\u202f")})}
+// rythme à tenir : on ne fait pas de demi-squat. Pour les unités qui se comptent (répétitions, squats, étages…), arrondi au-dessus.
+function dfsRythme(v,unite){return /^(km|minutes?|min)$/i.test(unite||"")?dfsNum(v):dfsNum(Math.ceil(v-1e-9))}
 function dfsIso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 
 async function chargerDefis(force){
@@ -7561,13 +7565,13 @@ function dfsCompteurDonnees(d,S){
 function dfsCompteurHtml(d,S,cls){
   var C=dfsCompteurDonnees(d,S);if(!C||!C.reste)return "";
   var u=dfsEsc(d.unite),mov=estMovember(d),qui=mov?"rameur":"participant";
-  var parJour=C.reste/Math.max(1,C.jr),chacun=C.n?C.reste/C.n:0;
+  var parJour=C.reste/Math.max(1,Math.ceil(C.jr)),chacun=C.n?C.reste/C.n:0;
   var proj=C.passage?'<span class="cr-proj ok">📈 À ce rythme, vous passez les '+dfsNum(C.cible)+' '+u+' <b>'+(dfsIso(C.passage)===dfsIso(new Date())?"aujourd'hui":C.passage.toLocaleDateString("fr-FR",{weekday:"long"}))+'</b>.</span>'
     :'<span class="cr-proj ko">📈 À ce rythme : <b>≈ '+dfsNum(Math.floor(C.proj))+' '+u+'</b> à la fin. Il faut accélérer !</span>';
   return '<div class="dfs-cr '+(cls||"")+(C.jr<=1?' urgent':'')+'" data-fin="'+C.fin.getTime()+'">'
     +'<div class="cr-haut"><div class="cr-km"><b>'+dfsNum(C.reste)+' '+u+'</b><em>à aller chercher'+(C.bonus?' pour les '+dfsNum(C.cible)+' '+u:'')+'</em></div>'
     +'<div class="cr-t"><small>⏱️ fin dans</small><span class="cr-chrono">'+dfsChrono(C.fin-new Date())+'</span></div></div>'
-    +'<div class="cr-l">🎯 Rythme à tenir : <b>'+dfsNum(parJour)+' '+u+' par jour</b>'+(C.n?', soit <b>'+dfsNum(chacun)+' '+u+'</b> par '+qui+' si les '+C.n+' '+qui+'s s\'y mettent':'')+'.</div>'
+    +'<div class="cr-l">🎯 Rythme à tenir : <b>'+dfsRythme(parJour,d.unite)+' '+u+' par jour</b>'+(C.n?', soit <b>'+dfsRythme(chacun,d.unite)+' '+u+'</b> par '+qui+' si les '+C.n+' '+qui+'s s\'y mettent':'')+'.</div>'
     +'<div class="cr-l">'+proj+'</div>'
     +'<div class="cr-sgt">🔴 '+dfsEsc(CR_SERGENT[themeHumour(d)||"autre"])+'</div></div>';
 }
